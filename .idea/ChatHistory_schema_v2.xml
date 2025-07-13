@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChatHistoryState">
+    <option name="serializedSessions">
+      <map>
+        <entry key="e5a985ad-1f7f-4ca4-82fb-9f4f8a2206db" value="{&quot;id&quot;:&quot;e5a985ad-1f7f-4ca4-82fb-9f4f8a2206db&quot;,&quot;name&quot;:&quot;Hi from Colleague&quot;,&quot;timestamp&quot;:1751570556520,&quot;messages&quot;:[{&quot;role&quot;:&quot;user&quot;,&quot;content&quot;:[{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;\u003cuser_query\u003e\nhi\n\u003c/user_query\u003e&quot;}]},{&quot;role&quot;:&quot;assistant&quot;,&quot;content&quot;:[{&quot;type&quot;:&quot;thinking&quot;,&quot;thinking&quot;:&quot;The user just said \&quot;hi\&quot; which is a simple greeting. I should respond with a brief greeting back. This doesn\u0027t require any tool usage - it\u0027s just a social interaction. I should keep my response short and direct as per the instructions.&quot;,&quot;signature&quot;:&quot;EpYDCkgIBRABGAIqQEDNbgMEiZCRZTt3Ac4EbD/X9fltqrrJXHlHIAQ5C9ZRTcQNzmsv5CWv/5oN+qoAcQ9PlqB5HMcBo3pi/lI8ECwSDK0TTH0708/37zT68BoMyLi6lNroTBwcmLzXIjB7z9dztc2xzxGkeRvLxJ1jPSLg2+ZYSXmih/YgsC9Hec6+PfaUMmB4sFnUlMGEt6Eq+wG9v4h/WLwlYEjonnSWR+BS2OpbGRwf2Gkt4O7lB2pmTkxdt+12lxlRE2mvZvxCgepzDQL0oVGG/cAa7pJa/AE2Wgg5syX95yGdvU+ENfyiqk3Czl1HP1LCF5neXJHBPs7Z0xH/BoatV0cT25w3xbiR6jWOU9tR/uniYWxyJVAFvN7oeZyGUiTfzAIMlL0vNG/vtXw9G8WYYQeqjS/BonVtqcIegW7Wx1ash+qimH/pX0snYQHoyqmBlR2DLIct4/iIsH9I/RcaoU0m0Vb6HzdcjdPJ+/enKF0TYK90NS6Cxv44kTnQzOKnzKyucdtv0HAJplq+zcpQoriUZBgB&quot;},{&quot;type&quot;:&quot;text&quot;,&quot;text&quot;:&quot;Hi! How can I help you today?&quot;}]}]}" />
+      </map>
+    </option>
+  </component>
+</project>
