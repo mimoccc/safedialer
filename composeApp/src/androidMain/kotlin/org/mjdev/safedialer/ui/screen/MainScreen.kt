@@ -87,7 +87,7 @@ fun MainScreen(
                         onClick = {
                             IncomingCallService.showAlert(
                                 context,
-                                "+420602587087"
+                                "+420702568909"
                             )
                         }
                     )
