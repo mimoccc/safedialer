@@ -2,27 +2,20 @@ package org.mjdev.safedialer.activity
 
 import android.Manifest
 import android.content.Context
+import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.mutableStateMapOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.lifecycle.lifecycleScope
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
-import kotlinx.coroutines.launch
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
 import org.mjdev.safedialer.helpers.PreferencesManager
-import org.mjdev.safedialer.server.CallServer
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.screen.PermissionsScreen
-import org.mjdev.safedialer.ui.screen.ServerScreen
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity() {
@@ -71,6 +64,10 @@ class MainActivity : ComponentActivity() {
             }
         }
         checkPermissions()
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
     }
 
     fun refreshUI() {
