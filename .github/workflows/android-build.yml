@@ -1,11 +1,9 @@
 name: Android CI
-
 on:
   push:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,17 +11,14 @@ jobs:
       contents: read
       pages: write
       id-token: write
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
         java-version: '17'
-        
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -33,32 +28,29 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
-
     - name: Build with Gradle
       run: ./gradlew build -x lint
-
+    - name: Create directory for APK
+      run: mkdir -p assets/downloads
+    - name: Copy APK to assets
+      run: find composeApp/build/outputs/apk -name "*.apk" -exec cp {} assets/downloads/ \;
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
       with:
         name: app-build
-        path: composeApp/build/outputs/
-
+        path: composeApp/build/outputs/apk/debug/
     - name: Setup Pages
       id: pages
       uses: actions/configure-pages@v4
-
     - name: Build with Jekyll
       uses: actions/jekyll-build-pages@v1
       with:
         source: ./
         destination: ./_site
-
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -72,3 +64,23 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+    steps:
+      - name: Download APK from build
+        uses: actions/download-artifact@v4
+        with:
+          name: app-build
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            *.apk
+          tag_name: build-${{ github.sha }}
+          body: "Automatic build from commit ${{ github.sha }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
