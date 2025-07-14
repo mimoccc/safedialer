@@ -82,8 +82,8 @@ android {
         minSdk = libs.versions.android.minSdk.get().toInt()
         //noinspection OldTargetApi
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = libs.versions.android.versionCode.get().toInt()
+        versionName = libs.versions.android.versionName.get().toString()
     }
     packaging {
         resources {
