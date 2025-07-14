@@ -36,7 +36,7 @@ jobs:
       id: version
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
-      run: ./gradlew build -x lint
+      run: ./gradlew assembleRelease -x lint
     - name: Create directory for APK
       run: mkdir -p assets/downloads
     - name: Copy APK to assets
@@ -45,7 +45,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: app-build
-        path: composeApp/build/outputs/apk/debug/
+        path: composeApp/build/outputs/apk/release/
     - name: Setup Pages
       id: pages
       uses: actions/configure-pages@v4
