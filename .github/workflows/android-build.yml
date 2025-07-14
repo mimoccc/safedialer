@@ -11,6 +11,8 @@ jobs:
       contents: read
       pages: write
       id-token: write
+    outputs:
+      versionName: ${{ steps.version.outputs.versionName }}
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -30,6 +32,9 @@ jobs:
           ${{ runner.os }}-gradle-
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
+    - name: Extract version name
+      id: version
+      run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
       run: ./gradlew build -x lint
     - name: Create directory for APK
@@ -80,7 +85,7 @@ jobs:
         with:
           files: |
             *.apk
-          tag_name: build-${{ github.sha }}
+          tag_name: v${{ needs.build.outputs.versionName }}
           body: "Automatic build from commit ${{ github.sha }}"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
