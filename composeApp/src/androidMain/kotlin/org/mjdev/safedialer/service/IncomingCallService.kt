@@ -17,12 +17,9 @@ import android.util.Log
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
-import io.ktor.client.content.LocalFileContent
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.data.model.MetaData
 import org.mjdev.safedialer.service.calls.CallListener

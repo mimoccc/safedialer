@@ -1,23 +1,10 @@
 package org.mjdev.safedialer.helpers
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+@Suppress("EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+expect object JsonHelper {
 
-object JsonHelper {
-    val gson: Gson by lazy {
-        GsonBuilder()
-            .setPrettyPrinting()
-            .setLenient()
-            .serializeNulls()
-            .serializeSpecialFloatingPointValues()
-            .create()
-    }
+    fun <T> T.toJson(): String
 
-    fun <T> T.toJson(): String =
-        gson.toJson(this)
-
-    inline fun <reified T> fromJson(
-        json: String
-    ): T = gson.fromJson(json, T::class.java)
+    inline fun <reified T> fromJson(json: String): T
 
 }

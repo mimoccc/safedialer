@@ -21,3 +21,4 @@ captures
 /.idea/
 /_site/
 /composeApp/build/
+/composeApp/lint-baseline.xml

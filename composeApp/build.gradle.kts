@@ -12,7 +12,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
 
@@ -50,6 +50,7 @@ kotlin {
             implementation("io.ktor:ktor-server-compression:3.2.1")
             implementation("io.ktor:ktor-server-websockets:3.2.1")
             implementation("dev.chrisbanes.haze:haze-jetpack-compose:0.7.0")
+            implementation("com.google.code.gson:gson:2.10.1")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -64,7 +65,6 @@ kotlin {
             implementation(libs.qrose)
             implementation(libs.coil.compose)
             implementation(libs.coil.base)
-            implementation("com.google.code.gson:gson:2.10.1")
             implementation("dev.kotbase:couchbase-lite:3.1.9-1.1.1")
             implementation("ch.qos.logback:logback-classic:1.3.11")
         }
@@ -80,6 +80,7 @@ android {
     defaultConfig {
         applicationId = "org.mjdev.safedialer"
         minSdk = libs.versions.android.minSdk.get().toInt()
+        //noinspection OldTargetApi
         targetSdk = libs.versions.android.targetSdk.get().toInt()
         versionCode = 1
         versionName = "1.0"
@@ -104,11 +105,45 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+    lint {
+        abortOnError = false
+        htmlReport = true
+        baseline = file("lint-baseline.xml")
     }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+tasks.register("updateVersionInReadme") {
+    group = "mjdev"
+    onlyIf { System.getenv("CI") == "true" }
+    doLast {
+        val version = android.defaultConfig.versionName
+        val readmeFile = rootProject.file("index.md")
+        val content = readmeFile.readText()
+        val newContent = content.replace("%%VERSION%%", "v$version")
+        readmeFile.writeText(newContent)
+    }
+}
+
+tasks.register("deleteTemporarFiles") {
+    group = "mjdev"
+    doLast {
+        delete(rootDir.resolve(".jekyll-cache"))
+        delete(rootDir.resolve("_site"))
+        delete(rootDir.resolve(".kotlin"))
+    }
+}
+
+tasks.named("build") {
+    dependsOn("updateVersionInReadme")
+}
+
+tasks.named("clean") {
+    dependsOn("deleteTemporarFiles")
 }

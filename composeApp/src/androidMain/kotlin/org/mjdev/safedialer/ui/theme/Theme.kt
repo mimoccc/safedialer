@@ -1,6 +1,9 @@
+@file:Suppress("unused")
+
 package org.mjdev.safedialer.ui.theme
 
 import android.content.Context
+import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
@@ -259,14 +262,21 @@ val unspecified_scheme = ColorFamily(
 @Composable
 fun AppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    dynamicColor: Boolean = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S,
     context: Context = LocalContext.current,
     content: @Composable() () -> Unit
 ) {
     val colorScheme = when {
         dynamicColor -> {
-            if (darkTheme) dynamicDarkColorScheme(context)
-            else dynamicLightColorScheme(context)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (darkTheme) dynamicDarkColorScheme(context)
+                else dynamicLightColorScheme(context)
+            } else {
+                when {
+                    darkTheme -> darkScheme
+                    else -> lightScheme
+                }
+            }
         }
 
         darkTheme -> darkScheme
@@ -276,9 +286,7 @@ fun AppTheme(
         colorScheme = colorScheme,
         typography = AppTypography,
         content = {
-            CompositionLocalProvider(
-//                LocalLiquidGlassProviderState provides rememberLiquidGlassProviderState()
-            ) {
+            CompositionLocalProvider {
                 content()
             }
         }

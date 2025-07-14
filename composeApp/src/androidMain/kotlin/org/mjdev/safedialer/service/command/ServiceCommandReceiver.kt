@@ -2,7 +2,6 @@ package org.mjdev.safedialer.service.command
 
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
@@ -30,7 +29,7 @@ class ServiceCommandReceiver : BroadcastReceiver() {
     }
 
     fun register(context: Context) {
-        ContextCompat.registerReceiver(context, this, filter, RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(context, this, filter, ContextCompat.RECEIVER_EXPORTED)
         if (context is CommandReceiver) {
             listeners.add(context)
         }
@@ -45,7 +44,7 @@ class ServiceCommandReceiver : BroadcastReceiver() {
 
     companion object {
         val ACTION = ServiceCommandReceiver::class.java.`package`!!.name + ".COMMAND"
-        val CMD = "CMD"
-        val DATA = "DATA"
+        const val CMD = "CMD"
+        const val DATA = "DATA"
     }
 }

@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.window
 
-import android.R
 import android.app.Activity
 import android.app.Application
 import android.app.KeyguardManager
@@ -53,6 +52,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.mjdev.safedialer.R
 
 @Suppress("unused", "DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 class ComposeFloatingWindow(
@@ -210,7 +210,7 @@ class ComposeFloatingWindow(
             windowHeight: Int = WindowManager.LayoutParams.WRAP_CONTENT,
             windowWidth: Int = WindowManager.LayoutParams.WRAP_CONTENT,
             windowFlags: Int = DEFAULT_WINDOW_FLAGS,
-            windowAnimationResId: Int = R.style.Animation_Dialog,
+            windowAnimationResId: Int = androidx.appcompat.R.style.Animation_AppCompat_Dialog,
             windowGravity: Int = Gravity.START or Gravity.TOP
         ) = WindowManager.LayoutParams().apply {
             height = windowHeight
@@ -230,7 +230,7 @@ class ComposeFloatingWindow(
 
         fun alertLayoutParams(
             context: Context,
-            windowAnimationResId: Int = R.style.Animation_Dialog,
+            windowAnimationResId: Int = androidx.appcompat.R.style.Animation_AppCompat_Dialog,
             windowGravity: Int = Gravity.START or Gravity.TOP
         ) = defaultLayoutParams(
             context,

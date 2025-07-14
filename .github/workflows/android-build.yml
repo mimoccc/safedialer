@@ -33,32 +33,32 @@ jobs:
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
       with:
-        name: app-build # Názov artefaktu s APK
-        path: composeApp/build/outputs/ # Cesta k APK (môže obsahovať viac súborov/adresárov)
+        name: app-build
+        path: composeApp/build/outputs/
 
     - name: Setup Pages
       id: pages
       uses: actions/configure-pages@v4
 
     - name: Build with Jekyll
-      uses: actions/jekyll-build-pages@v1 # Zostaví Jekyll stránku
+      uses: actions/jekyll-build-pages@v1
       with:
-        source: ./ # Koreňový adresár ako zdroj Jekyll stránky
-        destination: ./_site # Cieľový adresár pre zostavenú stránku
+        source: ./
+        destination: ./_site
 
     - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v3 # Nahrá zostavenú stránku ako artefakt pre nasadenie
+      uses: actions/upload-pages-artifact@v3
 
   deploy:
-    needs: build # Spustí sa až po úspešnom dokončení 'build' jobu
+    needs: build
     runs-on: ubuntu-latest
     permissions:
-      pages: write      # Potrebné na nasadenie na GitHub Pages
-      id-token: write   # Potrebné pre OpenID Connect s GitHub Pages
+      pages: write
+      id-token: write
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }} # URL nasadenej stránky
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4 # Nasadí artefakt na GitHub Pages
+        uses: actions/deploy-pages@v4s

@@ -2,7 +2,6 @@ package org.mjdev.safedialer.service.calls
 
 import android.content.BroadcastReceiver
 import android.content.Context
-import android.content.Context.RECEIVER_EXPORTED
 import android.content.Intent
 import android.content.IntentFilter
 import android.telephony.TelephonyManager
@@ -11,6 +10,7 @@ import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.telephony.TelephonyManager.EXTRA_STATE_RINGING
 import android.telephony.TelephonyManager.EXTRA_STATE_OFFHOOK
 import android.telephony.TelephonyManager.EXTRA_STATE_IDLE
+import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 
 @Suppress("DEPRECATION")
 class IncomingCallBroadcastReceiver : BroadcastReceiver() {
@@ -44,7 +44,12 @@ class IncomingCallBroadcastReceiver : BroadcastReceiver() {
     }
 
     fun register(context: Context) {
-        ContextCompat.registerReceiver(context, this, filter, RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(
+            context,
+            this,
+            filter,
+            RECEIVER_EXPORTED
+        )
         if (context is CallListener) {
             listeners.add(context)
         }
