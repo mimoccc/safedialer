@@ -33,7 +33,6 @@ import org.mjdev.safedialer.ui.components.TabbedScreen
 import org.mjdev.safedialer.ui.components.TabsState
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.components.TitleBar
-import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Preview
@@ -52,63 +51,63 @@ fun MainScreen(
             state = titleBarState,
             canScroll = {
                 scrollState.canScroll && filterText.value.trim().isEmpty()
-            }
+            },
         )
     val serverState: MutableState<Boolean> = remember { mutableStateOf(false) }
-    AppTheme {
-        Box(
-            modifier = Modifier
+    Box(
+        modifier =
+            Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .nestedScroll(fabState.nestedScrollConnection)
                 .nestedScroll(titleScrollBehavior.nestedScrollConnection),
-        ) {
-            Scaffold(
-                modifier = Modifier
+    ) {
+        Scaffold(
+            modifier =
+                Modifier
                     .fillMaxSize()
                     .safeContentPadding()
                     .background(MaterialTheme.colorScheme.background),
-                topBar = {
-                    TitleBar(
-                        showActions = true,
-                        titleBarState = titleBarState,
-                        scrollBehavior = titleScrollBehavior,
-                        filterText = filterText,
-                        onServeClick = {
-                            serverState.value = serverState.value.not()
-                        }
-                    )
-                },
-                bottomBar = { },
-                floatingActionButton = {
-                    FloatButton(
-                        modifier = Modifier.padding(bottom = 48.dp),
-                        fabState = fabState,
-                        onClick = {
-                            IncomingCallService.showAlert(
-                                context,
-                                "+420702568909"
-                            )
-                        }
-                    )
-                }
-            ) { padding ->
-                TabbedScreen(
-                    modifier = Modifier
+            topBar = {
+                TitleBar(
+                    showActions = true,
+                    titleBarState = titleBarState,
+                    scrollBehavior = titleScrollBehavior,
+                    filterText = filterText,
+                    onServeClick = {
+                        serverState.value = serverState.value.not()
+                    },
+                )
+            },
+            bottomBar = { },
+            floatingActionButton = {
+                FloatButton(
+                    modifier = Modifier.padding(bottom = 48.dp),
+                    fabState = fabState,
+                    onClick = {
+                        IncomingCallService.showAlert(
+                            context,
+                            "+420702568909",
+                        )
+                    },
+                )
+            },
+        ) { padding ->
+            TabbedScreen(
+                modifier =
+                    Modifier
                         .fillMaxSize()
                         .padding(padding),
-                    scrollState = scrollState,
-                    tabState = tabState,
-                    filterText = filterText
-                )
-            }
+                scrollState = scrollState,
+                tabState = tabState,
+                filterText = filterText,
+            )
         }
         ServerScreen(
-            serverState = serverState
+            serverState = serverState,
         )
     }
     LaunchedEffect(fabState.isVisible) {
         tabState.isVisible = fabState.isVisible
     }
-
 }

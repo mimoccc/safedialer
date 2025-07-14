@@ -20,7 +20,7 @@ kotlin {
     listOf(
         iosX64(),
         iosArm64(),
-        iosSimulatorArm64()
+        iosSimulatorArm64(),
     ).forEach { iosTarget ->
         iosTarget.binaries.framework {
             baseName = "ComposeApp"
@@ -77,14 +77,29 @@ kotlin {
 
 android {
     namespace = "org.mjdev.safedialer"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
+    compileSdk =
+        libs.versions.android.compileSdk
+            .get()
+            .toInt()
     defaultConfig {
         applicationId = "org.mjdev.safedialer"
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk =
+            libs.versions.android.minSdk
+                .get()
+                .toInt()
         //noinspection OldTargetApi
-        targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = libs.versions.android.versionCode.get().toInt()
-        versionName = libs.versions.android.versionName.get().toString()
+        targetSdk =
+            libs.versions.android.targetSdk
+                .get()
+                .toInt()
+        versionCode =
+            libs.versions.android.versionCode
+                .get()
+                .toInt()
+        versionName =
+            libs.versions.android.versionName
+                .get()
+                .toString()
     }
     packaging {
         resources {
@@ -123,7 +138,7 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-//dokkatoo {
+// dokkatoo {
 //    moduleName.set("Basic Project")
 //
 //    dokkatooSourceSets.configureEach {
@@ -164,7 +179,7 @@ dependencies {
 //    versions {
 //        jetbrainsDokka.set("1.9.20")
 //    }
-//}
+// }
 
 tasks.register("updateVersionInReadme") {
     group = "mjdev"

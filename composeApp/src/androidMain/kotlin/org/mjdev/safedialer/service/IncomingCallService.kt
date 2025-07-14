@@ -14,10 +14,6 @@ import android.os.IBinder
 import android.provider.Settings
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.ui.Modifier
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.mjdev.safedialer.dao.DAO
@@ -27,17 +23,21 @@ import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.CommandReceiver
 import org.mjdev.safedialer.service.command.ServiceCommand
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
-import org.mjdev.safedialer.ui.components.ContactDetail
+import org.mjdev.safedialer.ui.components.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
 import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
 
 @Suppress("DEPRECATION")
-class IncomingCallService : Service(), CallListener, CommandReceiver {
+class IncomingCallService :
+    Service(),
+    CallListener,
+    CommandReceiver {
     private val notificationManager by lazy {
         getSystemService(NotificationManager::class.java) as NotificationManager
     }
     private val notification by lazy {
-        NotificationCompat.Builder(applicationContext, CHANNEL_ID)
+        NotificationCompat
+            .Builder(applicationContext, CHANNEL_ID)
             .setContentTitle("Sledování hovorů")
             .setContentText("Služba běží na pozadí a sleduje příchozí hovory.")
             .setSmallIcon(R.drawable.sym_call_incoming)
@@ -49,17 +49,19 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
     private val commandsReceiver by lazy {
         ServiceCommandReceiver()
     }
-    private val channel = NotificationChannel(
-        CHANNEL_ID,
-        "Sledování hovorů",
-        NotificationManager.IMPORTANCE_LOW
-    )
+    private val channel =
+        NotificationChannel(
+            CHANNEL_ID,
+            "Sledování hovorů",
+            NotificationManager.IMPORTANCE_LOW,
+        )
     private val canDrawOverlays: Boolean
-        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Settings.canDrawOverlays(this)
-        } else {
-            true
-        }
+        get() =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                Settings.canDrawOverlays(this)
+            } else {
+                true
+            }
     private val dao by lazy { DAO.getInstance(this) }
 
     override fun onCreate() {
@@ -70,7 +72,7 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
             startForeground(
                 1,
                 notification,
-                ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL
+                ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL,
             )
         } else {
             startForeground(1, notification)
@@ -117,13 +119,9 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
         }
     }
 
-    override fun onBind(
-        intent: Intent?
-    ): IBinder? = null
+    override fun onBind(intent: Intent?): IBinder? = null
 
-    private fun serviceStop(
-        restart: Boolean
-    ) {
+    private fun serviceStop(restart: Boolean) {
         isRestart = restart
         lastAlerts.forEach { la -> la.hide() }
         stopSelf()
@@ -133,31 +131,24 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
         startActivity(
             Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
-                Uri.parse("package:$packageName")
+                Uri.parse("package:$packageName"),
             ).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
+            },
         )
     }
 
     private fun showAlert(
         phoneNumber: String?,
-        context: Context = applicationContext
+        context: Context = applicationContext,
     ) = ComposeFloatingWindow(
         context = context,
-        windowParams = alertLayoutParams(context)
+        windowParams = alertLayoutParams(context),
     ) {
         setContent {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-            ) {
-                ContactDetail(
-                    caller = phoneNumber,
-                    showCloseButton = true,
-                )
-            }
+            CallDialog (
+                phoneNumber = phoneNumber
+            )
         }
         show()
         lastAlerts.add(this)
@@ -178,7 +169,7 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
 
     override fun onCommand(
         command: ServiceCommand?,
-        data: Bundle?
+        data: Bundle?,
     ) {
         when (command) {
             ServiceCommand.ShowAlert -> {
@@ -201,50 +192,59 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
         private var isRestart = false
         var isStarted = false
 
-        fun start(context: Context) = runCatching {
-            Intent(context, IncomingCallService::class.java).let { intent ->
-                ContextCompat.startForegroundService(context, intent)
+        fun start(context: Context) =
+            runCatching {
+                Intent(context, IncomingCallService::class.java).let { intent ->
+                    ContextCompat.startForegroundService(context, intent)
+                }
+            }.onFailure { e ->
+                e.printStackTrace()
             }
-        }.onFailure { e ->
-            e.printStackTrace()
-        }
 
         fun cmd(
             context: Context,
             cmd: ServiceCommand,
-            data: Bundle? = null
+            data: Bundle? = null,
         ) {
-            context.sendBroadcast(Intent(ServiceCommandReceiver.ACTION).apply {
-                putExtra(ServiceCommandReceiver.CMD, cmd.toString())
-                putExtra(ServiceCommandReceiver.DATA, data)
-            })
+            context.sendBroadcast(
+                Intent(ServiceCommandReceiver.ACTION).apply {
+                    putExtra(ServiceCommandReceiver.CMD, cmd.toString())
+                    putExtra(ServiceCommandReceiver.DATA, data)
+                },
+            )
         }
 
-        fun showAlert(context: Context, phoneNumber: String? = null) = cmd(
+        fun showAlert(
+            context: Context,
+            phoneNumber: String? = null,
+        ) = cmd(
             context,
             ServiceCommand.ShowAlert,
             Bundle().apply {
                 putString(EXTRA_INCOMING_NUMBER, phoneNumber)
-            }
+            },
         )
 
-        fun hideAlert(context: Context) = cmd(
-            context,
-            ServiceCommand.HideAlert,
-            null
-        )
+        fun hideAlert(context: Context) =
+            cmd(
+                context,
+                ServiceCommand.HideAlert,
+                null,
+            )
 
-        fun stop(context: Context) = cmd(
-            context,
-            ServiceCommand.Stop,
-            null
-        )
+        fun stop(context: Context) =
+            cmd(
+                context,
+                ServiceCommand.Stop,
+                null,
+            )
 
-        fun restart(context: Context) = cmd(
-            context,
-            ServiceCommand.Restart,
-            null
-        )
+        fun restart(context: Context) =
+            cmd(
+                context,
+                ServiceCommand.Restart,
+                null,
+            )
 
         private fun MutableList<ComposeFloatingWindow>.hideAll() {
             iterator().apply {
@@ -255,7 +255,5 @@ class IncomingCallService : Service(), CallListener, CommandReceiver {
                 }
             }
         }
-
     }
 }
-
