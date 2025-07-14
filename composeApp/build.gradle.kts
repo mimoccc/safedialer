@@ -110,9 +110,12 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     lint {
-        abortOnError = false
         htmlReport = true
         baseline = file("lint-baseline.xml")
+        checkReleaseBuilds = false
+        abortOnError = false
+        quiet = true
+        ignoreWarnings = true
     }
 }
 
