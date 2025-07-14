@@ -38,10 +38,10 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew assembleRelease -x lint
     - name: List APK directory
-      run: ls -R $GITHUB_WORKSPACE/composeApp/build/outputs/apk
+      run: ls -R $GITHUB_WORKSPACE/composeApp/build/outputs/apk/release
     - name: Find and rename APK
       run: |
-        find $GITHUB_WORKSPACE/composeApp/build/outputs/apk -name "composeApp-release.apk" -exec mv {} $GITHUB_WORKSPACE/SafeDialer.apk \;
+        find $GITHUB_WORKSPACE/composeApp/build/outputs/apk/release -name "*.apk" -exec mv {} $GITHUB_WORKSPACE/SafeDialer.apk \;
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
       with:
