@@ -6,6 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("dev.adamko.dokkatoo-jekyll") version "2.3.1"
 }
 
 kotlin {
@@ -37,6 +38,8 @@ kotlin {
             implementation(libs.androidx.annotation)
             implementation(libs.androidx.core.splashscreen)
             implementation(libs.lottie.compose)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.base)
             implementation("com.nabinbhandari.android:permissions:4.0.0")
             implementation("io.ktor:ktor-server-core:3.2.1")
             implementation("io.ktor:ktor-server-netty:3.2.1")
@@ -63,8 +66,6 @@ kotlin {
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.qrose)
-            implementation(libs.coil.compose)
-            implementation(libs.coil.base)
             implementation("dev.kotbase:couchbase-lite:3.1.9-1.1.1")
             implementation("ch.qos.logback:logback-classic:1.3.11")
         }
@@ -118,6 +119,49 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
+
+//dokkatoo {
+//    moduleName.set("Basic Project")
+//
+//    dokkatooSourceSets.configureEach {
+//        documentedVisibilities(
+//            VisibilityModifier.PUBLIC,
+//            VisibilityModifier.PROTECTED,
+//        )
+//        suppressedFiles.from(file("src/main/kotlin/it/suppressedByPath"))
+//        perPackageOption {
+//            matchingRegex.set("it.suppressedByPackage.*")
+//            suppress.set(true)
+//        }
+//        perPackageOption {
+//            matchingRegex.set("it.overriddenVisibility.*")
+//            documentedVisibilities(
+//                DokkaConfiguration.Visibility.PRIVATE
+//            )
+//        }
+//    }
+//
+//    pluginsConfiguration.html {
+//        customStyleSheets.from(
+//            "./customResources/logo-styles.css",
+//            "./customResources/custom-style-to-add.css",
+//        )
+//        customAssets.from(
+//            "./customResources/custom-resource.svg",
+//        )
+//        footerMessage.set("(C) The Owner")
+//    }
+//
+//    dokkatooPublications.configureEach {
+//        suppressObviousFunctions.set(true)
+//        suppressInheritedMembers.set(false)
+//    }
+//
+//    // The default versions that Dokkatoo uses can be overridden:
+//    versions {
+//        jetbrainsDokka.set("1.9.20")
+//    }
+//}
 
 tasks.register("updateVersionInReadme") {
     group = "mjdev"
