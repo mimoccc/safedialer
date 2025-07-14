@@ -1,5 +1,6 @@
 [versions]
 # app specific
+android-appnamespace = "org.mjdev.safedialer"
 android-compileSdk = "36"
 android-minSdk = "26"
 #noinspection OldTargetApi
@@ -23,6 +24,10 @@ qrose = "1.0.1"
 #haze = "0.7.0"
 
 [libraries]
+gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "agp" }
+gradle-kotlin-plugin = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activity" }
 androidx-lifecycle-viewmodel = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel", version.ref = "androidx-lifecycle" }

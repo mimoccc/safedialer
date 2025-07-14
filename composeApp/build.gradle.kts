@@ -1,19 +1,20 @@
+import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    id("dev.adamko.dokkatoo-jekyll") version "2.3.1"
+    ProjectPlugin
 }
 
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JVM_17)
         }
     }
 
@@ -76,30 +77,15 @@ kotlin {
 }
 
 android {
-    namespace = "org.mjdev.safedialer"
-    compileSdk =
-        libs.versions.android.compileSdk
-            .get()
-            .toInt()
+    namespace = libs.versions.android.appnamespace.stringValue
+    compileSdk = libs.versions.android.compileSdk.intValue
     defaultConfig {
-        applicationId = "org.mjdev.safedialer"
-        minSdk =
-            libs.versions.android.minSdk
-                .get()
-                .toInt()
+        applicationId = libs.versions.android.appnamespace.stringValue
+        minSdk = libs.versions.android.minSdk.intValue
         //noinspection OldTargetApi
-        targetSdk =
-            libs.versions.android.targetSdk
-                .get()
-                .toInt()
-        versionCode =
-            libs.versions.android.versionCode
-                .get()
-                .toInt()
-        versionName =
-            libs.versions.android.versionName
-                .get()
-                .toString()
+        targetSdk = libs.versions.android.targetSdk.intValue
+        versionCode = libs.versions.android.versionCode.intValue
+        versionName = libs.versions.android.versionName.stringValue
     }
     packaging {
         resources {
@@ -119,10 +105,13 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+        getByName("debug") {
+            isMinifyEnabled = false
+        }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = VERSION_17
+        targetCompatibility = VERSION_17
     }
     lint {
         htmlReport = true
@@ -138,74 +127,39 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
-// dokkatoo {
-//    moduleName.set("Basic Project")
-//
-//    dokkatooSourceSets.configureEach {
-//        documentedVisibilities(
-//            VisibilityModifier.PUBLIC,
-//            VisibilityModifier.PROTECTED,
-//        )
-//        suppressedFiles.from(file("src/main/kotlin/it/suppressedByPath"))
-//        perPackageOption {
-//            matchingRegex.set("it.suppressedByPackage.*")
-//            suppress.set(true)
-//        }
-//        perPackageOption {
-//            matchingRegex.set("it.overriddenVisibility.*")
-//            documentedVisibilities(
-//                DokkaConfiguration.Visibility.PRIVATE
-//            )
-//        }
-//    }
-//
-//    pluginsConfiguration.html {
-//        customStyleSheets.from(
-//            "./customResources/logo-styles.css",
-//            "./customResources/custom-style-to-add.css",
-//        )
-//        customAssets.from(
-//            "./customResources/custom-resource.svg",
-//        )
-//        footerMessage.set("(C) The Owner")
-//    }
-//
-//    dokkatooPublications.configureEach {
-//        suppressObviousFunctions.set(true)
-//        suppressInheritedMembers.set(false)
-//    }
-//
-//    // The default versions that Dokkatoo uses can be overridden:
-//    versions {
-//        jetbrainsDokka.set("1.9.20")
+// todo remove to plugin
+
+// tasks.register("updateVersionInReadme") {
+//    group = "mjdev"
+//    onlyIf { System.getenv("CI") == "true" }
+//    doLast {
+//        val version = android.defaultConfig.versionName
+//        val readmeFile = rootProject.rootDir.resolve("site").resolve("index.md")
+//        val content = readmeFile.readText()
+//        val newContent = content.replace("%%VERSION%%", "v$version")
+//        readmeFile.writeText(newContent)
 //    }
 // }
 
-tasks.register("updateVersionInReadme") {
-    group = "mjdev"
-    onlyIf { System.getenv("CI") == "true" }
-    doLast {
-        val version = android.defaultConfig.versionName
-        val readmeFile = rootProject.file("index.md")
-        val content = readmeFile.readText()
-        val newContent = content.replace("%%VERSION%%", "v$version")
-        readmeFile.writeText(newContent)
-    }
-}
+// tasks.register<Exec>("jekyllBuild") {
+//    group = "mjdev"
+// //    onlyIf { System.getenv("CI") == "true" }
+//    commandLine("jekyll", "build", "-s", "./site", "-d", "./_site")
+// }
 
-tasks.register("deleteTemporarFiles") {
-    group = "mjdev"
-    doLast {
-        delete(rootDir.resolve(".jekyll-cache"))
-        delete(rootDir.resolve("_site"))
-        delete(rootDir.resolve(".kotlin"))
-    }
-}
+// tasks.register("deleteTemporarFiles") {
+//    group = "mjdev"
+//    doLast {
+//        delete(rootDir.resolve(".jekyll-cache"))
+//        delete(rootDir.resolve("_site"))
+//        delete(rootDir.resolve(".kotlin"))
+//    }
+// }
 
-tasks.named("build") {
-    dependsOn("updateVersionInReadme")
-}
+// tasks.named("build") {
+//    dependsOn("updateVersionInReadme", "jekyllBuild")
+// }
 
-tasks.named("clean") {
-    dependsOn("deleteTemporarFiles")
-}
+// tasks.named("clean") {
+//    dependsOn("deleteTemporarFiles")
+// }
