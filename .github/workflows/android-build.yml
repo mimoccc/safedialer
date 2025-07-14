@@ -37,12 +37,11 @@ jobs:
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
       run: ./gradlew assembleRelease -x lint
-    - name: Create directory for APK
-      run: mkdir -p assets/downloads
-    - name: Copy APK to assets
-      run: find composeApp/build/outputs/apk -name "*.apk" -exec cp {} assets/downloads/ \;
-    - name: Rename APK
-      run: mv assets/downloads/composeApp-release.apk assets/downloads/SafeDialer.apk
+    - name: List APK directory
+      run: ls -R $GITHUB_WORKSPACE/composeApp/build/outputs/apk
+    - name: Find and rename APK
+      run: |
+        find $GITHUB_WORKSPACE/composeApp/build/outputs/apk -name "composeApp-release.apk" -exec mv {} $GITHUB_WORKSPACE/SafeDialer.apk \;
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
       with:
