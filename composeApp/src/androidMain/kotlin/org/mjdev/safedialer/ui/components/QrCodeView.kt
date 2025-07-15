@@ -20,11 +20,11 @@ import io.github.alexzhirkevich.qrose.options.circle
 import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.mjdev.safedialer.helpers.Previews
 
 // todo : params
 @Suppress("unused", "FunctionName")
-@Preview
+@Previews
 @Composable
 fun QrCodeView(
     modifier: Modifier = Modifier,

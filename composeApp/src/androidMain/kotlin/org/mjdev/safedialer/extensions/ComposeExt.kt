@@ -20,14 +20,26 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModel
 import coil.ImageLoader
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import org.kodein.di.DI
+import org.kodein.di.compose.localDI
+import org.kodein.di.instance
 
 object ComposeExt1 {
 
     val ScrollableState.canScroll
         get() = canScrollForward || canScrollBackward
+
+    @Composable
+    inline fun <reified T : ViewModel> diViewModel(
+        di: DI = localDI()
+    ): T = remember {
+        val instance: T by di.instance()
+        instance
+    }
 
     @Composable
     fun rememberImageLoader(

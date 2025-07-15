@@ -5,9 +5,9 @@ class ProjectPlugin : BasePlugin() {
     }
 
     override fun Project.registerTasks() {
-        registerTask<TaskJekyllBuild>()
+        registerTask<TaskSiteBuild>()
         registerTask<TaskDeleteTemporaryFiles>()
-        registerTask<TaskUpdateReadmeVersion>()
+        registerTask<TaskUpdateSiteData>()
     }
 
     override fun Project.onBeforeEvaluate() {
@@ -15,15 +15,13 @@ class ProjectPlugin : BasePlugin() {
 
     override fun Project.onAfterEvaluate() {
         buildTask {
-            dependsOn(
-                TaskUpdateReadmeVersion::class.taskName,
-                TaskJekyllBuild::class.taskName,
-            )
+            dependsOnTask(TaskSiteBuild::class)
+        }
+        assembleTask {
+            dependsOnTask(TaskSiteBuild::class)
         }
         cleanTask {
-            dependsOn(
-                TaskDeleteTemporaryFiles::class.taskName,
-            )
+            dependsOnTask(TaskDeleteTemporaryFiles::class)
         }
     }
 }

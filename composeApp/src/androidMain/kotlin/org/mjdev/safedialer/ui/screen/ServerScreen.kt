@@ -21,7 +21,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -30,17 +29,16 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.launch
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.server.CallServer
 import org.mjdev.safedialer.server.CallServer.Companion.rememberCallServer
 import org.mjdev.safedialer.ui.components.TitleBar
 import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@Previews
 @Composable
 fun ServerScreen(
     serverState: MutableState<Boolean> = remember { mutableStateOf(false) },

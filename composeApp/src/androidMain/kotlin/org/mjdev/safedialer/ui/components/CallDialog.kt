@@ -12,27 +12,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.components.ContactDetails.Companion.rememberContactDetails
 import org.mjdev.safedialer.ui.theme.AppTheme
 
-@Preview
+@Previews
 @Composable
 fun CallDialog(
     phoneNumber: String? = "+420702568909",
     contactDetails: ContactDetails = rememberContactDetails(phoneNumber),
 ) = AppTheme {
     Column(
-        modifier =
-            Modifier
-                .padding(8.dp)
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .background(
-                    color = MaterialTheme.colorScheme.background,
-                    shape = RoundedCornerShape(16.dp),
-                ),
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .background(
+                color = MaterialTheme.colorScheme.background,
+                shape = RoundedCornerShape(16.dp),
+            ),
     ) {
         ContactDetail(
             caller = contactDetails.phoneNumber,
@@ -43,13 +42,12 @@ fun CallDialog(
             showDivider = true,
         )
         Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .height(96.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-                    ),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                ),
         ) {
         }
     }

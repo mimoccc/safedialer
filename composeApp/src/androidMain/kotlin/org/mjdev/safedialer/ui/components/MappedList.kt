@@ -22,7 +22,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
@@ -31,8 +30,9 @@ import org.mjdev.safedialer.data.list.IListItem
 import org.mjdev.safedialer.data.Mapper.asListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.MapFilter
+import org.mjdev.safedialer.helpers.Previews
 
-@Preview
+@Previews
 @Composable
 fun MappedList(
     modifier: Modifier = Modifier.fillMaxSize(),

@@ -21,8 +21,10 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.helpers.Previews
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Previews
 @Composable
 fun TitleSearch(
     titleBarState: TopAppBarState = rememberTopAppBarState(),

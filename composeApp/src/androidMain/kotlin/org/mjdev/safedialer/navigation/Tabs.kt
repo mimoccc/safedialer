@@ -9,13 +9,21 @@ import org.mjdev.safedialer.ui.tabs.TabMessages
 
 enum class Tabs(
     val title: String,
-    val content: @Composable (scrollState: LazyListState, filterText: MutableState<String>) -> Unit
+    val content: @Composable (scrollState: LazyListState, filterText: MutableState<String>) -> Unit,
 ) {
-    CallLog("Calls", { ss, ft -> TabCallLog(ss, ft) }),
-    Contacts("Contacts", { ss, ft -> TabContactList(ss, ft) }),
-    Messages("Messages", { ss, ft -> TabMessages(ss, ft) });
+    CallLog("Calls", { ss, ft ->
+        TabCallLog(ss, ft)
+    }),
 
-    companion object {
-        fun asList(): List<Tabs> = entries
-    }
+    Contacts("Contacts", { ss, ft ->
+        TabContactList(ss, ft)
+    }),
+
+    Messages("Messages", { ss, ft ->
+        TabMessages(ss, ft)
+    }),
+
+    ;
+
+    override fun toString(): String = title
 }

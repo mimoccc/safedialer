@@ -16,17 +16,20 @@ import androidx.compose.material3.TopAppBarState
 import androidx.compose.material3.rememberTopAppBarState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
+import org.mjdev.safedialer.extensions.ComposeExt1.diViewModel
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
 import org.mjdev.safedialer.service.IncomingCallService
+import org.mjdev.safedialer.viewmodel.MainViewModel
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen
@@ -35,47 +38,49 @@ import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.components.TitleBar
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
+@Previews
 @Composable
 fun MainScreen(
     context: Context = LocalContext.current,
     startTab: Tabs = Tabs.CallLog,
 ) {
-    val fabState = rememberFabState()
+    val viewModel: MainViewModel = diViewModel()
+    val isTabsVisible by viewModel.isTabsVisible.collectAsState()
+    val fabState = rememberFabState(isTabsVisible)
     val scrollState = rememberLazyListState()
-    val tabState: TabsState = rememberTabsState(Tabs.asList(), startTab)
-    val filterText: MutableState<String> = remember { mutableStateOf("") }
+    val tabState: TabsState = rememberTabsState(Tabs.entries, startTab)
+    val filterText by viewModel.filterText.collectAsState()
+    val serverState by viewModel.serverState.collectAsState()
     val titleBarState: TopAppBarState = rememberTopAppBarState()
     val titleScrollBehavior: TopAppBarScrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             state = titleBarState,
             canScroll = {
-                scrollState.canScroll && filterText.value.trim().isEmpty()
+                scrollState.canScroll && filterText.trim().isEmpty()
             },
         )
-    val serverState: MutableState<Boolean> = remember { mutableStateOf(false) }
     Box(
-        modifier =
-            Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .nestedScroll(fabState.nestedScrollConnection)
-                .nestedScroll(titleScrollBehavior.nestedScrollConnection),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .nestedScroll(fabState.nestedScrollConnection)
+            .nestedScroll(titleScrollBehavior.nestedScrollConnection),
     ) {
         Scaffold(
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .safeContentPadding()
-                    .background(MaterialTheme.colorScheme.background),
+            modifier = Modifier
+                .fillMaxSize()
+                .safeContentPadding()
+                .background(MaterialTheme.colorScheme.background),
             topBar = {
                 TitleBar(
                     showActions = true,
                     titleBarState = titleBarState,
                     scrollBehavior = titleScrollBehavior,
-                    filterText = filterText,
+                    filterText = remember { mutableStateOf(filterText) }.apply {
+                        value = filterText
+                    },
                     onServeClick = {
-                        serverState.value = serverState.value.not()
+                        viewModel.toggleServerState()
                     },
                 )
             },
@@ -94,20 +99,24 @@ fun MainScreen(
             },
         ) { padding ->
             TabbedScreen(
-                modifier =
-                    Modifier
-                        .fillMaxSize()
-                        .padding(padding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
                 scrollState = scrollState,
                 tabState = tabState,
-                filterText = filterText,
+                filterText = remember {
+                    mutableStateOf(filterText)
+                }.apply { value = filterText },
             )
         }
         ServerScreen(
-            serverState = serverState,
+            serverState = remember {
+                mutableStateOf(serverState)
+            }.apply { value = serverState },
         )
     }
     LaunchedEffect(fabState.isVisible) {
         tabState.isVisible = fabState.isVisible
+        viewModel.setTabsVisible(fabState.isVisible)
     }
 }

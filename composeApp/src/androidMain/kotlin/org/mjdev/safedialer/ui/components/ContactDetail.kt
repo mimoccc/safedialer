@@ -34,30 +34,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.data.ContactsRepository
 import org.mjdev.safedialer.data.ContactsRepository.Companion.rememberContactsRepository
 import org.mjdev.safedialer.data.Mapper.asListItem
 import org.mjdev.safedialer.data.enums.CallType
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.shapes.DottedShape
 import java.util.Date
 
 @Suppress("DEPRECATION")
-@Preview
+@Previews
 @Composable
 fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
     contactsRepository: ContactsRepository? = rememberContactsRepository(),
-    contact: ListItem =
-        contactsRepository?.findContact(caller)?.asListItem() ?: ListItem(
-            contactId = "",
-            phoneNumber = caller ?: "+420702568909",
-            displayName = "Milan Jurkulak",
-        ),
+    contact: ListItem = contactsRepository?.findContact(caller)?.asListItem() ?: ListItem(
+        contactId = "",
+        phoneNumber = caller ?: "+420702568909",
+        displayName = "Milan Jurkulak",
+    ),
     buttons: @Composable () -> Unit = { ContactButtonsDefault(contact) },
     context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(context),
@@ -97,7 +96,8 @@ fun ContactDetail(
                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
                             },
                         shape = background,
-                    ).padding(start = 0.dp, end = 8.dp),
+                    )
+                    .padding(start = 0.dp, end = 8.dp),
         ) {
             Column(
                 modifier =
@@ -212,7 +212,8 @@ fun ContactDetail(
                                             .background(
                                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                                                 shape = CircleShape,
-                                            ).padding(4.dp),
+                                            )
+                                            .padding(4.dp),
                                     imageVector = Icons.Filled.QrCode,
                                     contentDescription = "",
                                     colorFilter =
@@ -239,7 +240,8 @@ fun ContactDetail(
                                             .background(
                                                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
                                                 shape = CircleShape,
-                                            ).padding(4.dp),
+                                            )
+                                            .padding(4.dp),
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = "",
                                     colorFilter =

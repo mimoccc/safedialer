@@ -16,7 +16,9 @@ import org.mjdev.safedialer.data.model.ContactModel
 import org.mjdev.safedialer.extensions.MapFilter
 import org.mjdev.safedialer.data.list.IListItem
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.mjdev.safedialer.extensions.ComposeExt1.diViewModel
 import org.mjdev.safedialer.ui.components.MappedList
+import org.mjdev.safedialer.viewmodel.MainViewModel
 import kotlin.collections.LinkedHashMap
 
 @Suppress("UNCHECKED_CAST")
@@ -25,9 +27,9 @@ import kotlin.collections.LinkedHashMap
 fun TabContactList(
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
-    contactsRepository: ContactsRepository? = rememberContactsRepository(),
 ) {
-    val contactMap = contactsRepository?.contactsMap?.collectAsState(LinkedHashMap())
+    val viewModel: MainViewModel = diViewModel()
+    val contactMap = viewModel.contactMap.collectAsState(LinkedHashMap())
     val filter: MapFilter<ContactModel> = remember {
         { m, s ->
             m.values.flatten().filter { i ->

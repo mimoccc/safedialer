@@ -52,31 +52,30 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import org.mjdev.safedialer.R
+import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.instance
+import org.mjdev.safedialer.app.MainApp
 
 @Suppress("unused", "DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 class ComposeFloatingWindow(
     val context: Context,
     val windowParams: WindowManager.LayoutParams = defaultLayoutParams(context),
-    val onShown :  ComposeFloatingWindow.() -> Unit = {},
+    val onShown: ComposeFloatingWindow.() -> Unit = {},
     val onHidden: ComposeFloatingWindow.() -> Unit = {},
     block: ComposeFloatingWindow.() -> Unit = {}
-) : SavedStateRegistryOwner, ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
+) : DIAware, SavedStateRegistryOwner, ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
+    override val di: DI by (context.applicationContext as MainApp).di
 
-    val windowManager by lazy {
-        context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-    }
+    val windowManager by instance<WindowManager>()
 
-    val keyGuardManager by lazy {
-        context.getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
-    }
+    val keyGuardManager by instance<KeyguardManager>()
 
     var lifecycleRegistry: LifecycleRegistry =
         LifecycleRegistry(this)
 
     var savedStateRegistryController: SavedStateRegistryController =
         SavedStateRegistryController.Companion.create(this)
-
     private var _showing = MutableStateFlow(false)
 
     val showing: StateFlow<Boolean>

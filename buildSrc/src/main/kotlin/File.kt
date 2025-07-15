@@ -1,3 +1,3 @@
 import java.io.File
 
-operator fun File?.get(name: String): File? = this?.resolve(name)
+operator fun File.get(name: String): File = resolve(name)

@@ -1,9 +1,12 @@
-import Constants.BUILD_TASK
-import Constants.CLEAN_TASK
+import Constants.TASK_ASSEMBLE
+import Constants.TASK_BUILD
+import Constants.TASK_CLEAN
+import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.Task
 import org.gradle.api.UnknownTaskException
+import org.gradle.kotlin.dsl.the
 
 val isCI
     get() =
@@ -11,12 +14,20 @@ val isCI
             .getenv("CI")
             .contentEquals("true", true)
 
+val Project.libs
+    get() = the<LibrariesForLibs>()
+
 @Throws(UnknownTaskException::class)
 fun Project.cleanTask(configurationAction: Action<Task>) {
-    tasks.named(CLEAN_TASK, configurationAction)
+    tasks.named(TASK_CLEAN, configurationAction)
 }
 
 @Throws(UnknownTaskException::class)
 fun Project.buildTask(configurationAction: Action<Task>) {
-    tasks.named(BUILD_TASK, configurationAction)
+    tasks.named(TASK_BUILD, configurationAction)
+}
+
+@Throws(UnknownTaskException::class)
+fun Project.assembleTask(configurationAction: Action<Task>) {
+    tasks.named(TASK_ASSEMBLE, configurationAction)
 }

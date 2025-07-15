@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder
 
 @Suppress("DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 actual object JsonHelper {
+
+    // todo may be singleton in di ?
     val gson: Gson by lazy {
         GsonBuilder()
             .setPrettyPrinting()

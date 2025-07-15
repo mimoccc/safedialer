@@ -1,7 +1,6 @@
 package org.mjdev.safedialer.server
 
 import android.content.Context
-import android.content.Context.CONNECTIVITY_SERVICE
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import androidx.compose.runtime.Composable
@@ -37,19 +36,23 @@ import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import org.kodein.di.DI
 import org.slf4j.event.Level
 import java.net.Inet4Address
 import kotlin.time.Duration.Companion.seconds
+import org.kodein.di.DIAware
+import org.kodein.di.instance
+import org.mjdev.safedialer.app.MainApp
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "RedundantSuspendModifier")
 class CallServer(
     val context: Context,
     val port: Int = 0,
-) {
-    val connectivityManager by lazy {
-        context.getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
-    }
+): DIAware {
+
+    override val di: DI by (context.applicationContext as MainApp).di
+
+    val connectivityManager by instance<ConnectivityManager>()
     val messageResponseFlow = MutableSharedFlow<String>()
     val sharedFlow = messageResponseFlow.asSharedFlow()
     val server by lazy {
@@ -217,7 +220,7 @@ class CallServer(
         @Composable
         fun rememberCallServer(
             context: Context = LocalContext.current
-        ): CallServer = remember() {
+        ): CallServer = remember {
             CallServer(context)
         }
     }

@@ -5,9 +5,9 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import com.google.gson.Gson
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "unused")
 class PreferencesManager(
-    private val mContext: Context
+    private val context: Context
 ) {
     private var mGson: Gson = Gson()
     private var mMode: Int = INVALID_VALUE
@@ -26,7 +26,7 @@ class PreferencesManager(
 
     fun init(): PreferencesManager {
         if (mName?.isEmpty() ?: true) {
-            mName = mContext.packageName
+            mName = context.packageName
         }
         if (
             mMode == INVALID_VALUE ||
@@ -36,7 +36,7 @@ class PreferencesManager(
         ) {
             mMode = Context.MODE_PRIVATE
         }
-        mSharedPreferences = mContext.getSharedPreferences(mName, mMode)
+        mSharedPreferences = context.getSharedPreferences(mName, mMode)
         return this
     }
 

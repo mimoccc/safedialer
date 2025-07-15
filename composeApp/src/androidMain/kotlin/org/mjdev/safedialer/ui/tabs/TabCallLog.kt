@@ -7,25 +7,25 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.mjdev.safedialer.data.ContactsRepository
-import org.mjdev.safedialer.data.ContactsRepository.Companion.EmptyMap
-import org.mjdev.safedialer.data.ContactsRepository.Companion.rememberContactsRepository
+import org.kodein.di.compose.withDI
 import org.mjdev.safedialer.data.model.CallModel
 import org.mjdev.safedialer.extensions.MapFilter
 import org.mjdev.safedialer.data.list.IListItem
+import org.mjdev.safedialer.extensions.ComposeExt1.diViewModel
 import org.mjdev.safedialer.ui.components.MappedList
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.viewmodel.MainViewModel
 import java.util.Date
 
 @Suppress("DEPRECATION", "UNCHECKED_CAST")
-@Preview
+@Previews
 @Composable
 fun TabCallLog(
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
-    contactsRepository: ContactsRepository? = rememberContactsRepository(),
 ) {
-    val callLogMap = contactsRepository?.callLogMap?.collectAsState(LinkedHashMap())
+    val viewModel: MainViewModel = diViewModel()
+    val callLogMap = viewModel.callLogMap.collectAsState(LinkedHashMap())
     val filter: MapFilter<CallModel> = remember {
         { m, s ->
             m.values.flatten().filter { item ->
@@ -43,7 +43,7 @@ fun TabCallLog(
     ) {
         MappedList(
             modifier = Modifier.fillMaxSize(),
-            mapData = callLogMap?.value ?: EmptyMap,
+            mapData = callLogMap.value,
             showDate = true,
             scrollState = scrollState,
             filterText = filterText,

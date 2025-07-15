@@ -20,13 +20,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 
-@Preview
+@Previews
 @Composable
 fun FloatButton(
     modifier: Modifier = Modifier,
@@ -49,9 +50,10 @@ fun FloatButton(
 }
 
 class FabState(
-    private val scope: CoroutineScope = CoroutineScope(Job())
+    visible: Boolean = true,
+    private val scope: CoroutineScope = CoroutineScope(Job() + Dispatchers.IO),
 ) {
-    val fabVisibleState: MutableState<Boolean> = mutableStateOf(true)
+    val fabVisibleState: MutableState<Boolean> = mutableStateOf(visible)
     var fabJob: Job? = null
 
     var isVisible
@@ -81,9 +83,10 @@ class FabState(
     companion object {
         @Composable
         fun rememberFabState(
-            scope: CoroutineScope = rememberCoroutineScope()
+            isVisible: Boolean = true,
+            scope: CoroutineScope = rememberCoroutineScope(),
         ): FabState {
-            return remember { FabState(scope) }
+            return remember { FabState(isVisible, scope) }
         }
     }
 }

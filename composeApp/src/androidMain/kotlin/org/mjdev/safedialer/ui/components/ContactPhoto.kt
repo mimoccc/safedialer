@@ -14,14 +14,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
+import org.mjdev.safedialer.helpers.Previews
 
-@Preview
+@Previews
 @Composable
 fun ContactPhoto(
     modifier: Modifier = Modifier,

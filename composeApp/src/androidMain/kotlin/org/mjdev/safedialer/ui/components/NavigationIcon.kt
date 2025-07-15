@@ -13,27 +13,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.helpers.Previews
 
+@Previews
 @Composable
-fun NavigationIcon(
-    onClick: () -> Unit = {},
-) {
+fun NavigationIcon(onClick: () -> Unit = {}) {
     IconButton(
         modifier = Modifier.size(36.dp),
-        onClick = onClick
+        onClick = onClick,
     ) {
         Image(
             modifier = Modifier
                 .background(
                     color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                    shape = CircleShape
+                    shape = CircleShape,
                 )
                 .padding(4.dp),
             imageVector = Icons.Filled.Phone,
             contentDescription = "",
             colorFilter = ColorFilter.tint(
-                color = MaterialTheme.colorScheme.primary
-            )
+                color = MaterialTheme.colorScheme.primary,
+            ),
         )
     }
 }

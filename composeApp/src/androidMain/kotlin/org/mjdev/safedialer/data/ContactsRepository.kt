@@ -20,6 +20,10 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.instance
+import org.mjdev.safedialer.app.MainApp
 import org.mjdev.safedialer.data.enums.CallType
 import org.mjdev.safedialer.data.model.CallModel
 import org.mjdev.safedialer.data.model.ContactModel
@@ -27,7 +31,7 @@ import org.mjdev.safedialer.data.model.MessageModel
 import org.mjdev.safedialer.extensions.CursorFlow.cursorFlow
 import org.mjdev.safedialer.helpers.Cache
 import org.mjdev.safedialer.service.IncomingCallService
-import org.mjdev.safedialer.service.external.PhoneLookup.updateDetails
+import org.mjdev.safedialer.service.external.PhoneLookup
 import java.util.Date
 import kotlin.text.firstOrNull
 import android.provider.CallLog.Calls.DATE as CALL_DATE
@@ -49,7 +53,10 @@ class ContactsRepository(
     val context: Context,
     val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
     val cache: Cache = Cache(),
-) {
+) : DIAware {
+    override val di: DI by (context.applicationContext as MainApp).di
+    val phoneLookup by instance<PhoneLookup>()
+
     val contacts = cursorFlow(
         context = context,
         cache = cache,
@@ -202,13 +209,13 @@ class ContactsRepository(
         CoroutineScope(Dispatchers.IO + Job()).launch {
             runCatching {
                 contacts.collectLatest { contacts ->
-                    updateDetails(contacts)
+                    phoneLookup.updateDetails(contacts)
                 }
                 calls.collectLatest { calls ->
-                    updateDetails(calls)
+                    phoneLookup.updateDetails(calls)
                 }
                 sms.collectLatest { sms ->
-                    updateDetails(sms)
+                    phoneLookup.updateDetails(sms)
                 }
             }
         }

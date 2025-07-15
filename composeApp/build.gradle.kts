@@ -41,20 +41,20 @@ kotlin {
             implementation(libs.lottie.compose)
             implementation(libs.coil.compose)
             implementation(libs.coil.base)
-            implementation("com.nabinbhandari.android:permissions:4.0.0")
-            implementation("io.ktor:ktor-server-core:3.2.1")
-            implementation("io.ktor:ktor-server-netty:3.2.1")
-            implementation("io.ktor:ktor-server-default-headers:3.2.1")
-            implementation("io.ktor:ktor-server-call-logging:3.2.1")
-            implementation("io.ktor:ktor-server-content-negotiation:3.2.1")
-            implementation("io.ktor:ktor-serialization-gson:3.2.1")
-            implementation("io.ktor:ktor-server-status-pages:3.2.1")
-            implementation("io.ktor:ktor-server-cors:3.2.1")
-            implementation("io.ktor:ktor-server-auth:3.2.1")
-            implementation("io.ktor:ktor-server-compression:3.2.1")
-            implementation("io.ktor:ktor-server-websockets:3.2.1")
-            implementation("dev.chrisbanes.haze:haze-jetpack-compose:0.7.0")
-            implementation("com.google.code.gson:gson:2.10.1")
+            implementation(libs.permissions)
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.netty)
+            implementation(libs.ktor.server.default.headers)
+            implementation(libs.ktor.server.call.logging)
+            implementation(libs.ktor.server.content.negotiation)
+            implementation(libs.ktor.serialization.gson)
+            implementation(libs.ktor.server.status.pages)
+            implementation(libs.ktor.server.cors)
+            implementation(libs.ktor.server.auth)
+            implementation(libs.ktor.server.compression)
+            implementation(libs.ktor.server.websockets)
+            implementation(libs.haze.jetpack.compose)
+            implementation(libs.gson)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -66,9 +66,12 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.qrose)
-            implementation("dev.kotbase:couchbase-lite:3.1.9-1.1.1")
-            implementation("ch.qos.logback:logback-classic:1.3.11")
+            implementation(libs.couchbase.lite)
+            implementation(libs.logback.classic)
+            implementation(libs.kodein.di)
+            implementation(libs.kodein.di.framework.compose)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -126,40 +129,3 @@ android {
 dependencies {
     debugImplementation(compose.uiTooling)
 }
-
-// todo remove to plugin
-
-// tasks.register("updateVersionInReadme") {
-//    group = "mjdev"
-//    onlyIf { System.getenv("CI") == "true" }
-//    doLast {
-//        val version = android.defaultConfig.versionName
-//        val readmeFile = rootProject.rootDir.resolve("site").resolve("index.md")
-//        val content = readmeFile.readText()
-//        val newContent = content.replace("%%VERSION%%", "v$version")
-//        readmeFile.writeText(newContent)
-//    }
-// }
-
-// tasks.register<Exec>("jekyllBuild") {
-//    group = "mjdev"
-// //    onlyIf { System.getenv("CI") == "true" }
-//    commandLine("jekyll", "build", "-s", "./site", "-d", "./_site")
-// }
-
-// tasks.register("deleteTemporarFiles") {
-//    group = "mjdev"
-//    doLast {
-//        delete(rootDir.resolve(".jekyll-cache"))
-//        delete(rootDir.resolve("_site"))
-//        delete(rootDir.resolve(".kotlin"))
-//    }
-// }
-
-// tasks.named("build") {
-//    dependsOn("updateVersionInReadme", "jekyllBuild")
-// }
-
-// tasks.named("clean") {
-//    dependsOn("deleteTemporarFiles")
-// }

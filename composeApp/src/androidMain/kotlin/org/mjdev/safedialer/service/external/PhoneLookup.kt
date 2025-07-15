@@ -1,22 +1,25 @@
 package org.mjdev.safedialer.service.external
 
+import android.content.Context
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import okhttp3.CacheControl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.instance
+import org.mjdev.safedialer.app.MainApp
 import org.mjdev.safedialer.data.list.IListItem
 import java.util.concurrent.TimeUnit
 
-@Suppress("ConstPropertyName")
-object PhoneLookup {
-    val pnu: PhoneNumberUtil = PhoneNumberUtil.getInstance()
-    private const val httpAddressTemplate = "https://kdomivolal.eu/%s"
-
-    val httpClient by lazy {
-        OkHttpClient.Builder()
-            .callTimeout(60000, TimeUnit.MILLISECONDS)
-            .build()
-    }
+@Suppress("unused", "RedundantSuspendModifier")
+class PhoneLookup(
+    private val context : Context
+) : DIAware {
+    override val di: DI by (context.applicationContext as MainApp).di
+    private val pnu: PhoneNumberUtil by instance()
+    private val httpAddressTemplate = "https://kdomivolal.eu/%s"
+    private val httpClient by instance<OkHttpClient>()
 
     val HtmlParser: (html: String) -> String? = { html ->
         val regex = "<title>(.*?)</title>".toRegex()

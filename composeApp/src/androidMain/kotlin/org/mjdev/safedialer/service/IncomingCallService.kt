@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.service
 
 import android.R
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.Service
@@ -16,6 +17,9 @@ import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.data.model.MetaData
 import org.mjdev.safedialer.service.calls.CallListener
@@ -26,43 +30,24 @@ import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.ui.components.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
 import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
+import kotlin.getValue
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "unused")
 class IncomingCallService :
     Service(),
     CallListener,
-    CommandReceiver {
-    private val notificationManager by lazy {
-        getSystemService(NotificationManager::class.java) as NotificationManager
-    }
-    private val notification by lazy {
-        NotificationCompat
-            .Builder(applicationContext, CHANNEL_ID)
-            .setContentTitle("Sledování hovorů")
-            .setContentText("Služba běží na pozadí a sleduje příchozí hovory.")
-            .setSmallIcon(R.drawable.sym_call_incoming)
-            .build()
-    }
-    private val incomingCallReceiver by lazy {
-        IncomingCallBroadcastReceiver()
-    }
-    private val commandsReceiver by lazy {
-        ServiceCommandReceiver()
-    }
-    private val channel =
-        NotificationChannel(
-            CHANNEL_ID,
-            "Sledování hovorů",
-            NotificationManager.IMPORTANCE_LOW,
-        )
+    CommandReceiver, DIAware {
+    override val di by closestDI()
+    private val notificationManager by instance<NotificationManager>()
+    private val notification by instance<Notification>("notification")
+    private val incomingCallReceiver by instance<IncomingCallBroadcastReceiver>()
+    private val commandsReceiver by instance<ServiceCommandReceiver>()
+    private val channel by instance<NotificationChannel>("notificationChannel")
     private val canDrawOverlays: Boolean
-        get() =
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                Settings.canDrawOverlays(this)
-            } else {
-                true
-            }
-    private val dao by lazy { DAO.getInstance(this) }
+        get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Settings.canDrawOverlays(this)
+        } else true
+    private val dao by instance<DAO>()
 
     override fun onCreate() {
         isStarted = true
@@ -146,7 +131,7 @@ class IncomingCallService :
         windowParams = alertLayoutParams(context),
     ) {
         setContent {
-            CallDialog (
+            CallDialog(
                 phoneNumber = phoneNumber
             )
         }
@@ -187,7 +172,7 @@ class IncomingCallService :
     }
 
     companion object {
-        private const val CHANNEL_ID = "incoming_call_service_channel"
+        const val CHANNEL_ID = "incoming_call_service_channel"
         private var lastAlerts = mutableListOf<ComposeFloatingWindow>()
         private var isRestart = false
         var isStarted = false

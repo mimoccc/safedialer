@@ -1,4 +1,5 @@
 import Constants.TASK_GROUP_MJDEV
+import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -29,8 +30,8 @@ abstract class BasePlugin : Plugin<Project> {
     abstract fun Project.onAfterEvaluate()
 
     companion object {
-        val <T : Task> KClass<T>.taskName: String
-            get() = this.simpleName!!.unCapitalize()
+        val KClass<*>.taskName: String?
+            get() = this.simpleName?.unCapitalize()
 
         fun String.unCapitalize(): String = replaceFirstChar(Char::lowercase)
 
@@ -40,7 +41,8 @@ abstract class BasePlugin : Plugin<Project> {
             crossinline block: T.() -> Unit = {},
         ) = tasks
             .register(
-                name ?: T::class.taskName,
+                name ?: T::class.taskName
+                    ?: throw(GradleException("No task name defined, please define task name")),
                 T::class.java,
             ) {
                 this.group = group

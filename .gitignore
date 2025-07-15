@@ -1,4 +1,4 @@
-*.iml
+.iml
 .kotlin
 .gradle
 **/build/
@@ -25,3 +25,5 @@ captures
 /site/assets/downloads/composeApp-release-unsigned.apk
 /site/.jekyll-cache/
 /site/_site/
+/sign/mjdev.cert
+/sign/mjdev.jks.base64.txt

@@ -8,7 +8,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       pages: write
       id-token: write
     outputs:
@@ -16,6 +16,11 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    - name: Install requirements
+      uses: awalsh128/cache-apt-pkgs-action@latest
+      with:
+          packages: jekyll
+          version: 1.0
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
@@ -30,55 +35,46 @@ jobs:
         key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle.kts', '**/gradle-wrapper.properties', '**/libs.versions.toml') }}
         restore-keys: |
           ${{ runner.os }}-gradle-
-    - name: Install jekyll
-      run: sudo apt install jekyll
     - name: Grant execute permission for gradlew
       run: chmod +x ./gradlew
     - name: Extract version name
       id: version
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
-      run: ./gradlew assembleRelease -x lint
-    - name: Upload build outputs (APK)
-      uses: actions/upload-artifact@v4
-      with:
-        name: app-build
-        path: ./composeApp/build/outputs/apk/
-    - name: Setup Pages
-      id: pages
-      uses: actions/configure-pages@v4
+      run: ./gradlew build -x lint
+    - name: List site artifacts
+      run: ls -lR ./_site
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
-  release:
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    permissions:
-      contents: write
-    steps:
-      - name: Download APK from build
-        uses: actions/download-artifact@v4
-        with:
-          name: app-build
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            *.apk
-          tag_name: v${{ needs.build.outputs.versionName }}
-          body: "Automatic build from commit ${{ github.sha }}"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        path: _site
+    - name: Prepare signing check
+      run: echo "SIGNING_KEY=${{ secrets.SIGNING_KEY }}" >> $GITHUB_ENV
+    - name: Sign app APK
+      uses: r0adkll/sign-android-release@v1
+      if: env.SIGNING_KEY != ''
+      id: sign_app
+      with:
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
+        alias: ${{ secrets.ALIAS }}
+        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.KEY_PASSWORD }}
+      # env:
+      # override default build-tools version (33.0.0) -- optional
+      # BUILD_TOOLS_VERSION: "34.0.0"
+    - name: Upload build outputs (APK)
+      uses: actions/upload-artifact@v4
+      if: env.SIGNING_KEY != ''
+      with:
+        name: app
+        path: ${{steps.sign_app.outputs.signedReleaseFile}}
+    - name: Deploy to GitHub Pages
+      uses: actions/deploy-pages@v4
+    - name: Create Release
+      uses: ncipollo/release-action@v1
+      with:
+        artifacts: "composeApp/build/**/*.apk"
+        tag: v${{ steps.version.outputs.versionName }}
+        name: Release ${{ steps.version.outputs.versionName }}
+        token: ${{ secrets.GITHUB_TOKEN }}
