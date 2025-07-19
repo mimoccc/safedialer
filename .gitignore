@@ -22,6 +22,9 @@ captures
 .idea/
 .idea
 /_site/
+_site/
+/_site
+_site
 /composeApp/build/
 /composeApp/lint-baseline.xml
 /site/assets/downloads/composeApp-release-unsigned.apk
@@ -29,4 +32,3 @@ captures
 /site/_site/
 /sign/mjdev.cert
 /sign/mjdev.jks.base64.txt
-!/.idea/
