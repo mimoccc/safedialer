@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.di
 
 import android.R
+import android.app.Application
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -24,31 +25,65 @@ import org.kodein.di.bindConstant
 import org.kodein.di.bindProvider
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp
+import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
-import org.mjdev.safedialer.data.ContactsRepository
+import org.mjdev.safedialer.data.repository.DataRepository
+import org.mjdev.safedialer.email.MailClient
 import org.mjdev.safedialer.helpers.Cache
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
+import java.io.File
+import java.util.Properties
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 val appModule = DI.Module("AppModule") {
+    bindConstant<Int>("callCapabilities") {
+        CallsManager.CAPABILITY_BASELINE or CallsManager.CAPABILITY_SUPPORTS_VIDEO_CALLING
+    }
+    bindConstant<NotificationChannel>("notificationChannel") {
+        NotificationChannel(
+            CHANNEL_ID,
+            "Sledování hovorů",
+            NotificationManager.IMPORTANCE_LOW,
+        )
+    }
+
+    bindProvider<Application> {
+        instance<Context>().let { context ->
+            context.applicationContext as Application
+        }
+    }
+    bindProvider<PreferencesManager> {
+        PreferencesManager(
+            context = instance()
+        ).setName("app_preferences")
+            .setMode(MODE_PRIVATE)
+            .init()
+    }
+    bindProvider<IncomingCallBroadcastReceiver> {
+        IncomingCallBroadcastReceiver()
+    }
+    bindProvider<ServiceCommandReceiver> {
+        ServiceCommandReceiver()
+    }
+
     bindSingleton<ConnectivityManager> {
         instance<Context>()
             .getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
     }
-    bindProvider<NotificationManager> {
+    bindSingleton<NotificationManager> {
         instance<Context>()
             .getSystemService(NotificationManager::class.java) as NotificationManager
     }
-    bindProvider<WindowManager> {
+    bindSingleton<WindowManager> {
         instance<Context>()
             .getSystemService(Context.WINDOW_SERVICE) as WindowManager
     }
-    bindProvider<KeyguardManager> {
+    bindSingleton<KeyguardManager> {
         instance<Context>()
             .getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     }
@@ -67,35 +102,41 @@ val appModule = DI.Module("AppModule") {
     bindSingleton<PhoneLookup> {
         PhoneLookup(instance())
     }
+    bindSingleton<okhttp3.Cache> {
+        val application: Application = instance()
+        okhttp3.Cache(
+            directory = File(application.cacheDir, "http_cache"),
+            maxSize = 1024L * 1024L * 1024L // 1GB
+        )
+    }
+    bindSingleton<MailClient> {
+        MailClient(
+            hostImap = BuildConfig.SERVER,
+            hostSmtp = BuildConfig.SERVER,
+            portImap = BuildConfig.SERVER_PORT_IMAP.toInt(),
+            portSmtp = BuildConfig.SERVER_PORT_SMTP.toInt(),
+            userImap = BuildConfig.SERVER_UNAME,
+            passwordImap = BuildConfig.SERVER_UPASS,
+            userSmtp = BuildConfig.SERVER_UNAME,
+            passwordSmtp = BuildConfig.SERVER_UPASS,
+            props = Properties(),
+        )
+    }
     bindSingleton<OkHttpClient> {
         OkHttpClient.Builder()
+            .cache(instance())
+            .connectTimeout(60000, TimeUnit.MILLISECONDS)
             .callTimeout(60000, TimeUnit.MILLISECONDS)
             .build()
     }
-    bindProvider<PreferencesManager> {
-        PreferencesManager(
-            context = instance()
-        ).setName("app_preferences")
-            .setMode(MODE_PRIVATE)
-            .init()
-    }
-    bindSingleton<ContactsRepository> {
-        ContactsRepository(
+    bindSingleton<DataRepository> {
+        DataRepository(
             context = instance(),
             scope = instance(),
             cache = instance()
         )
     }
-    bindProvider<IncomingCallBroadcastReceiver> {
-        IncomingCallBroadcastReceiver()
-    }
-    bindProvider<ServiceCommandReceiver> {
-        ServiceCommandReceiver()
-    }
-    bindConstant<Int>("callCapabilities") {
-        CallsManager.CAPABILITY_BASELINE or CallsManager.CAPABILITY_SUPPORTS_VIDEO_CALLING
-    }
-    bindProvider<Notification>("notification") {
+    bindSingleton<Notification>("notification") {
         instance<Context>().let { context ->
             NotificationCompat.Builder(context, CHANNEL_ID)
                 .setContentTitle("Sledování hovorů")
@@ -103,13 +144,6 @@ val appModule = DI.Module("AppModule") {
                 .setSmallIcon(R.drawable.sym_call_incoming)
                 .build()
         }
-    }
-    bindConstant<NotificationChannel>("notificationChannel") {
-        NotificationChannel(
-            CHANNEL_ID,
-            "Sledování hovorů",
-            NotificationManager.IMPORTANCE_LOW,
-        )
     }
     bindSingleton<Gson> {
         GsonBuilder()

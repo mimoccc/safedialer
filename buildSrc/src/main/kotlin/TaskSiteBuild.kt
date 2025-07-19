@@ -1,4 +1,3 @@
-import Constants.TASK_ASSEMBLE_RELEASE
 import Constants.TASK_GROUP_MJDEV
 import org.gradle.api.tasks.Exec
 import java.io.File
@@ -18,17 +17,15 @@ open class TaskSiteBuild : Exec() {
         get() = rootDir["composeApp"]["build"]["outputs"]["apk"]
     private val apksDirRelease: File
         get() = apksDir["release"]
-    private val siteDestAssetsDir: File
-        get() = siteDestDir["assets"].apply { mkdirs() }
-    private val siteDownloadsDir: File
-        get() = siteDestAssetsDir["downloads"].apply { mkdirs() }
+    private val apksDirDebug: File
+        get() = apksDir["debug"]
     private val jekyllCacheDir: File
         get() = siteSourceDir[".jekyll-cache"]
+    private val appName: String
+        get() = libs.versions.android.appName.stringValue
 
     init {
         group = TASK_GROUP_MJDEV
-        dependsOnTask(TaskUpdateSiteData::class)
-        dependsOn(TASK_ASSEMBLE_RELEASE)
         commandLine(
             "jekyll",
             "build",
@@ -41,14 +38,36 @@ open class TaskSiteBuild : Exec() {
         )
         doLast {
             siteDestDir["layouts"].deleteRecursively()
-            apksDirRelease
-                .listFiles { f ->
-                    f.name.endsWith(".apk")
-                }?.forEach { f ->
-                    val dest = siteDownloadsDir[f.name]
-                    println("Copying file: $f -> $dest")
-                    f.copyTo(dest, true)
-                }
+            apksDirDebug.listFiles { f ->
+                f.name.endsWith(".apk")
+            }?.forEach { f ->
+                val dest = f.absolutePath
+                    .replace("-unsigned", "")
+                    .let { fname -> File(fname) }
+                    .let { file ->
+                        File(
+                            file.parentFile,
+                            file.name.replace("composeApp", appName)
+                        )
+                    }
+                println("Renaming file: $f -> $dest")
+                f.renameTo(dest)
+            }
+            apksDirRelease.listFiles { f ->
+                f.name.endsWith(".apk")
+            }?.forEach { f ->
+                val dest = f.absolutePath
+                    .replace("-unsigned", "")
+                    .let { fname -> File(fname) }
+                    .let { file ->
+                        File(
+                            file.parentFile,
+                            file.name.replace("composeApp", appName)
+                        )
+                    }
+                println("Renaming file: $f -> $dest")
+                f.renameTo(dest)
+            }
             jekyllCacheDir.deleteRecursively()
         }
     }

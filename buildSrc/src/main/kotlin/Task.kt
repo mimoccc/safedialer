@@ -9,4 +9,14 @@ val Task.libs
 
 fun Task.onlyIfIsCI() = onlyIf { isCI }
 
-fun Task.dependsOnTask(vararg classes: KClass<*>): Task = dependsOn(classes.map { cls -> cls.taskName })
+fun Task.dependsOnTask(
+    vararg classes: KClass<*>
+): Task = dependsOn(classes.map { cls ->
+    cls.taskName
+})
+
+fun Task.finalizedByTask(
+    vararg classes: KClass<*>
+): Task = finalizedBy(classes.map { cls ->
+    cls.taskName
+})

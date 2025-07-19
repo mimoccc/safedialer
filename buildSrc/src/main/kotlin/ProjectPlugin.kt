@@ -1,5 +1,6 @@
 import org.gradle.api.Project
 
+@Suppress("unused")
 class ProjectPlugin : BasePlugin() {
     override fun Project.onConfigure() {
     }
@@ -8,6 +9,8 @@ class ProjectPlugin : BasePlugin() {
         registerTask<TaskSiteBuild>()
         registerTask<TaskDeleteTemporaryFiles>()
         registerTask<TaskUpdateSiteData>()
+//        registerTask<TaskGenerateChangelog>()
+//        registerTask<TaskGenerateScreenshots>()
     }
 
     override fun Project.onBeforeEvaluate() {
@@ -15,13 +18,25 @@ class ProjectPlugin : BasePlugin() {
 
     override fun Project.onAfterEvaluate() {
         buildTask {
-            dependsOnTask(TaskSiteBuild::class)
+            finalizedByTask(
+//                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+//                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
+            )
         }
         assembleTask {
-            dependsOnTask(TaskSiteBuild::class)
+            finalizedByTask(
+//                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+//                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
+            )
         }
         cleanTask {
-            dependsOnTask(TaskDeleteTemporaryFiles::class)
+            finalizedByTask(
+                TaskDeleteTemporaryFiles::class
+            )
         }
     }
 }

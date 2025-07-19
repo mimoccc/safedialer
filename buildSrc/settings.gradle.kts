@@ -6,6 +6,8 @@
  *  w: https://mjdev.org
  */
 
+@file:Suppress("UnstableApiUsage")
+
 rootProject.name = "buildSrc"
 
 dependencyResolutionManagement {

@@ -76,5 +76,4 @@ object CursorFlow {
             }
         }
     }
-
 }

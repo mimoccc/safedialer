@@ -55,4 +55,10 @@ dependencyResolutionManagement {
     }
 }
 
+buildCache {
+    local {
+        isEnabled = true
+    }
+}
+
 include(":composeApp")

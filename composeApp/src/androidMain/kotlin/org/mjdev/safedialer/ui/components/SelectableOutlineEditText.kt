@@ -88,7 +88,7 @@ fun SelectableOutlineEditText(
     singleLine: Boolean = false,
     maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
     minLines: Int = 1,
-    shape: Shape = RoundedCornerShape(16.dp),
+    shape: Shape = RoundedCornerShape(8.dp),
     colors: TextFieldColors = outlinedTextFieldColors()
 ) = SelectionContainer(
     modifier = modifier

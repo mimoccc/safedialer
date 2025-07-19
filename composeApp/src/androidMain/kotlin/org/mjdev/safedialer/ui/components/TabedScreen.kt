@@ -13,10 +13,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.BottomCenter
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -27,6 +27,7 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
+import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 
 @Previews
@@ -36,7 +37,8 @@ fun TabbedScreen(
     startTab: Tabs = Tabs.CallLog,
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
-    tabState: TabsState = rememberTabsState(Tabs.entries, startTab),
+    tabState: TabsState = rememberTabsState(startTab = startTab),
+    fabState: FabState = rememberFabState(),
     hazeState: HazeState = remember { HazeState() },
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     shape: RoundedCornerShape = RoundedCornerShape(50),
@@ -45,8 +47,12 @@ fun TabbedScreen(
     modifier = modifier
         .padding(2.dp)
         .fillMaxSize(),
-    contentAlignment = BottomCenter,
+    contentAlignment = Alignment.BottomCenter,
 ) {
+    val phoneNumber: MutableState<String> = remember { mutableStateOf("") }
+    val dialPadVisible = remember(fabState.isVisible) {
+        fabState.isVisible
+    }
     ResponsiveContainer(
         modifier = Modifier.background(backgroundColor),
         ratio = 0.4f,
@@ -61,6 +67,14 @@ fun TabbedScreen(
                 (tabState.currentTab as? Tabs)
                     ?.content
                     ?.invoke(scrollState, filterText)
+                DialPad(
+                    modifier = Modifier
+                        .padding(bottom = 80.dp, end = 4.dp, start = 4.dp)
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter),
+                    phoneNumber = phoneNumber,
+//                    visible = !dialPadVisible,
+                )
             }
         },
         preview = {

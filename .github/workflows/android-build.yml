@@ -41,40 +41,52 @@ jobs:
       id: version
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
-      run: ./gradlew build -x lint
+      id: build
+      run: |
+        ./gradlew clean build -x lint
+    - name: List built artifacts
+      id: list_artifacts
+      run: |
+        ls -lR ./composeApp/build/outputs/
+    - name: Sign app APK
+      uses: ilharp/sign-android-release@v2.0.0
+      id: sign_app
+      with:
+        releaseDir: ./composeApp/build/outputs/apk/release
+        signingKey: ${{ secrets.ANDROID_SIGNING_KEY }}
+        keyAlias: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        keyPassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        customArgs: --v1-signing-enabled,true,--v2-signing-enabled,true
+        buildToolsVersion: "36.0.0"
+    - name: List all artifacts
+      id: list_all_artifacts
+      run: |
+          ls -lR ./composeApp/build/outputs/
+    - name: Print signed file path
+      run: echo ${{ steps.sign_app.outputs.signedFile }}
+    - name: Upload build outputs (APK)
+      uses: actions/upload-artifact@v4
+      with:
+        name: app
+        path: ${{ steps.sign_app.outputs.signedFile }}
     - name: List site artifacts
       run: ls -lR ./_site
+    - name: Fix permissions
+      run: |
+          chmod -c -R +rX "./_site/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
         path: _site
-    - name: Prepare signing check
-      run: echo "SIGNING_KEY=${{ secrets.SIGNING_KEY }}" >> $GITHUB_ENV
-    - name: Sign app APK
-      uses: r0adkll/sign-android-release@v1
-      if: env.SIGNING_KEY != ''
-      id: sign_app
-      with:
-        releaseDirectory: app/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
-      # env:
-      # override default build-tools version (33.0.0) -- optional
-      # BUILD_TOOLS_VERSION: "34.0.0"
-    - name: Upload build outputs (APK)
-      uses: actions/upload-artifact@v4
-      if: env.SIGNING_KEY != ''
-      with:
-        name: app
-        path: ${{steps.sign_app.outputs.signedReleaseFile}}
     - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "composeApp/build/**/*.apk"
+        artifacts: "composeApp/build/**/*.apk,composeApp/build/**/*.md"
         tag: v${{ steps.version.outputs.versionName }}
         name: Release ${{ steps.version.outputs.versionName }}
         token: ${{ secrets.GITHUB_TOKEN }}

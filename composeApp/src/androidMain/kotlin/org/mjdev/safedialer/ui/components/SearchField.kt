@@ -9,6 +9,7 @@
 package org.mjdev.safedialer.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
@@ -23,6 +24,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -37,11 +39,11 @@ fun SearchField(
     textState: MutableState<String> = mutableStateOf(""),
     textColor: Color = MaterialTheme.colorScheme.primary,
     textStyle: TextStyle = TextStyle.Default,
-    textSize: TextUnit = 13.sp,
+    textSize: TextUnit = 14.sp,
     enabled: Boolean = true,
     focusedBorderColor: Color = MaterialTheme.colorScheme.primary,
     unfocusedBorderColor: Color = MaterialTheme.colorScheme.primary,
-    leadingIcon: @Composable (() -> Unit)? = null,
+    leadingIcon: @Composable ((size: Dp) -> Unit) = {  },
     onClearClick: () -> Unit = {},
 ) = SelectableOutlineEditText(
     value = textState.value,
@@ -62,13 +64,14 @@ fun SearchField(
         disabledBorderColor = Color.Transparent,
         errorBorderColor = Color.Transparent
     ),
-    leadingIcon = leadingIcon,
+    leadingIcon = {
+        leadingIcon(textSize.value.dp)
+    },
     trailingIcon = {
         if (textState.value.isNotEmpty()) {
             Icon(
                 modifier = Modifier
-                    .padding(2.dp)
-                    .size(24.dp)
+                    .size(textSize.value.dp)
                     .clickable {
                         textState.value = ""
                         onClearClick()

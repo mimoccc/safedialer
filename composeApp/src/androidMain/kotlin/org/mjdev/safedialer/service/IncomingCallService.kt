@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.service
 
-import android.R
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,8 +14,11 @@ import android.os.IBinder
 import android.provider.Settings
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -27,10 +29,11 @@ import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.CommandReceiver
 import org.mjdev.safedialer.service.command.ServiceCommand
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
+import org.mjdev.safedialer.service.external.PhoneLookup
+import org.mjdev.safedialer.sync.SyncManager
 import org.mjdev.safedialer.ui.components.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
 import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
-import kotlin.getValue
 
 @Suppress("DEPRECATION", "unused")
 class IncomingCallService :
@@ -48,6 +51,8 @@ class IncomingCallService :
             Settings.canDrawOverlays(this)
         } else true
     private val dao by instance<DAO>()
+    private val phoneLookup by instance<PhoneLookup>()
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     override fun onCreate() {
         isStarted = true
@@ -78,6 +83,7 @@ class IncomingCallService :
             e.printStackTrace()
             serviceStop(true)
         }
+        // todo ?
         runCatching {
             dao.meta.clear()
             dao.meta.add(MetaData("test", "test"))
@@ -125,6 +131,8 @@ class IncomingCallService :
 
     private fun showAlert(
         phoneNumber: String?,
+        info: String?,
+        isDangerous: Boolean = false,
         context: Context = applicationContext,
     ) = ComposeFloatingWindow(
         context = context,
@@ -132,7 +140,8 @@ class IncomingCallService :
     ) {
         setContent {
             CallDialog(
-                phoneNumber = phoneNumber
+                phoneNumber = phoneNumber,
+                info = info,
             )
         }
         show()
@@ -141,7 +150,13 @@ class IncomingCallService :
 
     override fun onIncomingCall(incomingNumber: String?) { // number null
         lastAlerts.hideAll()
-        showAlert(incomingNumber)
+        scope.launch {
+            phoneLookup.getInfo(incomingNumber).let { info ->
+                withContext(Dispatchers.Main) {
+                    showAlert(incomingNumber, info.toString())
+                }
+            }
+        }
     }
 
     override fun onCallEnded(incomingNumber: String?) { // number null
@@ -159,14 +174,26 @@ class IncomingCallService :
         when (command) {
             ServiceCommand.ShowAlert -> {
                 data?.getString(EXTRA_INCOMING_NUMBER).also { phoneNumber ->
-                    showAlert(phoneNumber)
+                    showAlert(baseContext, phoneNumber)
                 }
             }
 
-            ServiceCommand.HideAlert -> lastAlerts.hideAll()
-            ServiceCommand.Start -> start(this)
-            ServiceCommand.Stop -> serviceStop(false)
-            ServiceCommand.Restart -> serviceStop(true)
+            ServiceCommand.HideAlert -> {
+                lastAlerts.hideAll()
+            }
+
+            ServiceCommand.Start -> {
+                start(this)
+            }
+
+            ServiceCommand.Stop -> {
+                serviceStop(false)
+            }
+
+            ServiceCommand.Restart -> {
+                serviceStop(true)
+            }
+
             else -> {}
         }
     }
@@ -177,7 +204,13 @@ class IncomingCallService :
         private var isRestart = false
         var isStarted = false
 
-        fun start(context: Context) =
+        fun start(context: Context) {
+            runCatching {
+                SyncManager.ensureAccount(context)
+                SyncManager.requestImmediateSync(context)
+            }.onFailure { e ->
+                e.printStackTrace()
+            }
             runCatching {
                 Intent(context, IncomingCallService::class.java).let { intent ->
                     ContextCompat.startForegroundService(context, intent)
@@ -185,6 +218,7 @@ class IncomingCallService :
             }.onFailure { e ->
                 e.printStackTrace()
             }
+        }
 
         fun cmd(
             context: Context,
@@ -210,26 +244,23 @@ class IncomingCallService :
             },
         )
 
-        fun hideAlert(context: Context) =
-            cmd(
-                context,
-                ServiceCommand.HideAlert,
-                null,
-            )
+        fun hideAlert(context: Context) = cmd(
+            context,
+            ServiceCommand.HideAlert,
+            null,
+        )
 
-        fun stop(context: Context) =
-            cmd(
-                context,
-                ServiceCommand.Stop,
-                null,
-            )
+        fun stop(context: Context) = cmd(
+            context,
+            ServiceCommand.Stop,
+            null,
+        )
 
-        fun restart(context: Context) =
-            cmd(
-                context,
-                ServiceCommand.Restart,
-                null,
-            )
+        fun restart(context: Context) = cmd(
+            context,
+            ServiceCommand.Restart,
+            null,
+        )
 
         private fun MutableList<ComposeFloatingWindow>.hideAll() {
             iterator().apply {

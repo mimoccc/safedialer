@@ -52,7 +52,7 @@ fun PermissionsScreen(
             topBar = {
                 TitleBar(
                     showActions = false,
-                    expanded = false
+                    canExpand = false
                 )
             },
             bottomBar = { }

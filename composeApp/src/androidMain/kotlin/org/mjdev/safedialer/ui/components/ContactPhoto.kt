@@ -2,6 +2,7 @@ package org.mjdev.safedialer.ui.components
 
 import android.content.Context
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
@@ -9,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -27,10 +29,16 @@ fun ContactPhoto(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(context),
-    contact: ListItem
+    contact: ListItem? = null,
+    onClick: () -> Unit = {}
 ) {
+    val photoUri = remember(contact) {
+        contact?.photoUri ?: contact?.photoThumbnailUri
+    }
     Box(
-        modifier = modifier
+        modifier = modifier.clickable {
+            onClick()
+        }
     ) {
         Image(
             modifier = Modifier
@@ -43,13 +51,13 @@ fun ContactPhoto(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
             )
         )
-        Image(
+        if (photoUri != null) Image(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape),
             painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(context).data(
-                    contact.photoUri ?: contact.photoThumbnailUri
+                    contact?.photoUri ?: contact?.photoThumbnailUri
                 ).build(),
                 imageLoader = imageLoader
             ),

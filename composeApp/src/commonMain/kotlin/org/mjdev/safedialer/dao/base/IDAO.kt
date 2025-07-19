@@ -1,19 +1,26 @@
 package org.mjdev.safedialer.dao.base
 
 import kotbase.Database
+import kotbase.DatabaseConfiguration
 import kotlin.reflect.KProperty
 
 @Suppress("SpellCheckingInspection")
 open class IDAO(
     val dbName: String,
+    val config: DatabaseConfiguration? = null
 ) {
-    val database: Database by lazy { Database(dbName) }
+    val database: Database by lazy {
+        if (config != null) {
+            Database(dbName, config)
+        } else {
+            Database(dbName)
+        }
+    }
 
-    inline operator fun <reified R:Any> getValue(
+    inline operator fun <reified R : Any> getValue(
         dao: IDAO,
         property: KProperty<*>
-    ): DAOCollection<R> =
-        dao.collection<R>()
+    ): DAOCollection<R> =  dao.collection<R>()
 
     @Throws(DAOException::class)
     inline fun <reified T : Any> collection(

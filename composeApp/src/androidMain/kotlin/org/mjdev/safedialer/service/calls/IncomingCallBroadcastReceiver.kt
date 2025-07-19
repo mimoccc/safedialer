@@ -5,20 +5,20 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.telephony.TelephonyManager
-import androidx.core.content.ContextCompat
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
-import android.telephony.TelephonyManager.EXTRA_STATE_RINGING
-import android.telephony.TelephonyManager.EXTRA_STATE_OFFHOOK
 import android.telephony.TelephonyManager.EXTRA_STATE_IDLE
+import android.telephony.TelephonyManager.EXTRA_STATE_OFFHOOK
+import android.telephony.TelephonyManager.EXTRA_STATE_RINGING
+import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 
 @Suppress("DEPRECATION")
 class IncomingCallBroadcastReceiver : BroadcastReceiver() {
     private val listeners = mutableListOf<CallListener>()
-    private val filter = IntentFilter("android.intent.action.PHONE_STATE")
+    private val filter = IntentFilter(ACTION_PHONE_STATE)
 
     override fun onReceive(context: Context?, intent: Intent?) {
-        if (intent?.action == "android.intent.action.PHONE_STATE") {
+        if (intent?.action == ACTION_PHONE_STATE) {
             val state = intent.getStringExtra(TelephonyManager.EXTRA_STATE)
             val incomingNumber = intent.getStringExtra(EXTRA_INCOMING_NUMBER)
             if (incomingNumber.isNullOrEmpty().not()) {
@@ -60,5 +60,9 @@ class IncomingCallBroadcastReceiver : BroadcastReceiver() {
         if (context is CallListener) {
             listeners.remove(context)
         }
+    }
+
+    companion object {
+        val ACTION_PHONE_STATE = "android.intent.action.PHONE_STATE"
     }
 }

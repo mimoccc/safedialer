@@ -1,6 +1,6 @@
 package org.mjdev.safedialer.service.command
 
-enum class ServiceCommand{
+enum class ServiceCommand {
     ShowAlert,
     HideAlert,
     Restart,

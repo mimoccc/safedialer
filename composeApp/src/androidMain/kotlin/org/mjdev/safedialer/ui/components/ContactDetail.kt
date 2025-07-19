@@ -34,8 +34,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
-import org.mjdev.safedialer.data.ContactsRepository
-import org.mjdev.safedialer.data.ContactsRepository.Companion.rememberContactsRepository
+import org.mjdev.safedialer.data.repository.DataRepository
+import org.mjdev.safedialer.data.repository.DataRepository.Companion.rememberContactsRepository
 import org.mjdev.safedialer.data.Mapper.asListItem
 import org.mjdev.safedialer.data.enums.CallType
 import org.mjdev.safedialer.data.list.ListItem
@@ -51,8 +51,8 @@ import java.util.Date
 fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
-    contactsRepository: ContactsRepository? = rememberContactsRepository(),
-    contact: ListItem = contactsRepository?.findContact(caller)?.asListItem() ?: ListItem(
+    dataRepository: DataRepository? = rememberContactsRepository(),
+    contact: ListItem = dataRepository?.findContactByPhone(caller)?.asListItem() ?: ListItem(
         contactId = "",
         phoneNumber = caller ?: "+420702568909",
         displayName = "Milan Jurkulak",
@@ -71,13 +71,12 @@ fun ContactDetail(
     showDate: Boolean = false,
     showDivider: Boolean = true,
 ) {
-    val background =
-        RoundedCornerShape(
-            topStart = if (isFirst) 16.dp else 0.dp,
-            topEnd = if (isFirst) 16.dp else 0.dp,
-            bottomEnd = if (isLast) 16.dp else 0.dp,
-            bottomStart = if (isLast) 16.dp else 0.dp,
-        )
+    val background = RoundedCornerShape(
+        topStart = if (isFirst) 16.dp else 0.dp,
+        topEnd = if (isFirst) 16.dp else 0.dp,
+        bottomEnd = if (isLast) 16.dp else 0.dp,
+        bottomStart = if (isLast) 16.dp else 0.dp,
+    )
     Box(
         modifier =
             modifier.background(
@@ -90,7 +89,7 @@ fun ContactDetail(
                 Modifier
                     .background(
                         color =
-                            if (contact.isBlocked || contact.isDanger) {
+                            if ((contact?.isBlocked ?: false) || (contact?.isDanger ?: false)) {
                                 Color.Red.copy(alpha = 0.3f)
                             } else {
                                 MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
@@ -117,7 +116,7 @@ fun ContactDetail(
                                     .clip(CircleShape)
                                     .border(
                                         2.dp,
-                                        when (contact.type) {
+                                        when (contact?.type) {
                                             CallType.BLOCKED -> Color.Red
                                             CallType.MISSED -> Color.Red
                                             CallType.REJECTED -> Color.Red
@@ -125,7 +124,7 @@ fun ContactDetail(
                                             CallType.OUTGOING -> Color.Green
                                             else ->
                                                 when {
-                                                    contact.isStored -> Color.Green
+                                                    contact?.isStored == true -> Color.Green
                                                     else -> Color.White.copy(alpha = 0.5f)
                                                 }
                                         },
@@ -154,7 +153,8 @@ fun ContactDetail(
                         ) {
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = contact.displayName.ifEmpty { "contact name" },
+                                text = contact?.displayName?.ifEmpty { "contact name" }
+                                    ?: "contact name",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 style = textStyle,
@@ -164,7 +164,8 @@ fun ContactDetail(
                             )
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = contact.phoneNumber.ifEmpty { "contact phone" },
+                                text = contact?.phoneNumber?.ifEmpty { "contact phone" }
+                                    ?: "contact phone",
                                 fontSize = 14.sp,
                                 style = textStyle,
                                 fontFamily = fontFamily,
@@ -175,7 +176,9 @@ fun ContactDetail(
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text =
-                                        contact.date.takeIf { d -> d != 0L }?.let { d ->
+                                        contact?.date?.takeIf { d ->
+                                            d != 0L
+                                        }?.let { d ->
                                             val date = Date(d)
                                             val hours = date.hours.toString().padStart(2, '0')
                                             val minutes = date.minutes.toString().padStart(2, '0')

@@ -10,6 +10,9 @@ plugins {
     `kotlin-dsl`
 }
 
+val versionCatalogLibs =
+    files(libs.javaClass.superclass.protectionDomain.codeSource.location)
+
 repositories {
     mavenLocal()
     gradlePluginPortal()
@@ -33,7 +36,7 @@ repositories {
 }
 
 dependencies {
-    implementation(files(libs.javaClass.superclass.protectionDomain.codeSource.location))
+    implementation(versionCatalogLibs)
     implementation(gradleApi())
     implementation(gradleKotlinDsl())
 //    implementation(libs.kotlin.reflect)

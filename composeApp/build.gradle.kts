@@ -1,23 +1,65 @@
+@file:OptIn(ExperimentalComposeLibrary::class)
+
+import com.android.build.api.dsl.VariantDimension
 import org.gradle.api.JavaVersion.VERSION_17
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import org.gradle.kotlin.dsl.kotlin
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    alias(libs.plugins.paparazzi)
+    alias(libs.plugins.buildkonfig)
     ProjectPlugin
 }
 
+val credentials = readPropsFile("credentials")
+val mjdevServer by credentials
+val mjdevServerUser by credentials
+val mjdevServerPass by credentials
+
+fun VariantDimension.authResValue(
+    name: String
+) = resValue(
+    "string",
+    "authority_$name",
+    "${libs.versions.android.appnamespace.stringValue}.$name"
+)
+
+fun VariantDimension.syncAccountTypeResValue() = resValue(
+    "string",
+    "account_type",
+    "${libs.versions.android.appnamespace.stringValue}.sync_account"
+)
+
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JVM_17)
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        unitTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+        @OptIn(ExperimentalKotlinGradlePluginApi::class)
+        instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+        dependencies {
+            testImplementation(libs.kotlin.test)
+            testImplementation(libs.androidx.core.ktx)
+            testImplementation(libs.junit4)
+            testImplementation(libs.androidx.test.core)
+            testImplementation(libs.robolectric)
+            androidTestImplementation(libs.junit4)
+            androidTestImplementation(libs.androidx.test.core)
+            androidTestImplementation(libs.androidx.test.ext.junit)
+            androidTestImplementation(libs.androidx.test.runner)
+            androidTestImplementation(libs.androidx.test.rules)
         }
     }
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -28,7 +70,6 @@ kotlin {
             isStatic = true
         }
     }
-
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -55,6 +96,9 @@ kotlin {
             implementation(libs.ktor.server.websockets)
             implementation(libs.haze.jetpack.compose)
             implementation(libs.gson)
+            implementation(libs.jakarta.mail)
+            implementation(libs.jakarta.activation)
+            implementation(libs.ez.vcard)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -72,6 +116,8 @@ kotlin {
             implementation(libs.logback.classic)
             implementation(libs.kodein.di)
             implementation(libs.kodein.di.framework.compose)
+//            implementation(libs.kodein.db)
+//            implementation(libs.kodein.db.serializer.kotlinx)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -85,10 +131,29 @@ android {
     defaultConfig {
         applicationId = libs.versions.android.appnamespace.stringValue
         minSdk = libs.versions.android.minSdk.intValue
-        //noinspection OldTargetApi
+        // noinspection OldTargetApi
         targetSdk = libs.versions.android.targetSdk.intValue
         versionCode = libs.versions.android.versionCode.intValue
         versionName = libs.versions.android.versionName.stringValue
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        syncAccountTypeResValue()
+        authResValue("calendar")
+        authResValue("call_log")
+        authResValue("contacts")
+        authResValue("emails")
+        authResValue("gallery")
+        authResValue("tasks")
+        resValue(
+            "string",
+            "app_name",
+            mjdevServer.ifBlank { libs.versions.android.appName.stringValue }
+        )
+        resValue("string", "sync_label_calendar", "Calendar")
+        resValue("string", "sync_label_call_log", "CallLog")
+        resValue("string", "sync_label_contacts", "Contacts")
+        resValue("string", "sync_label_emails", "Emails")
+        resValue("string", "sync_label_gallery", "Gallery")
+        resValue("string", "sync_label_tasks", "Tasks")
     }
     packaging {
         resources {
@@ -100,16 +165,27 @@ android {
             excludes += "/META-INF/NOTICE"
             excludes += "/META-INF/NOTICE.txt"
             excludes += "/META-INF/notice.txt"
+            excludes += "/META-INF/LICENSE.md"
+            excludes += "/META-INF/NOTICE.md"
             excludes += "META-INF/io.netty.versions.properties"
             excludes += "META-INF/INDEX.LIST"
         }
     }
     buildTypes {
         getByName("release") {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            isDebuggable = false
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("debug")
         }
         getByName("debug") {
             isMinifyEnabled = false
+            isShrinkResources = false
+            isDebuggable = true
         }
     }
     compileOptions {
@@ -124,8 +200,39 @@ android {
         quiet = true
         ignoreWarnings = true
     }
+    sourceSets {
+        getByName("main") {
+            res.srcDirs("$projectDir/composeApp/src/androidMain/res")
+        }
+    }
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+tasks.withType<Test> {
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
+}
+
+buildkonfig {
+    packageName = libs.versions.android.appnamespace.stringValue
+    objectName = "BuildConfig"
+    defaultConfigs {
+        buildConfigField(STRING, "APP_ID", libs.versions.android.appnamespace.stringValue)
+        buildConfigField(
+            STRING,
+            "APP_NAME",
+            mjdevServer.ifBlank { libs.versions.android.appName.stringValue }
+        )
+        buildConfigField(STRING, "SERVER", mjdevServer)
+        buildConfigField(STRING, "SERVER_UNAME", mjdevServerUser)
+        buildConfigField(STRING, "SERVER_UPASS", mjdevServerPass)
+        buildConfigField(STRING, "SERVER_PORT_IMAP", libs.versions.port.imap.stringValue)
+        buildConfigField(STRING, "SERVER_PORT_SMTP", libs.versions.port.smtp.stringValue)
+        buildConfigField(
+            STRING,
+            "ACCOUNT_TYPE", "${libs.versions.android.appnamespace.stringValue}.sync_account"
+        )
+    }
 }

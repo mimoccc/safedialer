@@ -12,7 +12,6 @@ import kotbase.ResultSet
 import kotbase.SelectResult
 import org.mjdev.safedialer.helpers.JsonHelper.fromJson
 import org.mjdev.safedialer.helpers.JsonHelper.toJson
-import kotlin.collections.get
 import kotbase.Collection as DBCollection
 
 class DAOCollection<T : Any>(
@@ -29,6 +28,13 @@ class DAOCollection<T : Any>(
     }.onFailure { e ->
         e.printStackTrace()
     }.getOrNull()
+
+    fun addAll(
+        objs: List<T>,
+        concurrency: ConcurrencyControl = ConcurrencyControl.LAST_WRITE_WINS,
+    ) {
+        objs.forEach { o -> add(o, concurrency) }
+    }
 
     inline fun <reified T : Any> asList(
         expression: Expression? = null,

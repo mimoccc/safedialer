@@ -24,33 +24,35 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
-import org.mjdev.safedialer.extensions.ComposeExt1.diViewModel
+import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
-import org.mjdev.safedialer.service.IncomingCallService
-import org.mjdev.safedialer.viewmodel.MainViewModel
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen
 import org.mjdev.safedialer.ui.components.TabsState
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.components.TitleBar
+import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Previews
 @Composable
 fun MainScreen(
-    context: Context = LocalContext.current,
     startTab: Tabs = Tabs.CallLog,
 ) {
-    val viewModel: MainViewModel = diViewModel()
+    val context: Context = LocalContext.current
+    val viewModel by rememberViewModelSafe {
+        MainViewModel(DataRepository(context))
+    }
     val isTabsVisible by viewModel.isTabsVisible.collectAsState()
+    val filterText by viewModel.filterText.collectAsState()
     val fabState = rememberFabState(isTabsVisible)
     val scrollState = rememberLazyListState()
-    val tabState: TabsState = rememberTabsState(Tabs.entries, startTab)
-    val filterText by viewModel.filterText.collectAsState()
-    val serverState by viewModel.serverState.collectAsState()
+    val tabState: TabsState = rememberTabsState(startTab = startTab)
+    val serverState = viewModel.serverState.collectAsState()
     val titleBarState: TopAppBarState = rememberTopAppBarState()
     val titleScrollBehavior: TopAppBarScrollBehavior =
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
@@ -59,6 +61,15 @@ fun MainScreen(
                 scrollState.canScroll && filterText.trim().isEmpty()
             },
         )
+    val floatingActionIcon: @Composable () -> Unit = {
+        FloatButton(
+            modifier = Modifier.padding(bottom = 48.dp),
+            fabState = fabState,
+            onClick = {
+                fabState.isVisible = !fabState.isVisible
+            },
+        )
+    }
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -86,16 +97,7 @@ fun MainScreen(
             },
             bottomBar = { },
             floatingActionButton = {
-                FloatButton(
-                    modifier = Modifier.padding(bottom = 48.dp),
-                    fabState = fabState,
-                    onClick = {
-                        IncomingCallService.showAlert(
-                            context,
-                            "+420702568909",
-                        )
-                    },
-                )
+                floatingActionIcon()
             },
         ) { padding ->
             TabbedScreen(
@@ -104,15 +106,14 @@ fun MainScreen(
                     .padding(padding),
                 scrollState = scrollState,
                 tabState = tabState,
+                fabState = fabState,
                 filterText = remember {
                     mutableStateOf(filterText)
                 }.apply { value = filterText },
             )
         }
         ServerScreen(
-            serverState = remember {
-                mutableStateOf(serverState)
-            }.apply { value = serverState },
+            visibleState = serverState
         )
     }
     LaunchedEffect(fabState.isVisible) {

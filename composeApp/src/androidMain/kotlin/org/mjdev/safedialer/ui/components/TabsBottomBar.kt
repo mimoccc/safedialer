@@ -5,10 +5,16 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -16,19 +22,22 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
+import org.mjdev.safedialer.BuildConfig
 
 @Previews
 @Composable
 fun TabsBottomBar(
     modifier: Modifier = Modifier,
-    tabState: TabsState = rememberTabsState(Tabs.entries),
+    tabState: TabsState = rememberTabsState(),
 ) = AnimatedVisibility(
     modifier = modifier,
     enter = fadeIn() + slideInVertically(initialOffsetY = { it }),
@@ -38,29 +47,51 @@ fun TabsBottomBar(
     TabRow(
         containerColor = Color.Transparent,
         modifier = modifier,
-        indicator = { tabPositions -> Box {} },
+        indicator = { _ -> Box {} },
         divider = { Box {} },
         selectedTabIndex = tabState.currentTab?.ordinal ?: 0,
     ) {
         tabState.tabs.forEachIndexed { index, tab ->
             val selected = tabState.currentTab?.ordinal == index
             Tab(
-                modifier =
-                    Modifier
-                        .padding(5.dp)
-                        .clip(RoundedCornerShape(50))
-                        .background(
-                            if (selected) {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
-                            } else {
-                                Color.Transparent
-                            },
-                        ),
+                modifier = Modifier
+                    .padding(5.dp)
+                    .clip(RoundedCornerShape(50))
+                    .background(
+                        if (selected) {
+                            MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                        } else {
+                            Color.Transparent
+                        },
+                    ),
                 text = {
-                    Text(
-                        text = tab.toString(),
-                        maxLines = 1,
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Image(
+                            modifier = Modifier
+                                .background(
+                                    color = if (!selected) MaterialTheme.colorScheme.primary.copy(
+                                        alpha = 0.2f
+                                    ) else Color.Transparent,
+                                    shape = CircleShape,
+                                )
+                                .size(if (selected) 24.dp else 40.dp)
+                                .padding(if (selected) 4.dp else 8.dp),
+                            // todo generalize
+                            imageVector = (tab as? Tabs)?.icon ?: Icons.Default.Apps,
+                            contentDescription = "",
+                            colorFilter = ColorFilter.tint(
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        )
+                        if (selected) {
+                            Text(
+                                text = tab.toString(),
+                                maxLines = 1,
+                            )
+                        }
+                    }
                 },
                 selectedContentColor = MaterialTheme.colorScheme.primary,
                 unselectedContentColor = MaterialTheme.colorScheme.primary,
@@ -94,7 +125,12 @@ class TabsState(
     companion object {
         @Composable
         fun rememberTabsState(
-            tabs: List<Enum<*>> = emptyList(),
+            tabs: List<Enum<*>> = Tabs.entries.toMutableList().apply{
+                val isServer = BuildConfig.SERVER.isNotEmpty()
+                val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
+                val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
+                if(!(isServer && isUser && isPass)) remove(Tabs.Emails)
+            },
             startTab: Enum<*>? = tabs.firstOrNull(),
         ) = remember(tabs, startTab) {
             TabsState(tabs, startTab)
