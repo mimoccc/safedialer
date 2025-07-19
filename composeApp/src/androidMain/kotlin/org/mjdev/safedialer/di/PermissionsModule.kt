@@ -5,6 +5,7 @@ import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DI
 import org.kodein.di.bindConstant
 
+@Suppress("DEPRECATION")
 val permissionsModule = DI.Module("PermissionsModule") {
     bindConstant<Array<String>>("permissions") {
         arrayOf(

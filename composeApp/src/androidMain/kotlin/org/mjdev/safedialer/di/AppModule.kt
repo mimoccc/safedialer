@@ -35,6 +35,7 @@ import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
 import java.util.concurrent.TimeUnit
 
+@Suppress("DEPRECATION")
 val appModule = DI.Module("AppModule") {
     bindSingleton<ConnectivityManager> {
         instance<Context>()

@@ -52,20 +52,20 @@ jobs:
       run: echo "SIGNING_KEY=${{ secrets.SIGNING_KEY }}" >> $GITHUB_ENV
     - name: Sign app APK
       uses: r0adkll/sign-android-release@v1
-      if: env.SIGNING_KEY != ''
+      #if: env.SIGNING_KEY != ''
       id: sign_app
       with:
-        releaseDirectory: app/build/outputs/apk/release
+        releaseDirectory: ./composeApp/build/outputs/apk/release
         signingKeyBase64: ${{ secrets.SIGNING_KEY }}
         alias: ${{ secrets.ALIAS }}
         keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
         keyPassword: ${{ secrets.KEY_PASSWORD }}
-      # env:
-      # override default build-tools version (33.0.0) -- optional
-      # BUILD_TOOLS_VERSION: "34.0.0"
+        customArgs: --v1-signing-enabled,true,--v2-signing-enabled,true
+      env:
+        BUILD_TOOLS_VERSION: "35.0.0"
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
-      if: env.SIGNING_KEY != ''
+      #if: env.SIGNING_KEY != ''
       with:
         name: app
         path: ${{steps.sign_app.outputs.signedReleaseFile}}

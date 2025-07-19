@@ -32,3 +32,5 @@ _site
 /site/_site/
 /sign/mjdev.cert
 /sign/mjdev.jks.base64.txt
+/sign/mjdev.cert.old
+/sign/mjdev.jks

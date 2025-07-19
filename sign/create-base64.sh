@@ -1,6 +1,6 @@
 #!/bin/sh
 signing_name="mjdev"
-openssl base64 < "$signing_name.cert" | tr -d '\n' > "$signing_name.jks.base64.txt"
+openssl base64 < "$signing_name.jks" | tr -d '\n' > "$signing_name.jks.base64.txt"
 # define github secrets
 # SIGNING_KEY_BASE64, KEYSTORE_PASSWORD, KEY_PASSWORD, KEY_ALIAS
 # steps:
