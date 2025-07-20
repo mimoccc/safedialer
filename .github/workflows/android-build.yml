@@ -48,27 +48,24 @@ jobs:
       uses: actions/upload-pages-artifact@v3
       with:
         path: _site
-    - name: Prepare signing check
-      run: echo "SIGNING_KEY=${{ secrets.SIGNING_KEY }}" >> $GITHUB_ENV
     - name: Sign app APK
-      uses: r0adkll/sign-android-release@v1
-      #if: env.SIGNING_KEY != ''
+      uses: ilharp/sign-android-release@v2.0.0
       id: sign_app
       with:
-        releaseDirectory: ./composeApp/build/outputs/apk/release
-        signingKeyBase64: ${{ secrets.SIGNING_KEY }}
-        alias: ${{ secrets.ALIAS }}
-        keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
-        keyPassword: ${{ secrets.KEY_PASSWORD }}
+        releaseDir: ./composeApp/build/outputs/apk/release
+        signingKey: ${{ secrets.ANDROID_SIGNING_KEY }}
+        keyAlias: ${{ secrets.ANDROID_SIGNING_KEY_ALIAS }}
+        keyStorePassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
+        keyPassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
         customArgs: --v1-signing-enabled,true,--v2-signing-enabled,true
-      env:
-        BUILD_TOOLS_VERSION: "35.0.0"
+        buildToolsVersion: "36.0.0"
+    - name: Print signed file path
+      run: echo ${{ steps.sign_app.outputs.signedFile }}
     - name: Upload build outputs (APK)
       uses: actions/upload-artifact@v4
-      #if: env.SIGNING_KEY != ''
       with:
         name: app
-        path: ${{steps.sign_app.outputs.signedReleaseFile}}
+        path: ${{ steps.sign_app.outputs.signedFile }}
     - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
     - name: Create Release
