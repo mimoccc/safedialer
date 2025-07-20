@@ -1,6 +1,11 @@
 package org.mjdev.safedialer.data
 
-import org.mjdev.safedialer.data.enums.CallType.*
+import org.mjdev.safedialer.data.enums.CallType.BLOCKED
+import org.mjdev.safedialer.data.enums.CallType.INCOMING
+import org.mjdev.safedialer.data.enums.CallType.MISSED
+import org.mjdev.safedialer.data.enums.CallType.OUTGOING
+import org.mjdev.safedialer.data.enums.CallType.REJECTED
+import org.mjdev.safedialer.data.enums.CallType.VOICEMAIL
 import org.mjdev.safedialer.data.list.IListItem
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.model.CallModel
@@ -13,7 +18,7 @@ object Mapper {
         is ContactModel -> asListItem()
         is CallModel -> asListItem()
         is MessageModel -> asListItem()
-        else ->  {
+        else -> {
             throw IllegalArgumentException(
                 "Unsupported IListItem type: ${this::class.simpleName}"
             )

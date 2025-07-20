@@ -7,6 +7,7 @@ import android.os.Handler
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
@@ -16,6 +17,7 @@ import org.kodein.di.compose.withDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
 import org.mjdev.safedialer.helpers.PreferencesManager
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.screen.PermissionsScreen
@@ -59,10 +61,10 @@ class MainActivity : ComponentActivity(), DIAware {
     private fun refreshUI() {
         if (wasPermissionsGranted.not()) {
             preferencesManager.putBoolean(PERMISSIONS_GRANTED, true)
+            IncomingCallService.restart(this@MainActivity)
             Handler().postDelayed({
-                IncomingCallService.restart(this@MainActivity)
                 recreate()
-            }, 400)
+            }, 400L)
         }
     }
 
@@ -88,5 +90,19 @@ class MainActivity : ComponentActivity(), DIAware {
 
     companion object {
         const val PERMISSIONS_GRANTED = "permissions_granted"
+    }
+}
+
+@Previews
+@Composable
+fun PreviewMainActivity(
+    wasPermissionsGranted: Boolean = true,
+) {
+    AppTheme {
+        if (wasPermissionsGranted) {
+            MainScreen()
+        } else {
+            PermissionsScreen()
+        }
     }
 }

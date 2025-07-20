@@ -26,9 +26,12 @@ import io.ktor.server.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.server.plugins.cors.routing.CORS
 import io.ktor.server.plugins.defaultheaders.DefaultHeaders
 import io.ktor.server.plugins.statuspages.StatusPages
-import io.ktor.server.websocket.*
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.routing
+import io.ktor.server.websocket.WebSockets
+import io.ktor.server.websocket.pingPeriod
+import io.ktor.server.websocket.timeout
+import io.ktor.server.websocket.webSocket
 import io.ktor.websocket.Frame
 import io.ktor.websocket.readText
 import io.ktor.websocket.send
@@ -37,20 +40,19 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
+import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
+import org.kodein.di.instance
 import org.slf4j.event.Level
 import java.net.Inet4Address
 import kotlin.time.Duration.Companion.seconds
-import org.kodein.di.DIAware
-import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp
 
 @Suppress("DEPRECATION", "RedundantSuspendModifier")
 class CallServer(
     val context: Context,
     val port: Int = 0,
-): DIAware {
-
-    override val di: DI by (context.applicationContext as MainApp).di
+) : DIAware {
+    override val di: DI by closestDI(context)
 
     val connectivityManager by instance<ConnectivityManager>()
     val messageResponseFlow = MutableSharedFlow<String>()

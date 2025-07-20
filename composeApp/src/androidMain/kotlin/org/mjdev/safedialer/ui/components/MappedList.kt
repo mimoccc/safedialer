@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import org.mjdev.safedialer.data.ContactsRepository.Companion.EmptyMap
-import org.mjdev.safedialer.data.list.IListItem
 import org.mjdev.safedialer.data.Mapper.asListItem
+import org.mjdev.safedialer.data.list.IListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.MapFilter
 import org.mjdev.safedialer.helpers.Previews
@@ -50,7 +50,7 @@ fun MappedList(
     filter: MapFilter<IListItem> = { m, s -> m },
 ) {
     val filteredData = remember(filterText.value, mapData) {
-        if(filterText.value.trim().length > 0) {
+        if (filterText.value.trim().length > 0) {
             filter(mapData, filterText.value)
         } else mapData
     }

@@ -9,7 +9,7 @@ open class IDAO(
 ) {
     val database: Database by lazy { Database(dbName) }
 
-    inline operator fun <reified R:Any> getValue(
+    inline operator fun <reified R : Any> getValue(
         dao: IDAO,
         property: KProperty<*>
     ): DAOCollection<R> =

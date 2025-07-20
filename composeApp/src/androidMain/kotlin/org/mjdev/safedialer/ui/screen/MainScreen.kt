@@ -24,27 +24,30 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.data.ContactsRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
-import org.mjdev.safedialer.extensions.ComposeExt1.diViewModel
+import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
 import org.mjdev.safedialer.service.IncomingCallService
-import org.mjdev.safedialer.viewmodel.MainViewModel
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen
 import org.mjdev.safedialer.ui.components.TabsState
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.components.TitleBar
+import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Previews
 @Composable
 fun MainScreen(
-    context: Context = LocalContext.current,
     startTab: Tabs = Tabs.CallLog,
+    context: Context = LocalContext.current,
 ) {
-    val viewModel: MainViewModel = diViewModel()
+    val viewModel by rememberViewModelSafe {
+        MainViewModel(ContactsRepository(context))
+    }
     val isTabsVisible by viewModel.isTabsVisible.collectAsState()
     val fabState = rememberFabState(isTabsVisible)
     val scrollState = rememberLazyListState()

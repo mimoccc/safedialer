@@ -24,7 +24,6 @@ import org.kodein.di.bindConstant
 import org.kodein.di.bindProvider
 import org.kodein.di.bindSingleton
 import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.data.ContactsRepository
 import org.mjdev.safedialer.helpers.Cache

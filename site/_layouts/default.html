@@ -5,6 +5,10 @@
     <link rel="icon"
           href="data:image/svg+xml,<svg width='47' fill='none' height='26' viewBox='0 0 268 150' xmlns='http://www.w3.org/2000/svg'><rect rx='25.1443' width='50.2886' height='143.953' fill='%23666CFF' transform='matrix(-0.865206 0.501417 0.498585 0.866841 195.571 0)'></rect><rect rx='25.1443' width='50.2886' height='143.953' fill-opacity='0.4' fill='url(%23paint0_linear_7821_79167)' transform='matrix(-0.865206 0.501417 0.498585 0.866841 196.084 0)'></rect><rect rx='25.1443' width='50.2886' height='143.953' fill='%23666CFF' transform='matrix(0.865206 0.501417 -0.498585 0.866841 173.147 0)'></rect><rect rx='25.1443' width='50.2886' height='143.953' fill='%23666CFF' transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'></rect><rect rx='25.1443' width='50.2886' height='143.953' fill-opacity='0.4' fill='url(%23paint1_linear_7821_79167)' transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'></rect><rect rx='25.1443' width='50.2886' height='143.953' fill='%23666CFF' transform='matrix(0.865206 0.501417 -0.498585 0.866841 71.7728 0)'></rect><defs><linearGradient y1='0' x1='25.1443' x2='25.1443' y2='143.953' id='paint0_linear_7821_79167' gradientUnits='userSpaceOnUse'><stop></stop><stop offset='1' stop-opacity='0'></stop></linearGradient><linearGradient y1='0' x1='25.1443' x2='25.1443' y2='143.953' id='paint1_linear_7821_79167' gradientUnits='userSpaceOnUse'><stop></stop><stop offset='1' stop-opacity='0'></stop></linearGradient></defs></svg>"
           type="image/svg+xml">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.12.0/baguetteBox.min.js"></script>
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/baguettebox.js@1.12.0/dist/baguetteBox.min.css">
     <style>
         body {
           background  : #282a42;
@@ -90,6 +94,32 @@
              padding-top     : 2px;
              padding-bottom  : 2px;
         }
+        div.gallery {
+            width: 100%;
+            height: 160px;
+            display: block;
+        }
+        div.gallery a img {
+            height: 160px;
+        }
+        div.gallery a:hover {
+            border: 1px solid #777;
+        }
+        div.content {
+            width: 100%;
+            height: 50%;
+            display: block;
+        }
+        a.button {
+             background-color: #666CFF;
+             color: white;
+             padding: 12px 25px;
+             text-decoration: none;
+             border-radius: 5px;
+             font-weight: bold;
+             font-size: 1.1em;
+             display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -142,7 +172,30 @@
     </div>
 </div>
 <div class="content_area">
-    {{ content }}
+    <div class="gallery">
+        <a href="assets/screenshots/mainscreen_calllog.png" data-caption="Call Log">
+            <img src="assets/screenshots/mainscreen_calllog.png" alt="Call Log">
+        </a>
+        <a href="assets/screenshots/mainscreen_contacts.png" data-caption="Contact List">
+            <img src="assets/screenshots/mainscreen_contacts.png" alt="Contact List">
+        </a>
+        <a href="assets/screenshots/mainscreen_messages.png" data-caption="Message List">
+            <img src="assets/screenshots/mainscreen_messages.png" alt="Message List">
+        </a>
+    </div>
+    <div class="content">
+        {{ content }}
+    </div>
 </div>
 </body>
+<script language="JavaScript">
+    window.addEventListener('load', function() {
+        baguetteBox.run('.gallery', {
+            captions : true,
+            fullScreen : false,
+            noScrollbars : true,
+            preload : 3,
+        });
+    });
+</script>
 </html>

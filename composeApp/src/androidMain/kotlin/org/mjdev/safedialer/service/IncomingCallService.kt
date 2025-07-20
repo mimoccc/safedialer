@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.service
 
-import android.R
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -15,7 +14,6 @@ import android.os.IBinder
 import android.provider.Settings
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.util.Log
-import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
@@ -30,7 +28,6 @@ import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.ui.components.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
 import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
-import kotlin.getValue
 
 @Suppress("DEPRECATION", "unused")
 class IncomingCallService :

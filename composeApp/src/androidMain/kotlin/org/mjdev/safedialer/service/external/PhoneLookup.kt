@@ -7,20 +7,20 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.kodein.di.DI
 import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
 import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp
 import org.mjdev.safedialer.data.list.IListItem
-import java.util.concurrent.TimeUnit
 
 @Suppress("unused", "RedundantSuspendModifier")
 class PhoneLookup(
-    private val context : Context
+    private val context: Context
 ) : DIAware {
-    override val di: DI by (context.applicationContext as MainApp).di
+    override val di: DI by closestDI(context)
     private val pnu: PhoneNumberUtil by instance()
     private val httpAddressTemplate = "https://kdomivolal.eu/%s"
     private val httpClient by instance<OkHttpClient>()
 
+    @Suppress("PropertyName")
     val HtmlParser: (html: String) -> String? = { html ->
         val regex = "<title>(.*?)</title>".toRegex()
         regex.find(html)?.groupValues?.get(1)?.trim()

@@ -29,7 +29,12 @@ class ServiceCommandReceiver : BroadcastReceiver() {
     }
 
     fun register(context: Context) {
-        ContextCompat.registerReceiver(context, this, filter, ContextCompat.RECEIVER_EXPORTED)
+        ContextCompat.registerReceiver(
+            context,
+            this,
+            filter,
+            ContextCompat.RECEIVER_EXPORTED
+        )
         if (context is CommandReceiver) {
             listeners.add(context)
         }

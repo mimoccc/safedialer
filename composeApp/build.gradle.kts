@@ -1,23 +1,38 @@
+@file:OptIn(ExperimentalComposeLibrary::class)
+
 import org.gradle.api.JavaVersion.VERSION_17
+import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    id("app.cash.paparazzi") version "1.3.5"
     ProjectPlugin
 }
 
 kotlin {
     androidTarget {
+        compilations.all {
+            @Suppress("DEPRECATION")
+            kotlinOptions {
+                jvmTarget = JvmTarget.JVM_17.target
+            }
+        }
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
-        compilerOptions {
-            jvmTarget.set(JVM_17)
+        unitTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
+        dependencies {
+            testImplementation(libs.kotlin.test)
+            testImplementation(libs.androidx.core.ktx)
+            testImplementation("junit:junit:4.13.2")
+            testImplementation("androidx.test:core:1.5.0")
+            testImplementation("org.robolectric:robolectric:4.11.1")
         }
     }
-
     listOf(
         iosX64(),
         iosArm64(),
@@ -28,7 +43,6 @@ kotlin {
             isStatic = true
         }
     }
-
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
@@ -85,10 +99,11 @@ android {
     defaultConfig {
         applicationId = libs.versions.android.appnamespace.stringValue
         minSdk = libs.versions.android.minSdk.intValue
-        //noinspection OldTargetApi
+        // noinspection OldTargetApi
         targetSdk = libs.versions.android.targetSdk.intValue
         versionCode = libs.versions.android.versionCode.intValue
         versionName = libs.versions.android.versionName.stringValue
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     packaging {
         resources {
@@ -128,4 +143,8 @@ android {
 
 dependencies {
     debugImplementation(compose.uiTooling)
+}
+
+tasks.withType<Test> {
+    jvmArgs("-XX:+EnableDynamicAgentLoading")
 }

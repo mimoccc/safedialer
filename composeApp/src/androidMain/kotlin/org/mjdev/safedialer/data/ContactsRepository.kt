@@ -15,6 +15,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
@@ -22,8 +23,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.kodein.di.DI
 import org.kodein.di.DIAware
+import org.kodein.di.android.closestDI
 import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp
 import org.mjdev.safedialer.data.enums.CallType
 import org.mjdev.safedialer.data.model.CallModel
 import org.mjdev.safedialer.data.model.ContactModel
@@ -33,7 +34,6 @@ import org.mjdev.safedialer.helpers.Cache
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.service.external.PhoneLookup
 import java.util.Date
-import kotlin.text.firstOrNull
 import android.provider.CallLog.Calls.DATE as CALL_DATE
 import android.provider.CallLog.Calls.DURATION as CALL_DURATION
 import android.provider.CallLog.Calls.NUMBER as CALL_NUMBER
@@ -54,116 +54,128 @@ class ContactsRepository(
     val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
     val cache: Cache = Cache(),
 ) : DIAware {
-    override val di: DI by (context.applicationContext as MainApp).di
+    override val di: DI by closestDI(context)
     val phoneLookup by instance<PhoneLookup>()
 
-    val contacts = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-    ) { uri, cursor ->
-        ContactList().apply {
-            val idIndex = cursor.getColumnIndex(CONTACT_ID)
-            val nameIndex = cursor.getColumnIndex(CONTACT_DISPLAY_NAME)
-            val numberIndex = cursor.getColumnIndex(CONTACT_NUMBER)
-            val photoUriIndex = cursor.getColumnIndex(CONTACT_PHOTO_URI)
-            val photoThumbNailIndex = cursor.getColumnIndex(CONTACT_PHOTO_THUMBNAIL_URI)
-            while (cursor.moveToNext()) {
-                val phoneNum = cursor.getString(numberIndex)
-                ContactModel(
-                    contactId = cursor.getString(idIndex),
-                    displayName = cursor.getString(nameIndex),
-                    phoneNumber = phoneNum,
-                    photoThumbnailUri = cursor.getString(photoThumbNailIndex),
-                    photoUri = cursor.getString(photoUriIndex),
-                    isBlocked = false, // todo
-                ).also { contact ->
-                    add(contact)
-                }
-            }
-        }.filter { pn ->
-            pn.displayName.isNotBlank() && pn.phoneNumber.isNotBlank()
-        }.distinctBy { contact ->
+    val contacts = runCatching {
+        cursorFlow(
+            context = context,
+            cache = cache,
+            uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
+        ) { uri, cursor ->
+            runCatching {
+                ContactList().apply {
+                    val idIndex = cursor.getColumnIndex(CONTACT_ID)
+                    val nameIndex = cursor.getColumnIndex(CONTACT_DISPLAY_NAME)
+                    val numberIndex = cursor.getColumnIndex(CONTACT_NUMBER)
+                    val photoUriIndex = cursor.getColumnIndex(CONTACT_PHOTO_URI)
+                    val photoThumbNailIndex = cursor.getColumnIndex(CONTACT_PHOTO_THUMBNAIL_URI)
+                    while (cursor.moveToNext()) {
+                        val phoneNum = cursor.getString(numberIndex)
+                        ContactModel(
+                            contactId = cursor.getString(idIndex),
+                            displayName = cursor.getString(nameIndex),
+                            phoneNumber = phoneNum,
+                            photoThumbnailUri = cursor.getString(photoThumbNailIndex),
+                            photoUri = cursor.getString(photoUriIndex),
+                            isBlocked = false, // todo
+                        ).also { contact ->
+                            add(contact)
+                        }
+                    }
+                }.filter { pn ->
+                    pn.displayName.isNotBlank() && pn.phoneNumber.isNotBlank()
+                }.distinctBy { contact ->
 //             todo : group by phone number
-            contact.contactId
-        }.sortedBy { contact ->
-            contact.displayName
-        }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(
-        scope = scope,
-        started = Eagerly,
-        replay = 1
-    )
-
-    val calls = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = CallLog.Calls.CONTENT_URI
-    ) { uri, cursor ->
-        CallLogList().apply {
-            val idIndex = cursor.getColumnIndex(CALL_ID)
-            val numberIndex = cursor.getColumnIndex(CALL_NUMBER)
-            val typeIndex = cursor.getColumnIndex(CALL_TYPE)
-            val dateIndex = cursor.getColumnIndex(CALL_DATE)
-            val durationIndex = cursor.getColumnIndex(CALL_DURATION)
-            while (cursor.moveToNext()) {
-                val phoneNumber = cursor.getString(numberIndex)
-                CallModel(
-                    callId = cursor.getString(idIndex),
-                    phoneNumber = phoneNumber,
-                    type = CallType(Integer.parseInt(cursor.getString(typeIndex))),
-                    date = cursor.getString(dateIndex).toLong(),
-                    duration = cursor.getString(durationIndex).toLong(),
-                    contact = findContact(phoneNumber),
-                    // details = contact.details, // todo
-                ).also { call ->
-                    add(call)
+                    contact.contactId
+                }.sortedBy { contact ->
+                    contact.displayName
                 }
-            }
-        }.sortedByDescending { pn ->
-            pn.date
-        }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(
-        scope = scope,
-        started = Eagerly,
-        replay = 1
-    )
+            }.getOrNull() ?: emptyList()
+        }.flowOn(
+            Dispatchers.IO
+        ).shareIn(
+            scope = scope,
+            started = Eagerly,
+            replay = 1
+        )
+    }.getOrNull() ?: flow { emit(ContactList()) }
 
-    val sms = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = SMS_URI
-    ) { uri, cursor ->
-        MessagesList().apply {
-            while (cursor.moveToNext()) {
-                val idIndex = cursor.getColumnIndex(Telephony.Sms._ID)
-                val numberIndex = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
-                val dateIndex = cursor.getColumnIndex(Telephony.Sms.DATE_SENT)
-                val phoneNumber = cursor.getString(numberIndex)
-                // todo
-                MessageModel(
-                    smsId = cursor.getString(idIndex),
-                    phoneNumber = phoneNumber,
-                    contact = findContact(phoneNumber),
-                    date = cursor.getString(dateIndex).toLong(),
-                ).also { m ->
-                    add(m)
+    val calls = runCatching {
+        cursorFlow(
+            context = context,
+            cache = cache,
+            uri = CallLog.Calls.CONTENT_URI
+        ) { uri, cursor ->
+            runCatching {
+                CallLogList().apply {
+                    val idIndex = cursor.getColumnIndex(CALL_ID)
+                    val numberIndex = cursor.getColumnIndex(CALL_NUMBER)
+                    val typeIndex = cursor.getColumnIndex(CALL_TYPE)
+                    val dateIndex = cursor.getColumnIndex(CALL_DATE)
+                    val durationIndex = cursor.getColumnIndex(CALL_DURATION)
+                    while (cursor.moveToNext()) {
+                        val phoneNumber = cursor.getString(numberIndex)
+                        CallModel(
+                            callId = cursor.getString(idIndex),
+                            phoneNumber = phoneNumber,
+                            type = CallType(Integer.parseInt(cursor.getString(typeIndex))),
+                            date = cursor.getString(dateIndex).toLong(),
+                            duration = cursor.getString(durationIndex).toLong(),
+                            contact = findContact(phoneNumber),
+                            // details = contact.details, // todo
+                        ).also { call ->
+                            add(call)
+                        }
+                    }
+                }.sortedByDescending { pn ->
+                    pn.date
                 }
-            }
-        }.sortedByDescending { m ->
-            m.date
-        }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(
-        scope = scope,
-        started = Eagerly,
-        replay = 1
-    )
+            }.getOrNull() ?: emptyList()
+        }.flowOn(
+            Dispatchers.IO
+        ).shareIn(
+            scope = scope,
+            started = Eagerly,
+            replay = 1
+        )
+    }.getOrNull() ?: flow { emit(CallLogList()) }
+
+    val sms = runCatching {
+        cursorFlow(
+            context = context,
+            cache = cache,
+            uri = SMS_URI
+        ) { uri, cursor ->
+            runCatching {
+                MessagesList().apply {
+                    while (cursor.moveToNext()) {
+                        val idIndex = cursor.getColumnIndex(Telephony.Sms._ID)
+                        val numberIndex = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
+                        val dateIndex = cursor.getColumnIndex(Telephony.Sms.DATE_SENT)
+                        val phoneNumber = cursor.getString(numberIndex)
+                        // todo
+                        MessageModel(
+                            smsId = cursor.getString(idIndex),
+                            phoneNumber = phoneNumber,
+                            contact = findContact(phoneNumber),
+                            date = cursor.getString(dateIndex).toLong(),
+                        ).also { m ->
+                            add(m)
+                        }
+                    }
+                }.sortedByDescending { m ->
+                    m.date
+                }
+            }.getOrNull() ?: emptyList()
+        }.flowOn(
+            Dispatchers.IO
+        ).shareIn(
+            scope = scope,
+            started = Eagerly,
+            replay = 1
+        )
+    }.getOrNull() ?: flow { emit(MessagesList()) }
 
     val messagesMap = sms.map { m ->
         m.groupBy { c ->

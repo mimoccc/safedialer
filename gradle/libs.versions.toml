@@ -2,14 +2,14 @@
 # app specific
 android-appnamespace = "org.mjdev.safedialer"
 android-appName = "SafeDialer"
-android-compileSdk = "36"
+android-compileSdk = "35"
 android-minSdk = "26"
 #noinspection OldTargetApi
-android-targetSdk = "36"
+android-targetSdk = "34"
 android-versionCode = "1"
 android-versionName = "1.0.0"
 # libs
-agp = "8.12.0-alpha09"
+agp = "8.12.0-rc01"
 androidx-activity = "1.10.1"
 androidx-lifecycle = "2.9.1"
 composeMultiplatform = "1.8.2"
@@ -29,6 +29,8 @@ gson = "2.10.1"
 couchbase-lite = "3.1.9-1.1.1"
 logback = "1.3.11"
 kodein = "7.22.0"
+monitor = "1.7.2"
+coreKtx = "1.6.1"
 
 [libraries]
 gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
@@ -67,6 +69,8 @@ couchbase-lite = { module = "dev.kotbase:couchbase-lite", version.ref = "couchba
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 kodein-di = { module = "org.kodein.di:kodein-di", version.ref = "kodein" }
 kodein-di-framework-compose = { module = "org.kodein.di:kodein-di-framework-compose", version.ref = "kodein" }
+androidx-monitor = { group = "androidx.test", name = "monitor", version.ref = "monitor" }
+androidx-core-ktx = { group = "androidx.test", name = "core-ktx", version.ref = "coreKtx" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
