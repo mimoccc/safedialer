@@ -69,7 +69,7 @@ open class TaskGenerateChangelog : DefaultTask() {
 
     private fun execAndGetOutput(command: List<String>): String {
         val outputStream = ByteArrayOutputStream()
-        project.providers.exec {
+        project.exec {
             commandLine(command)
             standardOutput = outputStream
         }
