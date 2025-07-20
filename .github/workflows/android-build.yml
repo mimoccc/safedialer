@@ -42,12 +42,6 @@ jobs:
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
       run: ./gradlew build -x lint
-    - name: List site artifacts
-      run: ls -lR ./_site
-    - name: Upload GitHub Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: _site
     - name: Sign app APK
       uses: ilharp/sign-android-release@v2.0.0
       id: sign_app
@@ -66,6 +60,12 @@ jobs:
       with:
         name: app
         path: ${{ steps.sign_app.outputs.signedFile }}
+    - name: List site artifacts
+      run: ls -lR ./_site
+    - name: Upload GitHub Pages artifact
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: _site
     - name: Deploy to GitHub Pages
       uses: actions/deploy-pages@v4
     - name: Create Release

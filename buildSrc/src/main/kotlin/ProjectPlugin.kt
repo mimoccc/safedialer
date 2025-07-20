@@ -8,6 +8,7 @@ class ProjectPlugin : BasePlugin() {
         registerTask<TaskSiteBuild>()
         registerTask<TaskDeleteTemporaryFiles>()
         registerTask<TaskUpdateSiteData>()
+        registerTask<TaskGenerateChangelog>()
     }
 
     override fun Project.onBeforeEvaluate() {
@@ -15,13 +16,21 @@ class ProjectPlugin : BasePlugin() {
 
     override fun Project.onAfterEvaluate() {
         buildTask {
-            dependsOnTask(TaskSiteBuild::class)
+            dependsOnTask(
+                TaskSiteBuild::class,
+                TaskGenerateChangelog::class
+            )
         }
         assembleTask {
-            dependsOnTask(TaskSiteBuild::class)
+            dependsOnTask(
+                TaskSiteBuild::class,
+                TaskGenerateChangelog::class
+            )
         }
         cleanTask {
-            dependsOnTask(TaskDeleteTemporaryFiles::class)
+            dependsOnTask(
+                TaskDeleteTemporaryFiles::class
+            )
         }
     }
 }

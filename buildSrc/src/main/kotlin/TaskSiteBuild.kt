@@ -14,16 +14,16 @@ open class TaskSiteBuild : Exec() {
             rootDir["_site"].apply { mkdirs() }
     private val layoutsDir: File
         get() = siteSourceDir["_layouts"]
-    private val apksDir: File
-        get() = rootDir["composeApp"]["build"]["outputs"]["apk"]
-    private val apksDirRelease: File
-        get() = apksDir["release"]
-    private val siteDestAssetsDir: File
-        get() = siteDestDir["assets"].apply { mkdirs() }
-    private val siteDownloadsDir: File
-        get() = siteDestAssetsDir["downloads"].apply { mkdirs() }
-    private val jekyllCacheDir: File
-        get() = siteSourceDir[".jekyll-cache"]
+//    private val apksDir: File
+//        get() = rootDir["composeApp"]["build"]["outputs"]["apk"]
+//    private val apksDirRelease: File
+//        get() = apksDir["release"]
+//    private val siteDestAssetsDir: File
+//        get() = siteDestDir["assets"].apply { mkdirs() }
+//    private val siteDownloadsDir: File
+//        get() = siteDestAssetsDir["downloads"].apply { mkdirs() }
+//    private val jekyllCacheDir: File
+//        get() = siteSourceDir[".jekyll-cache"]
 
     init {
         group = TASK_GROUP_MJDEV
@@ -41,15 +41,15 @@ open class TaskSiteBuild : Exec() {
         )
         doLast {
             siteDestDir["layouts"].deleteRecursively()
-            apksDirRelease
-                .listFiles { f ->
-                    f.name.endsWith(".apk")
-                }?.forEach { f ->
-                    val dest = siteDownloadsDir[f.name]
-                    println("Copying file: $f -> $dest")
-                    f.copyTo(dest, true)
-                }
-            jekyllCacheDir.deleteRecursively()
+//            apksDirRelease
+//                .listFiles { f ->
+//                    f.name.endsWith(".apk")
+//                }?.forEach { f ->
+//                    val dest = siteDownloadsDir[f.name]
+//                    println("Copying file: $f -> $dest")
+//                    f.copyTo(dest, true)
+//                }
+//            jekyllCacheDir.deleteRecursively()
         }
     }
 }
