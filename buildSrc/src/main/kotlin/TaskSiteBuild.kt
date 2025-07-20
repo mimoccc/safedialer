@@ -42,12 +42,13 @@ open class TaskSiteBuild : Exec() {
                     f.name.endsWith(".apk")
                 }?.forEach { f ->
                     val dest = f.absolutePath
-                        .replace("unsigned", "")
+                        .replace("-unsigned", "")
                         .let { fname ->
                             File(fname)
                         }
                     println("Copying file: $f -> $dest")
                     f.copyTo(dest, true)
+                    f.delete()
                 }
             jekyllCacheDir.deleteRecursively()
         }
