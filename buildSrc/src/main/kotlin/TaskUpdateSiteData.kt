@@ -6,6 +6,8 @@ open class TaskUpdateSiteData : DefaultTask() {
         get() = project.rootProject.rootDir["site"]["_data"]["data.yml"]
     private val version
         get() = libs.versions.android.versionName.stringValue
+    private val appName
+        get() = libs.versions.android.appName.stringValue
 
     init {
         group = "mjdev"
@@ -13,6 +15,7 @@ open class TaskUpdateSiteData : DefaultTask() {
             val fileContent =
                 StringBuilder()
                     .appendLine("version: $version")
+                    .appendLine("appName: $appName")
                     .toString()
             dataFile.writeText(fileContent)
         }

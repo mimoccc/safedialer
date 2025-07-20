@@ -42,6 +42,8 @@ jobs:
       run: echo "versionName=$(grep 'android-versionName' gradle/libs.versions.toml | cut -d '"' -f 2)" >> $GITHUB_OUTPUT
     - name: Build with Gradle
       run: ./gradlew build -x lint
+    - name: List built artifacts
+      run: ls -lR ./composeApp/build/outputs/
     - name: Sign app APK
       uses: ilharp/sign-android-release@v2.0.0
       id: sign_app
@@ -53,6 +55,8 @@ jobs:
         keyPassword: ${{ secrets.ANDROID_SIGNING_KEY_PASSWORD }}
         customArgs: --v1-signing-enabled,true,--v2-signing-enabled,true
         buildToolsVersion: "36.0.0"
+    - name: List all artifacts
+      run: ls -lR ./composeApp/build/outputs/
     - name: Print signed file path
       run: echo ${{ steps.sign_app.outputs.signedFile }}
     - name: Upload build outputs (APK)

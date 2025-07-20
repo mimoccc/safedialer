@@ -59,6 +59,7 @@ open class TaskGenerateChangelog : DefaultTask() {
         val fileName = "${appName}-${versionName}-$tagPrefix"
         val changelogDir = project.file("./build/outputs/apk/$buildType")
         val changelogFilePath = "$changelogDir/CHANGELOG-$fileName.md"
+            .replace("---","")
         println("Changelog file path: $changelogFilePath")
         changelogDir.mkdirs()
         val changelogFile = project.file(changelogFilePath)
@@ -67,6 +68,7 @@ open class TaskGenerateChangelog : DefaultTask() {
         println(changelog)
     }
 
+    @Suppress("DEPRECATION")
     private fun execAndGetOutput(command: List<String>): String {
         val outputStream = ByteArrayOutputStream()
         project.exec {

@@ -1,6 +1,7 @@
 [versions]
 # app specific
 android-appnamespace = "org.mjdev.safedialer"
+android-appName = "SafeDialer"
 android-compileSdk = "36"
 android-minSdk = "26"
 #noinspection OldTargetApi
