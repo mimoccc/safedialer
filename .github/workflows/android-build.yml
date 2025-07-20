@@ -71,7 +71,7 @@ jobs:
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        artifacts: "composeApp/build/**/*.apk"
+        artifacts: "composeApp/build/**/*.apk,composeApp/build/**/*.md"
         tag: v${{ steps.version.outputs.versionName }}
         name: Release ${{ steps.version.outputs.versionName }}
         token: ${{ secrets.GITHUB_TOKEN }}
