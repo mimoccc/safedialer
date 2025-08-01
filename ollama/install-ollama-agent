@@ -1,0 +1,94 @@
+#!/bin/bash
+set -e
+#
+VENV_DIR="/usr/local/ollama-venv"
+AI_BIN="/usr/local/bin/ai"
+AI_ALIAS="/etc/profile.d/ai.sh"
+# 1. Ověření a instalace python3-venv
+if ! python3 -m venv --help > /dev/null 2>&1; then
+echo "Instaluji python3-venv ..."
+apt install -y /mjdev/packages/ollama*.deb
+apt install -y python3-venv
+fi
+# 2. Vytvoření virtualenv pro agenta
+if [ ! -d "$VENV_DIR" ]; then
+echo "Vytvářím virtualenv do $VENV_DIR ..."
+python3 -m venv "$VENV_DIR"
+fi
+# 3. Instalace ollama do virtualenv (ne do systémového Pythonu!)
+echo "Instaluji ollama do venv ..."
+"$VENV_DIR/bin/pip" install --upgrade pip
+"$VENV_DIR/bin/pip" install ollama
+# 4. Vygenerování Python agenta s opravou na shell příkazy
+cat > "$AI_BIN" <<EOF
+#!${VENV_DIR}/bin/python
+import ollama
+import subprocess
+import sys
+from datetime import datetime
+LOGFILE = "/var/log/ollama.log"
+MODEL = "llama3.2"
+def log_action(action, command):
+    with open(LOGFILE, "a") as log:
+        log.write(f"{datetime.now():%F %T} {action}: {command}\\n")
+def generate_bash_command(instruction):
+    prompt = (
+        "Jsi expert na Linux a Bash. Tvůj jediný úkol je převést textový popis na jediný, platný a přesný bash příkaz. "
+        "Neodpovídej žádným jiným textem, vysvětlením, ani komentářem. Jen a pouze příkaz.\\n"
+        f"Úkol: '{instruction}'\\n"
+        "Příkaz:"
+    )
+    resp = ollama.generate(
+        model=MODEL,
+        prompt=prompt,
+        stream=False,
+        options={'temperature': 0.0}
+    )
+    return resp["response"].strip()
+def confirm_and_run(command):
+    try:
+        ans = input(f"Vygenerovaný příkaz: {command}\\nSpustit? [y/n]: ").strip().lower()
+    except EOFError:
+        ans = 'n' # Default to no on non-interactive
+        print(f"Neinteraktivní vstup, příkaz nebude spuštěn: {command}")
+    if ans in ["y", "a", "yes", "ano"]:
+        log_action("RUN", command)
+        subprocess.run(command, shell=True)
+    elif ans in ["n", "no", "ne"]:
+        print("Příkaz nevykonán, pouze zalogován.")
+        log_action("SKIP", command)
+    else:
+        print("Neplatná odpověď.")
+        log_action("INVALID", command)
+def main():
+    if len(sys.argv) > 1:
+        zadani = " ".join(sys.argv[1:])
+    else:
+        try:
+            zadani = input("Zadejte popis nebo úkol (např. 'vytvoř adresář /data/backup'): ")
+        except EOFError:
+            print("Chyba: Použijte 'ai <úkol>' nebo spusťte interaktivně.", file=sys.stderr)
+            sys.exit(1)
+    if not zadani.strip():
+        print("Chyba: Nebyl zadán žádný úkol.", file=sys.stderr)
+        sys.exit(1)
+    prikaz = generate_bash_command(zadani)
+    confirm_and_run(prikaz)
+if __name__ == "__main__":
+    main()
+EOF
+chmod 755 "$AI_BIN"
+# 5. Globální alias
+echo "alias ai='$AI_BIN'" > "$AI_ALIAS"
+chmod 644 "$AI_ALIAS"
+#
+echo "-----------------------------------------"
+echo "HOTOVO: AI agent vytvořen!"
+echo "Python agent je v $AI_BIN, virtualenv je v $VENV_DIR"
+echo "Alias je v $AI_ALIAS (načte se v novém shellu nebo po source /etc/profile.d/ai.sh)"
+echo "POUŽÍVÁNÍ: ai <popis úkolu>"
+echo
+echo "Příklad: ai vytvoř adresář testdir"
+echo "Příklad: ai vytvoř textový soubor s obsahem 'hello' do hello.txt"
+echo "-----------------------------------------"
+#
