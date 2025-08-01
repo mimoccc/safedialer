@@ -1,4 +1,3 @@
-import Constants.TASK_ASSEMBLE_RELEASE
 import Constants.TASK_GROUP_MJDEV
 import org.gradle.api.tasks.Exec
 import java.io.File
@@ -27,8 +26,6 @@ open class TaskSiteBuild : Exec() {
 
     init {
         group = TASK_GROUP_MJDEV
-        dependsOnTask(TaskUpdateSiteData::class)
-        dependsOn(TASK_ASSEMBLE_RELEASE)
         commandLine(
             "jekyll",
             "build",

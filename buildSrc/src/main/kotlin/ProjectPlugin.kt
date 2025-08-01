@@ -18,13 +18,25 @@ class ProjectPlugin : BasePlugin() {
 
     override fun Project.onAfterEvaluate() {
         buildTask {
-            dependsOnTask(TaskSiteBuild::class)
+            finalizedByTask(
+                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
+            )
         }
         assembleTask {
-            dependsOnTask(TaskSiteBuild::class)
+            finalizedByTask(
+                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
+            )
         }
         cleanTask {
-            dependsOnTask(TaskDeleteTemporaryFiles::class)
+            finalizedByTask(
+                TaskDeleteTemporaryFiles::class
+            )
         }
     }
 }

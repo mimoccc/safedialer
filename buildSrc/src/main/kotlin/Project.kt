@@ -19,15 +19,27 @@ val Project.libs
 
 @Throws(UnknownTaskException::class)
 fun Project.cleanTask(configurationAction: Action<Task>) {
-    tasks.named(TASK_CLEAN, configurationAction)
+    tasks.filter { t ->
+        t.name.contains (TASK_CLEAN)
+    }.forEach { t ->
+        tasks.named(t.name, configurationAction)
+    }
 }
 
 @Throws(UnknownTaskException::class)
 fun Project.buildTask(configurationAction: Action<Task>) {
-    tasks.named(TASK_BUILD, configurationAction)
+    tasks.filter { t ->
+        t.name.contains (TASK_BUILD)
+    }.forEach { t ->
+        tasks.named(t.name, configurationAction)
+    }
 }
 
 @Throws(UnknownTaskException::class)
 fun Project.assembleTask(configurationAction: Action<Task>) {
-    tasks.named(TASK_ASSEMBLE, configurationAction)
+    tasks.filter { t ->
+        t.name.contains (TASK_ASSEMBLE)
+    }.forEach { t ->
+        tasks.named(t.name, configurationAction)
+    }
 }

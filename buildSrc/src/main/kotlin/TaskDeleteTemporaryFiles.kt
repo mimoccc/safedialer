@@ -16,6 +16,7 @@ open class TaskDeleteTemporaryFiles : DefaultTask() {
             ".jekyll-cache",
             "_site",
             ".kotlin",
+            "screenshots",
         )
 
     init {

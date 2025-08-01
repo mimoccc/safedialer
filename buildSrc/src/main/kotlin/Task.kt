@@ -14,3 +14,9 @@ fun Task.dependsOnTask(
 ): Task = dependsOn(classes.map { cls ->
     cls.taskName
 })
+
+fun Task.finalizedByTask(
+    vararg classes: KClass<*>
+): Task = finalizedBy(classes.map { cls ->
+    cls.taskName
+})

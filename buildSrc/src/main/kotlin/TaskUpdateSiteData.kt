@@ -11,8 +11,6 @@ open class TaskUpdateSiteData : DefaultTask() {
 
     init {
         group = "mjdev"
-        dependsOn("taskGenerateChangelog")
-        dependsOn("taskGenerateScreenshots")
         doLast {
             val fileContent =
                 StringBuilder()
