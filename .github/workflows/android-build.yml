@@ -66,6 +66,11 @@ jobs:
         path: ${{ steps.sign_app.outputs.signedFile }}
     - name: List site artifacts
       run: ls -lR ./_site
+    - name: Fix permissions
+      run: |
+          chmod -c -R +rX "./_site/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
     - name: Upload GitHub Pages artifact
       uses: actions/upload-pages-artifact@v3
       with:
