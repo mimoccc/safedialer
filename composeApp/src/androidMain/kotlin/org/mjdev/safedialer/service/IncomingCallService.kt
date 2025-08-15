@@ -15,6 +15,10 @@ import android.provider.Settings
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
 import android.util.Log
 import androidx.core.content.ContextCompat
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -25,6 +29,7 @@ import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.CommandReceiver
 import org.mjdev.safedialer.service.command.ServiceCommand
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
+import org.mjdev.safedialer.service.external.PhoneLookup
 import org.mjdev.safedialer.ui.components.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
 import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
@@ -45,6 +50,8 @@ class IncomingCallService :
             Settings.canDrawOverlays(this)
         } else true
     private val dao by instance<DAO>()
+    private val phoneLookup by instance<PhoneLookup>()
+    private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
     override fun onCreate() {
         isStarted = true
@@ -122,6 +129,8 @@ class IncomingCallService :
 
     private fun showAlert(
         phoneNumber: String?,
+        info: String?,
+        isDangerous: Boolean = false,
         context: Context = applicationContext,
     ) = ComposeFloatingWindow(
         context = context,
@@ -129,7 +138,8 @@ class IncomingCallService :
     ) {
         setContent {
             CallDialog(
-                phoneNumber = phoneNumber
+                phoneNumber = phoneNumber,
+                info = info,
             )
         }
         show()
@@ -138,7 +148,13 @@ class IncomingCallService :
 
     override fun onIncomingCall(incomingNumber: String?) { // number null
         lastAlerts.hideAll()
-        showAlert(incomingNumber)
+        scope.launch {
+            phoneLookup.getInfo(incomingNumber).let { info ->
+                withContext(Dispatchers.Main) {
+                    showAlert(incomingNumber, info.toString())
+                }
+            }
+        }
     }
 
     override fun onCallEnded(incomingNumber: String?) { // number null
@@ -154,11 +170,11 @@ class IncomingCallService :
         data: Bundle?,
     ) {
         when (command) {
-            ServiceCommand.ShowAlert -> {
-                data?.getString(EXTRA_INCOMING_NUMBER).also { phoneNumber ->
-                    showAlert(phoneNumber)
-                }
-            }
+//            ServiceCommand.ShowAlert -> {
+//                data?.getString(EXTRA_INCOMING_NUMBER).also { phoneNumber ->
+//                    showAlert(phoneNumber)
+//                }
+//            }
 
             ServiceCommand.HideAlert -> lastAlerts.hideAll()
             ServiceCommand.Start -> start(this)

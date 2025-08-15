@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.di
 
 import android.R
+import android.app.Application
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -32,6 +33,7 @@ import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
+import java.io.File
 import java.util.concurrent.TimeUnit
 
 @Suppress("DEPRECATION")
@@ -67,8 +69,17 @@ val appModule = DI.Module("AppModule") {
     bindSingleton<PhoneLookup> {
         PhoneLookup(instance())
     }
+    bindSingleton<okhttp3.Cache> {
+        val application: Application = instance()
+        okhttp3.Cache(
+            directory = File(application.cacheDir, "http_cache"),
+            maxSize = 1024L * 1024L * 1024L // 1GB
+        )
+    }
     bindSingleton<OkHttpClient> {
         OkHttpClient.Builder()
+            .cache(instance())
+            .connectTimeout(60000, TimeUnit.MILLISECONDS)
             .callTimeout(60000, TimeUnit.MILLISECONDS)
             .build()
     }
