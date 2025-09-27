@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalComposeLibrary::class)
+@file:OptIn(
+    ExperimentalComposeLibrary::class,
+    ExperimentalKotlinGradlePluginApi::class
+)
 
 import com.android.build.api.dsl.VariantDimension
 import org.gradle.api.JavaVersion.VERSION_17
@@ -8,6 +11,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.gradle.kotlin.dsl.kotlin
+import ProjectPlugin.Companion.credentialsMap
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -19,14 +23,7 @@ plugins {
     ProjectPlugin
 }
 
-val credentials = readPropsFile("credentials")
-val mjdevServer by credentials
-val mjdevServerUser by credentials
-val mjdevServerPass by credentials
-
-fun VariantDimension.authResValue(
-    name: String
-) = resValue(
+fun VariantDimension.authResValue(name: String) = resValue(
     "string",
     "authority_$name",
     "${libs.versions.android.appnamespace.stringValue}.$name"
@@ -38,14 +35,16 @@ fun VariantDimension.syncAccountTypeResValue() = resValue(
     "${libs.versions.android.appnamespace.stringValue}.sync_account"
 )
 
+val mjdevServer by credentialsMap
+val mjdevServerUser by credentialsMap
+val mjdevServerPass by credentialsMap
+
 kotlin {
     androidTarget {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
         }
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         unitTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         instrumentedTestVariant.sourceSetTree.set(KotlinSourceSetTree.test)
         dependencies {
             testImplementation(libs.kotlin.test)
@@ -146,7 +145,7 @@ android {
         resValue(
             "string",
             "app_name",
-            mjdevServer.ifBlank { libs.versions.android.appName.stringValue }
+            mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
         )
         resValue("string", "sync_label_calendar", "Calendar")
         resValue("string", "sync_label_call_log", "CallLog")
@@ -176,16 +175,20 @@ android {
             isMinifyEnabled = true
             isShrinkResources = true
             isDebuggable = false
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
         }
         getByName("debug") {
-            isMinifyEnabled = false
-            isShrinkResources = false
-            isDebuggable = true
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
     compileOptions {
@@ -212,7 +215,10 @@ dependencies {
 }
 
 tasks.withType<Test> {
-    jvmArgs("-XX:+EnableDynamicAgentLoading")
+    jvmArgs(
+        "-XX:+EnableDynamicAgentLoading",
+        "-Xconsistent-data-class-copy-visibility",
+    )
 }
 
 buildkonfig {
@@ -223,7 +229,7 @@ buildkonfig {
         buildConfigField(
             STRING,
             "APP_NAME",
-            mjdevServer.ifBlank { libs.versions.android.appName.stringValue }
+            mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
         )
         buildConfigField(STRING, "SERVER", mjdevServer)
         buildConfigField(STRING, "SERVER_UNAME", mjdevServerUser)

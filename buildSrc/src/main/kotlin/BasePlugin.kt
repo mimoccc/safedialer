@@ -9,6 +9,7 @@ abstract class BasePlugin : Plugin<Project> {
     override fun apply(project: Project) {
         with(project) {
             registerTasks()
+            onApply()
             beforeEvaluate {
                 onBeforeEvaluate()
             }
@@ -20,6 +21,8 @@ abstract class BasePlugin : Plugin<Project> {
             }
         }
     }
+
+    abstract fun Project.onApply()
 
     abstract fun Project.onConfigure()
 

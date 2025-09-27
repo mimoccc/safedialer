@@ -5,7 +5,7 @@ import org.mjdev.safedialer.webdav.webdavlib.PropertyFactory
 import org.mjdev.safedialer.webdav.webdavlib.XmlReader
 import org.xmlpull.v1.XmlPullParser
 
-data class Subscription private constructor(
+data class Subscription constructor(
     val webPushSubscription: WebPushSubscription? = null
 ): Property {
     companion object {

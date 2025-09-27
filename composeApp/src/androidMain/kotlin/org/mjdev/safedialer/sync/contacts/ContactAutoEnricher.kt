@@ -29,11 +29,11 @@ object ContactAutoEnricher {
                 ops += ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                     .withValue(
                         ContactsContract.RawContacts.ACCOUNT_TYPE,
-                        SyncManager.ACCOUNT_TYPE
+                        SyncManager.accountType
                     )
                     .withValue(
                         ContactsContract.RawContacts.ACCOUNT_NAME,
-                        SyncManager.ACCOUNT_NAME
+                        SyncManager.accountName
                     )
                     .build()
                 ops += ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)

@@ -2,6 +2,24 @@ import org.gradle.api.Project
 
 @Suppress("unused")
 class ProjectPlugin : BasePlugin() {
+
+    open class ProjectPluginExtension() {
+        lateinit var credentialsMap: SafeMap
+        companion object {
+            val name = "projectPlugin"
+            val CREDENTIALS_FILE_NAME = "credentials"
+        }
+    }
+
+    override fun Project.onApply() {
+        val extension = project.extensions.create(
+            ProjectPluginExtension.name,
+            ProjectPluginExtension::class.java
+        )
+        extension.credentialsMap =
+            readPropsFile(ProjectPluginExtension.CREDENTIALS_FILE_NAME)
+    }
+
     override fun Project.onConfigure() {
     }
 
@@ -9,8 +27,8 @@ class ProjectPlugin : BasePlugin() {
         registerTask<TaskSiteBuild>()
         registerTask<TaskDeleteTemporaryFiles>()
         registerTask<TaskUpdateSiteData>()
-//        registerTask<TaskGenerateChangelog>()
-//        registerTask<TaskGenerateScreenshots>()
+        registerTask<TaskGenerateChangelog>()
+        registerTask<TaskGenerateScreenshots>()
     }
 
     override fun Project.onBeforeEvaluate() {
@@ -19,17 +37,17 @@ class ProjectPlugin : BasePlugin() {
     override fun Project.onAfterEvaluate() {
         buildTask {
             finalizedByTask(
-//                TaskGenerateChangelog::class,
+                TaskGenerateChangelog::class,
                 TaskUpdateSiteData::class,
-//                TaskGenerateScreenshots::class,
+                TaskGenerateScreenshots::class,
                 TaskSiteBuild::class
             )
         }
         assembleTask {
             finalizedByTask(
-//                TaskGenerateChangelog::class,
+                TaskGenerateChangelog::class,
                 TaskUpdateSiteData::class,
-//                TaskGenerateScreenshots::class,
+                TaskGenerateScreenshots::class,
                 TaskSiteBuild::class
             )
         }
@@ -38,5 +56,12 @@ class ProjectPlugin : BasePlugin() {
                 TaskDeleteTemporaryFiles::class
             )
         }
+    }
+
+    companion object {
+        val Project.credentialsMap : SafeMap
+            get() = extensions
+                .getByType(ProjectPluginExtension::class.java)
+                .credentialsMap as SafeMap
     }
 }
