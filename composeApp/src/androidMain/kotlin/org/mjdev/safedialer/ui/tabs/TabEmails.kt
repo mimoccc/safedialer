@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.data.list.IListItem
-import org.mjdev.safedialer.data.model.MessageModel
+import org.mjdev.safedialer.data.model.TextMessageModel
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.extensions.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
@@ -35,7 +35,7 @@ fun TabEmails(
         MainViewModel(DataRepository(context))
     }
     val emailMessagesMap by viewModel.emailMessages.collectAsState(LinkedHashMap())
-    val filter: MapFilter<MessageModel> = remember {
+    val filter: MapFilter<TextMessageModel> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
                 i.displayName.contains(s, true)

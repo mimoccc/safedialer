@@ -660,13 +660,22 @@ class MailClient(
         ""
     }
 
+    @Suppress("UnusedVariable", "unused")
     private fun extractTextFromPart(
         part: Part
     ): String = runCatching {
+        // lazy load
+        val loadPart = part.content
         when {
-            part.isMimeType("text/plain") -> (part.content as? String) ?: ""
-            part.isMimeType("text/html") -> ((part.content as? String)
-                ?: "").replace("<[^>]+>".toRegex(), " ")
+            part.isMimeType("text/plain") -> {
+                (part.content as? String) ?: ""
+            }
+
+            part.isMimeType("text/html") -> {
+                (part.content as? String)
+                    ?.replace("<[^>]+>".toRegex(), " ")
+                    ?: ""
+            }
 
             part.isMimeType("multipart/*") -> {
                 val mp = part.content as? jakarta.mail.Multipart
@@ -686,13 +695,11 @@ class MailClient(
             }
 
             else -> {
-                val c = part.content
-                if (c is String) c else ""
+                part.content as? String ?: ""
             }
         }
-    }.getOrElse {
-        Log.e(TAG, "Failed to extract text from part: ${it.message}")
-        Log.e(TAG, it.message ?: "error", it)
+    }.getOrElse { mex ->
+        Log.e(TAG, "MessagingException during extractTextFromPart: ${mex.message}")
         ""
     }
 

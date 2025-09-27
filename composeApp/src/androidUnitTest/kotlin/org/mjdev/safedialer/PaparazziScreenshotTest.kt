@@ -15,7 +15,8 @@ class PaparazziScreenshotTest {
     @get:Rule
     val paparazzi = Paparazzi(
         deviceConfig = PIXEL_5,
-        theme = "android:Theme.Material.Light.NoActionBar"
+        theme = "android:Theme.Material.Dark.NoActionBar",
+        showSystemUi = true
     )
 
     @Test

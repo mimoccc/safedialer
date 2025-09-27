@@ -10,10 +10,11 @@ open class IDAO(
     val config: DatabaseConfiguration? = null
 ) {
     val database: Database by lazy {
+        val dbNameValid = dbName.replace(".", "_")
         if (config != null) {
-            Database(dbName, config)
+            Database(dbNameValid, config)
         } else {
-            Database(dbName)
+            Database(dbNameValid)
         }
     }
 

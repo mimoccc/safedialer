@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.data.model.ContactModel
+import org.mjdev.safedialer.data.repository.base.DataRepositoryUtils.findContactByPhone
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -32,10 +33,6 @@ class MainViewModel(
     val messagesMap = dataRepository.messagesMap
     val emailMessages = dataRepository.emailsMap
 
-    init {
-        loadData()
-    }
-
     fun toggleServerState() {
         _serverState.value = !_serverState.value
     }
@@ -49,21 +46,6 @@ class MainViewModel(
         start: CoroutineStart = CoroutineStart.DEFAULT,
         block: suspend CoroutineScope.() -> Unit
     ) = viewModelScope.launch(context, start, block)
-
-    private fun loadData() {
-        runSafe {
-            dataRepository.contacts.collect { contactsList ->
-            }
-        }
-        runSafe {
-            dataRepository.calls.collect { callLogList ->
-            }
-        }
-        runSafe {
-            dataRepository.sms.collect { messagesList ->
-            }
-        }
-    }
 
     fun findContact(phoneNumber: String): ContactModel {
         return dataRepository.findContactByPhone(phoneNumber)

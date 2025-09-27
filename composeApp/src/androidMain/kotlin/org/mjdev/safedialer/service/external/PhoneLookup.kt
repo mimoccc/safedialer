@@ -31,7 +31,9 @@ class PhoneLookup(
         item: IListItem,
         parser: (String) -> String? = HtmlParser,
     ): Any? = runCatching {
-        val phone = runCatching { pnu.parse(item.phoneNumber, null) }.getOrNull()
+        val phone = runCatching {
+            pnu.parse(item.phoneNumber, null)
+        }.getOrNull()
         val url = httpAddressTemplate.format(phone?.nationalNumber?.toString() ?: "")
         val request = Request.Builder()
             .url(url)
@@ -55,8 +57,10 @@ class PhoneLookup(
         phoneNumber: String?,
         parser: (String) -> String? = HtmlParser,
     ): Any? = runCatching {
-        val phone = runCatching { pnu.parse(phoneNumber, null) }.getOrNull()
-        val url = httpAddressTemplate.format(phone?.nationalNumber?.toString() ?: "")
+        val phone = runCatching {
+            pnu.parse(phoneNumber, null)
+        }.getOrNull()?.nationalNumber?.toString()
+        val url = httpAddressTemplate.format(phone ?: "")
         val request = Request.Builder()
             .url(url)
             .cacheControl(CacheControl.FORCE_NETWORK)

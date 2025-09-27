@@ -11,14 +11,14 @@ import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.model.CallModel
 import org.mjdev.safedialer.data.model.ContactModel
 import org.mjdev.safedialer.data.model.EmailMessageModel
-import org.mjdev.safedialer.data.model.MessageModel
+import org.mjdev.safedialer.data.model.TextMessageModel
 
 object Mapper {
 
     fun IListItem.asListItem() = when (this) {
         is ContactModel -> asListItem()
         is CallModel -> asListItem()
-        is MessageModel -> asListItem()
+        is TextMessageModel -> asListItem()
         is EmailMessageModel -> asListItem()
         else -> {
             throw IllegalArgumentException(
@@ -60,7 +60,7 @@ object Mapper {
         isDanger = false // todo
     )
 
-    fun MessageModel.asListItem() = ListItem(
+    fun TextMessageModel.asListItem() = ListItem(
         date = date,
         phoneNumber = phoneNumber,
         displayName = contact?.displayName ?: phoneNumber,
