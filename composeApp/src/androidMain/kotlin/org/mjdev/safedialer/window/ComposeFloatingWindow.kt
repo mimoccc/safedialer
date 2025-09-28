@@ -75,7 +75,7 @@ class ComposeFloatingWindow(
         LifecycleRegistry(this)
 
     var savedStateRegistryController: SavedStateRegistryController =
-        SavedStateRegistryController.Companion.create(this)
+        SavedStateRegistryController.create(this)
     private var _showing = MutableStateFlow(false)
 
     val showing: StateFlow<Boolean>
@@ -155,7 +155,7 @@ class ComposeFloatingWindow(
         decorView.getChildAt(0)?.takeIf {
             it is ComposeView
         }?.let { composeView ->
-            val thread = AndroidUiDispatcher.Companion.CurrentThread
+            val thread = AndroidUiDispatcher.CurrentThread
             val reComposer = Recomposer(thread)
             composeView.compositionContext = reComposer
             lifecycleScope.launch(thread) {

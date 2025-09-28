@@ -18,8 +18,8 @@ import org.kodein.di.DIAware
 import org.kodein.di.instance
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.dao.DAO
-import org.mjdev.safedialer.email.MailClient
-import org.mjdev.safedialer.email.MailItem
+import org.mjdev.safedialer.providers.custom.email.MailClient
+import org.mjdev.safedialer.providers.custom.email.MailItem
 import kotlin.getValue
 
 class ProviderEmails() : ContentProvider(), DIAware {
@@ -158,6 +158,8 @@ class ProviderEmails() : ContentProvider(), DIAware {
         const val MAIL_ITEM_RECIPIENTS_CSV = "recipientsCsv"
         const val MAIL_ITEM_IS_DELETED = "isDeleted"
         const val MAIL_ITEM_IS_FLAGGED = "isFlagged"
+
+        const val MAIL_FOLDER_NAME = "mailFolderName"
 
         val PROJECTION = arrayOf(
             MAIL_ITEM_ID,

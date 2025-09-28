@@ -11,6 +11,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Backspace
 import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Phone
@@ -171,7 +172,7 @@ fun DialPad(
                         ) {
                             Icon(
                                 modifier = Modifier.size(32.dp),
-                                imageVector = Icons.Default.Backspace,
+                                imageVector = Icons.AutoMirrored.Filled.Backspace,
                                 contentDescription = "Backspace",
                                 tint = MaterialTheme.colorScheme.primary
                             )

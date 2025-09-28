@@ -16,10 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.data.list.IListItem
-import org.mjdev.safedialer.data.model.TextMessageModel
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
-import org.mjdev.safedialer.extensions.MapFilter
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.custom.email.MailItem
+import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
 import java.util.Date
@@ -35,12 +35,12 @@ fun TabEmails(
         MainViewModel(DataRepository(context))
     }
     val emailMessagesMap by viewModel.emailMessages.collectAsState(LinkedHashMap())
-    val filter: MapFilter<TextMessageModel> = remember {
+    val filter: MapFilter<MailItem> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
-                i.displayName.contains(s, true)
+                i.senderName.contains(s, true)
             }.groupBy { c ->
-                Date(c.date).let {
+                Date(c.createdAtMillis).let {
                     "${it.date}.${it.month + 1}.${it.year + 1900}"
                 }
             }
@@ -60,7 +60,7 @@ fun TabEmails(
             showDate = true,
             scrollState = scrollState,
             filterText = filterText,
-            filter = filter as MapFilter<IListItem>
+            filter = filter as MapFilter<Entity>
         )
     }
 }

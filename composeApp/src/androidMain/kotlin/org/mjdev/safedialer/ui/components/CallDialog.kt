@@ -1,8 +1,10 @@
 package org.mjdev.safedialer.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -37,20 +39,18 @@ fun CallDialog(
         ContactDetail(
             caller = contactDetails.phoneNumber,
             showCloseButton = true,
-            isFirst = true,
             isLast = false,
-            buttons = {},
-            showDivider = true,
         )
-//        Box(
-//            modifier = Modifier
-//                .fillMaxWidth()
-//                .height(96.dp)
-//                .background(
-//                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
-//                ),
-//        ) {
-//        }
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(96.dp)
+                .background(
+                    color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                ),
+        ) {
+            // todo details
+        }
     }
 }
 

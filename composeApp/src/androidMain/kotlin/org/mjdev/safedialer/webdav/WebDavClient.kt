@@ -49,9 +49,9 @@ class WebDavClient(
             }
     }
 
-//    val pgpCertData: ByteArray by lazy {
-//        readFile(pgpCertFile)
-//    }
+    val pgpCertData: ByteArray by lazy {
+        readFile(pgpCertFile)
+    }
 
     val userPicture = flow<ImageBitmap?> {
         userVCard?.photos?.firstOrNull()?.data?.let { photoData ->

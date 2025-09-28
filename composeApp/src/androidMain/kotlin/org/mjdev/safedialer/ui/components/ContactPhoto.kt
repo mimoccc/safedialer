@@ -10,7 +10,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
@@ -32,9 +31,6 @@ fun ContactPhoto(
     contact: ListItem? = null,
     onClick: () -> Unit = {}
 ) {
-    val photoUri = remember(contact) {
-        contact?.photoUri ?: contact?.photoThumbnailUri
-    }
     Box(
         modifier = modifier.clickable {
             onClick()
@@ -51,13 +47,13 @@ fun ContactPhoto(
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
             )
         )
-        if (photoUri != null) Image(
+        if (contact?.itemPhoto != null) Image(
             modifier = Modifier
                 .fillMaxSize()
                 .clip(CircleShape),
             painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(context).data(
-                    contact?.photoUri ?: contact?.photoThumbnailUri
+                    contact.itemPhoto
                 ).build(),
                 imageLoader = imageLoader
             ),

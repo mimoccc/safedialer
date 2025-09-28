@@ -34,7 +34,7 @@ import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 @Composable
 fun TabbedScreen(
     modifier: Modifier = Modifier,
-    startTab: Tabs = Tabs.CallLog,
+    startTab: Tabs = Tabs.CallLog, // todo last item
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
     tabState: TabsState = rememberTabsState(startTab = startTab),
@@ -50,6 +50,7 @@ fun TabbedScreen(
     contentAlignment = Alignment.BottomCenter,
 ) {
     val phoneNumber: MutableState<String> = remember { mutableStateOf("") }
+    // todo dialPad
     val dialPadVisible = remember(fabState.isVisible) {
         fabState.isVisible
     }

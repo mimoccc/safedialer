@@ -31,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
-import org.mjdev.safedialer.BuildConfig
 
 @Previews
 @Composable
@@ -48,7 +47,7 @@ fun TabsBottomBar(
         containerColor = Color.Transparent,
         modifier = modifier,
         indicator = { _ -> Box {} },
-        divider = { Box {} },
+        divider = { },
         selectedTabIndex = tabState.currentTab?.ordinal ?: 0,
     ) {
         tabState.tabs.forEachIndexed { index, tab ->
@@ -57,6 +56,9 @@ fun TabsBottomBar(
                 modifier = Modifier
                     .padding(5.dp)
                     .clip(RoundedCornerShape(50))
+                    .size(
+                        if (selected) 0.dp else 40.dp
+                    )
                     .background(
                         if (selected) {
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
@@ -125,11 +127,11 @@ class TabsState(
     companion object {
         @Composable
         fun rememberTabsState(
-            tabs: List<Enum<*>> = Tabs.entries.toMutableList().apply{
-                val isServer = BuildConfig.SERVER.isNotEmpty()
-                val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
-                val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
-                if(!(isServer && isUser && isPass)) remove(Tabs.Emails)
+            tabs: List<Enum<*>> = Tabs.entries.toMutableList().apply {
+//                val isServer = BuildConfig.SERVER.isNotEmpty()
+//                val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
+//                val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
+//                if(!(isServer && isUser && isPass)) remove(Tabs.Emails)
             },
             startTab: Enum<*>? = tabs.firstOrNull(),
         ) = remember(tabs, startTab) {

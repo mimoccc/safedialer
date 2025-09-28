@@ -11,6 +11,7 @@ import org.kodein.di.bindSingleton
 import org.kodein.di.instance
 import org.mjdev.safedialer.di.appModule
 import org.mjdev.safedialer.di.permissionsModule
+import org.mjdev.safedialer.di.providersModule
 import org.mjdev.safedialer.di.viewModelsModule
 import org.mjdev.safedialer.service.IncomingCallService
 
@@ -36,6 +37,7 @@ class MainApp : Application(), DIAware {
             import(appModule)
             import(viewModelsModule)
             import(permissionsModule)
+            import(providersModule)
         }
     }
 }

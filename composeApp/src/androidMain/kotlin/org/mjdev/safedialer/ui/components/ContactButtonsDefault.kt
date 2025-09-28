@@ -30,23 +30,17 @@ import org.mjdev.safedialer.helpers.Previews
 @Previews
 @Composable
 fun ContactButtonsDefault(
-    contact: ListItem? = ListItem(
-        contactId = "+420702568909",
-        phoneNumber = "+420702568909",
-        displayName = "Milan Jurkulák",
-        callId = "+420702568909"
-    ),
+    item: ListItem = ListItem(),
     iconSize: Dp = 32.dp,
     context: Context = LocalContext.current,
-    phoneNumber: String = contact?.phoneNumber ?: ""
 ) = Row {
-    if (contact?.phoneNumber != null) {
+    if (item.itemPhone.isNotEmpty()) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_DIAL,
-                    Uri.parse("tel:$phoneNumber")
+                    Uri.parse("tel:${item.itemPhone}")
                 ).apply {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -67,7 +61,7 @@ fun ContactButtonsDefault(
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("sms:$phoneNumber")
+                    Uri.parse("sms:${item.itemPhone}")
                 ).apply {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -90,7 +84,7 @@ fun ContactButtonsDefault(
             }
         ) {
             Image(
-                imageVector = if (contact.isBlocked) Icons.Filled.FavoriteBorder
+                imageVector = if (item.isBlocked) Icons.Filled.FavoriteBorder
                 else Icons.Filled.Favorite,
                 contentDescription = "",
                 modifier = Modifier.padding(4.dp),
@@ -100,7 +94,7 @@ fun ContactButtonsDefault(
             )
         }
     }
-    if (contact?.contactId != null) {
+    if (item.itemId != 0L) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {
@@ -108,7 +102,7 @@ fun ContactButtonsDefault(
                     Intent.ACTION_VIEW,
                     Uri.withAppendedPath(
                         ContactsContract.Contacts.CONTENT_URI,
-                        java.lang.String.valueOf(contact?.contactId ?: "---")
+                        item.itemId.toString()
                     )
                 ).apply {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
@@ -126,7 +120,7 @@ fun ContactButtonsDefault(
             )
         }
     }
-    if (contact?.callId != null || contact?.contactId != null) {
+    if (item.itemId != 0L || item.itemId != 0L) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {

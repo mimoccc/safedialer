@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import org.mjdev.safedialer.helpers.Previews
 
 @Previews
@@ -34,11 +36,13 @@ fun ResponsiveContainer(
 ) = BoxWithConstraints(
     modifier.fillMaxSize()
 ) {
-    val displayInfo by remember(constraints) {
+    val density = LocalDensity.current
+    val displayInfo by remember(constraints, density) {
         derivedStateOf {
             DisplayInfo(
                 constraints,
-                ratio,
+                density = density,
+                ratio = ratio,
             )
         }
     }
@@ -66,12 +70,13 @@ fun ResponsiveContainer(
 
 data class DisplayInfo(
     val constraints: Constraints,
+    val density: Density,
     val ratio: Float = 0.4f,
 ) {
     val width: Dp
-        get() = constraints.maxWidth.dp
+        get() = with(density) { constraints.maxWidth.toDp() }
     val height: Dp
-        get() = constraints.maxHeight.dp
+        get() = with(density) { constraints.maxHeight.toDp() }
     val isLandscape: Boolean
         get() = width > height
     val isPortrait: Boolean

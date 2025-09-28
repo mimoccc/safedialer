@@ -18,6 +18,6 @@ data class Owner(
         override fun getName() = NAME
 
         override fun create(parser: XmlPullParser): Owner =
-            Owner(XmlReader(parser).readTextProperty(DavResource.Companion.HREF))
+            Owner(XmlReader(parser).readTextProperty(DavResource.HREF))
     }
 }

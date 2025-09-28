@@ -9,8 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.data.model.ContactModel
-import org.mjdev.safedialer.data.repository.base.DataRepositoryUtils.findContactByPhone
+import org.mjdev.safedialer.providers.android.contacts.Contact
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
@@ -28,9 +27,13 @@ class MainViewModel(
     private val _isTabsVisible = MutableStateFlow(true)
     val isTabsVisible: StateFlow<Boolean> = _isTabsVisible.asStateFlow()
 
+    val contacts = dataRepository.contacts
     val contactMap = dataRepository.contactsMap
-    val callLogMap = dataRepository.callLogMap
+
+    val calls = dataRepository.calls
+    val callsMap = dataRepository.callsMap
     val messagesMap = dataRepository.messagesMap
+    val messageThreads = dataRepository.messageThreads
     val emailMessages = dataRepository.emailsMap
 
     fun toggleServerState() {
@@ -47,7 +50,21 @@ class MainViewModel(
         block: suspend CoroutineScope.() -> Unit
     ) = viewModelScope.launch(context, start, block)
 
-    fun findContact(phoneNumber: String): ContactModel {
-        return dataRepository.findContactByPhone(phoneNumber)
+    // todo
+    fun getContact(string: String) : Contact? {
+        return null
     }
+
+//    suspend fun findContactByPhone(
+//        phoneNumber: String
+//    ): ContactModel {
+//        return dataRepository.findContactByPhone(phoneNumber).last()
+//    }
+//
+//    suspend fun findContactBySender(
+//        email: String?,
+//        senderName: String?
+//    ): ContactModel {
+//        return dataRepository.findContactBySender(email, senderName).last()
+//    }
 }

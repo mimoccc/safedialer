@@ -10,7 +10,7 @@ import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
-import org.mjdev.safedialer.data.list.IListItem
+import org.mjdev.safedialer.data.list.ListItem
 
 @Suppress("unused", "CanBeParameter")
 class PhoneLookup(
@@ -28,11 +28,11 @@ class PhoneLookup(
     }
 
     suspend fun getInfo(
-        item: IListItem,
+        item: ListItem,
         parser: (String) -> String? = HtmlParser,
     ): Any? = runCatching {
         val phone = runCatching {
-            pnu.parse(item.phoneNumber, null)
+            pnu.parse(item.itemPhone, null)
         }.getOrNull()
         val url = httpAddressTemplate.format(phone?.nationalNumber?.toString() ?: "")
         val request = Request.Builder()

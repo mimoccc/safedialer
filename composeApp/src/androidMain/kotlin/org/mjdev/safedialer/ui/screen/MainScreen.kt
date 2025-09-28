@@ -41,7 +41,7 @@ import org.mjdev.safedialer.viewmodel.MainViewModel
 @Previews
 @Composable
 fun MainScreen(
-    startTab: Tabs = Tabs.CallLog,
+    startTab: Tabs = Tabs.CallLog, // todo from past
 ) {
     val context: Context = LocalContext.current
     val viewModel by rememberViewModelSafe {

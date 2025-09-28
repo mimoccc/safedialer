@@ -30,7 +30,7 @@ data class PropStat(
                     when (parser.propertyName()) {
                         DavResource.PROP ->
                             prop.addAll(Property.parse(parser))
-                        Response.Companion.STATUS ->
+                        Response.STATUS ->
                             status = try {
                                 StatusLine.parse(parser.nextText())
                             } catch (e: ProtocolException) {

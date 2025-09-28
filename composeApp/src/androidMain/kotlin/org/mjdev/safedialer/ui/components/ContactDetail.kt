@@ -34,16 +34,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
-import org.mjdev.safedialer.data.Mapper.asListItem
-import org.mjdev.safedialer.data.enums.CallType
 import org.mjdev.safedialer.data.list.ListItem
-import org.mjdev.safedialer.data.repository.base.DataRepositoryUtils.findContactByPhone
-import org.mjdev.safedialer.data.repository.base.IDataRepository
-import org.mjdev.safedialer.data.repository.base.IDataRepository.Companion.rememberContactsRepository
+import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
+import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.providers.android.calllog.Call
+import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.service.IncomingCallService
-import org.mjdev.safedialer.shapes.DottedShape
+import org.mjdev.safedialer.ui.shapes.DottedShape
+import org.mjdev.safedialer.viewmodel.MainViewModel
 import java.util.Date
 
 @Suppress("DEPRECATION")
@@ -52,15 +52,10 @@ import java.util.Date
 fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
-    dataRepository: IDataRepository = rememberContactsRepository(),
-    contact: ListItem = dataRepository.findContactByPhone(caller).asListItem(),
-    buttons: @Composable () -> Unit = { ContactButtonsDefault(contact) },
-    context: Context = LocalContext.current,
-    imageLoader: ImageLoader = rememberImageLoader(context),
-    textStyle: TextStyle =
-        TextStyle(
-            color = MaterialTheme.colorScheme.primary,
-        ),
+    item: Entity? = null,
+    buttons: @Composable (item: ListItem) -> Unit = { item -> ContactButtonsDefault(item) },
+    imageLoader: ImageLoader = rememberImageLoader(),
+    textStyle: TextStyle = TextStyle(color = MaterialTheme.colorScheme.primary),
     fontFamily: FontFamily = FontFamily.Default,
     showCloseButton: Boolean = false,
     isFirst: Boolean = true,
@@ -68,89 +63,87 @@ fun ContactDetail(
     showDate: Boolean = false,
     showDivider: Boolean = true,
 ) {
+    val context: Context = LocalContext.current
+    val viewModel by rememberViewModelSafe {
+        MainViewModel(DataRepository(context))
+    }
     val background = RoundedCornerShape(
         topStart = if (isFirst) 16.dp else 0.dp,
         topEnd = if (isFirst) 16.dp else 0.dp,
         bottomEnd = if (isLast) 16.dp else 0.dp,
         bottomStart = if (isLast) 16.dp else 0.dp,
     )
+    val contact = item ?: viewModel.getContact(caller ?: "")
+    val listItem = ListItem(contact)
     Box(
-        modifier =
-            modifier.background(
-                color = MaterialTheme.colorScheme.background,
-                shape = background,
-            ),
+        modifier = modifier.background(
+            color = MaterialTheme.colorScheme.background,
+            shape = background,
+        ),
     ) {
         Box(
-            modifier =
-                Modifier
-                    .background(
-                        color =
-                            if ((contact.isBlocked) || (contact.isDanger)) {
-                                Color.Red.copy(alpha = 0.3f)
-                            } else {
-                                MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-                            },
-                        shape = background,
-                    )
-                    .padding(start = 0.dp, end = 8.dp),
+            modifier = Modifier
+                .background(
+                    color = if (listItem.isBlocked || listItem.isDanger) {
+                        Color.Red.copy(alpha = 0.3f)
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
+                    },
+                    shape = background,
+                )
+                .padding(start = 0.dp, end = 8.dp),
         ) {
             Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
             ) {
                 Box {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Box(
-                            modifier =
-                                Modifier
-                                    .padding(8.dp)
-                                    .size(64.dp)
-                                    .clip(CircleShape)
-                                    .border(
-                                        2.dp,
-                                        when (contact.type) {
-                                            CallType.BLOCKED -> Color.Red
-                                            CallType.MISSED -> Color.Red
-                                            CallType.REJECTED -> Color.Red
-                                            CallType.VOICEMAIL -> Color.Blue
-                                            CallType.OUTGOING -> Color.Green
-                                            else ->
-                                                when {
-                                                    contact.isStored -> Color.Green
-                                                    else -> Color.White.copy(alpha = 0.5f)
-                                                }
-                                        },
-                                        CircleShape,
-                                    ),
+                            modifier = Modifier
+                                .padding(8.dp)
+                                .size(64.dp)
+                                .clip(CircleShape)
+                                .border(
+                                    2.dp,
+                                    when (listItem.itemCallType) {
+                                        Call.CallType.BLOCKED -> Color.Red
+                                        Call.CallType.MISSED -> Color.Red
+                                        Call.CallType.REJECTED -> Color.Red
+                                        Call.CallType.VOICEMAIL -> Color.Blue
+                                        Call.CallType.OUTGOING -> Color.Green
+                                        else -> when {
+                                            listItem.isStored -> Color.Green
+                                            else -> Color.White.copy(alpha = 0.5f)
+                                        }
+                                    },
+                                    CircleShape,
+                                ),
                         ) {
                             ContactPhoto(
-                                contact = contact,
+                                contact = listItem,
                                 imageLoader = imageLoader,
-                                modifier =
-                                    Modifier
-                                        .padding(2.dp)
-                                        .fillMaxSize()
-                                        .clip(CircleShape),
+                                modifier = Modifier
+                                    .padding(2.dp)
+                                    .fillMaxSize()
+                                    .clip(CircleShape),
                             )
                         }
                         Column(
-                            modifier =
-                                Modifier
-                                    .fillMaxWidth()
-                                    .weight(1f, true)
-                                    .padding(
-                                        bottom = 20.dp,
-                                        top = 16.dp,
-                                    ),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .weight(1f, true)
+                                .padding(
+                                    bottom = 20.dp,
+                                    top = 16.dp,
+                                ),
                         ) {
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = contact.displayName.ifEmpty { "-" },
+                                text = listItem.itemName.ifEmpty { "-" },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 style = textStyle,
@@ -160,7 +153,7 @@ fun ContactDetail(
                             )
                             Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = contact.phoneNumber.ifEmpty { "-" },
+                                text = listItem.itemPhone.ifEmpty { "-" },
                                 fontSize = 14.sp,
                                 style = textStyle,
                                 fontFamily = fontFamily,
@@ -170,16 +163,26 @@ fun ContactDetail(
                             if (showDate) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text =
-                                        contact.date.takeIf { d ->
-                                            d != 0L
-                                        }?.let { d ->
-                                            val date = Date(d)
-                                            val hours = date.hours.toString().padStart(2, '0')
-                                            val minutes = date.minutes.toString().padStart(2, '0')
-                                            val seconds = date.seconds.toString().padStart(2, '0')
-                                            "$hours:$minutes:$seconds"
-                                        } ?: "-",
+                                    text = listItem.itemDate.takeIf { d ->
+                                        d != 0L
+                                    }?.let { d ->
+                                        // todo formats from system
+                                        val date = Date(d)
+                                        val hours = date.hours.toString().padStart(2, '0')
+                                        val minutes = date.minutes.toString().padStart(2, '0')
+                                        val seconds = date.seconds.toString().padStart(2, '0')
+                                        "$hours:$minutes:$seconds"
+                                    } ?: "-",
+                                    fontSize = 14.sp,
+                                    style = textStyle,
+                                    fontFamily = fontFamily,
+                                    maxLines = 1,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            } else {
+                                Text(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    text = listItem.details,
                                     fontSize = 14.sp,
                                     style = textStyle,
                                     fontFamily = fontFamily,
@@ -195,23 +198,21 @@ fun ContactDetail(
                     ) {
                         if (showCloseButton.not()) {
                             IconButton(
-                                modifier =
-                                    Modifier
-                                        .align(Alignment.TopEnd)
-                                        .size(32.dp)
-                                        .padding(top = 4.dp),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(32.dp)
+                                    .padding(top = 4.dp),
                                 onClick = {
                                     // todo generate qr code
                                 },
                             ) {
                                 Image(
-                                    modifier =
-                                        Modifier
-                                            .background(
-                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                shape = CircleShape,
-                                            )
-                                            .padding(4.dp),
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            shape = CircleShape,
+                                        )
+                                        .padding(4.dp),
                                     imageVector = Icons.Filled.QrCode,
                                     contentDescription = "",
                                     colorFilter =
@@ -223,44 +224,40 @@ fun ContactDetail(
                         }
                         if (showCloseButton) {
                             IconButton(
-                                modifier =
-                                    Modifier
-                                        .align(Alignment.TopEnd)
-                                        .size(32.dp)
-                                        .padding(top = 4.dp),
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(32.dp)
+                                    .padding(top = 4.dp),
                                 onClick = {
                                     IncomingCallService.hideAlert(context)
                                 },
                             ) {
                                 Image(
-                                    modifier =
-                                        Modifier
-                                            .background(
-                                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
-                                                shape = CircleShape,
-                                            )
-                                            .padding(4.dp),
+                                    modifier = Modifier
+                                        .background(
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            shape = CircleShape,
+                                        )
+                                        .padding(4.dp),
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = "",
-                                    colorFilter =
-                                        ColorFilter.tint(
-                                            color = MaterialTheme.colorScheme.primary,
-                                        ),
+                                    colorFilter = ColorFilter.tint(
+                                        color = MaterialTheme.colorScheme.primary,
+                                    ),
                                 )
                             }
                         }
-                        buttons()
+                        buttons(listItem)
                     }
                 }
                 if (!isLast && showDivider) {
                     HorizontalDivider(
-                        modifier =
-                            Modifier
-                                .padding(start = 80.dp, bottom = 2.dp)
-                                .background(
-                                    color = MaterialTheme.colorScheme.primary,
-                                    shape = DottedShape(5.dp),
-                                ),
+                        modifier = Modifier
+                            .padding(start = 80.dp, bottom = 2.dp)
+                            .background(
+                                color = MaterialTheme.colorScheme.primary,
+                                shape = DottedShape(5.dp),
+                            ),
                         color = Color.Transparent,
                         thickness = 1.dp,
                     )

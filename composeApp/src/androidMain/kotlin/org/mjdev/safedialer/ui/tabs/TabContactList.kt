@@ -16,12 +16,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.data.list.IListItem
-import org.mjdev.safedialer.data.model.ContactModel
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
-import org.mjdev.safedialer.extensions.MapFilter
+import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.ui.components.MapFilter
 
 @Suppress("UNCHECKED_CAST")
 @Preview
@@ -34,12 +34,12 @@ fun TabContactList(
         MainViewModel(DataRepository(context))
     }
     val contactMap by viewModel.contactMap.collectAsState(LinkedHashMap())
-    val filter: MapFilter<ContactModel> = remember {
+    val filter: MapFilter<Contact> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
-                i.displayName.contains(s, true)
+                i.displayName?.contains(s, true) ?: false
             }.groupBy { c ->
-                c.displayName.firstOrNull()?.uppercase() ?: ""
+                c.displayName?.firstOrNull()?.uppercase() ?: ""
             }
         }
     }
@@ -57,7 +57,9 @@ fun TabContactList(
             showDate = false,
             scrollState = scrollState,
             filterText = filterText,
-            filter = filter as MapFilter<IListItem>
+            filter = filter as MapFilter<Entity>
         )
     }
 }
+
+

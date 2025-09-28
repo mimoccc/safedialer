@@ -13,6 +13,9 @@ import android.net.ConnectivityManager
 import android.view.WindowManager
 import androidx.core.app.NotificationCompat
 import androidx.core.telecom.CallsManager
+import coil.ImageLoader
+import coil.disk.DiskCache
+import coil.memory.MemoryCache
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.i18n.phonenumbers.PhoneNumberUtil
@@ -28,8 +31,7 @@ import org.kodein.di.instance
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.email.MailClient
-import org.mjdev.safedialer.helpers.Cache
+import org.mjdev.safedialer.providers.custom.email.MailClient
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
@@ -51,7 +53,6 @@ val appModule = DI.Module("AppModule") {
             NotificationManager.IMPORTANCE_LOW,
         )
     }
-
     bindProvider<Application> {
         instance<Context>().let { context ->
             context.applicationContext as Application
@@ -70,7 +71,6 @@ val appModule = DI.Module("AppModule") {
     bindProvider<ServiceCommandReceiver> {
         ServiceCommandReceiver()
     }
-
     bindSingleton<ConnectivityManager> {
         instance<Context>()
             .getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -89,9 +89,6 @@ val appModule = DI.Module("AppModule") {
     }
     bindSingleton<CoroutineScope> {
         CoroutineScope(IO + Job())
-    }
-    bindSingleton<Cache> {
-        Cache()
     }
     bindSingleton<CallsManager> {
         CallsManager(instance())
@@ -122,6 +119,28 @@ val appModule = DI.Module("AppModule") {
             props = Properties(),
         )
     }
+    bindSingleton<ImageLoader> {
+        val application: Application = instance()
+        val okhttpClient: OkHttpClient = instance()
+        val cacheDir = application.cacheDir.resolve("image_cache")
+        ImageLoader.Builder(application)
+            .okHttpClient { okhttpClient }
+            .crossfade(false)
+            .diskCache {
+                DiskCache.Builder()
+                    .directory(cacheDir)
+                    .build()
+            }
+            .components {
+                // Add any custom components here if needed
+            }
+            .memoryCache {
+                MemoryCache.Builder(application)
+                    .maxSizePercent(0.5)
+                    .build()
+            }
+            .build()
+    }
     bindSingleton<OkHttpClient> {
         OkHttpClient.Builder()
             .cache(instance())
@@ -133,7 +152,6 @@ val appModule = DI.Module("AppModule") {
         DataRepository(
             context = instance(),
             scope = instance(),
-            cache = instance()
         )
     }
     bindSingleton<Notification>("notification") {

@@ -27,7 +27,9 @@ import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import coil.ImageLoader
 import coil.disk.DiskCache
 import coil.memory.MemoryCache
+import okhttp3.OkHttpClient
 import org.kodein.di.LazyDI
+import org.kodein.di.android.closestDI
 import org.kodein.di.direct
 import org.kodein.di.instance
 import org.mjdev.safedialer.app.MainApp.Companion.mainDI
@@ -71,25 +73,11 @@ object ComposeExt1 {
 
     @Composable
     fun rememberImageLoader(
-        context: Context = LocalContext.current
+        context: Context = LocalContext.current,
     ) = remember {
-        ImageLoader.Builder(context)
-//            .okHttpClient { OkHttpClient.Builder().build() }
-            .crossfade(true)
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(context.cacheDir.resolve("image_cache"))
-                    .build()
-            }
-            .components {
-                // Add any custom components here if needed
-            }
-            .memoryCache {
-                MemoryCache.Builder(context)
-                    .maxSizePercent(0.5)
-                    .build()
-            }
-            .build()
+        val di by closestDI(context)
+        val imageLoader : ImageLoader by di.instance()
+        imageLoader
     }
 
     /**

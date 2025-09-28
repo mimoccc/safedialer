@@ -15,11 +15,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
+import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.data.list.IListItem
-import org.mjdev.safedialer.data.model.TextMessageModel
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
-import org.mjdev.safedialer.extensions.MapFilter
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
 import java.util.Date
@@ -35,10 +35,10 @@ fun TabMessages(
         MainViewModel(DataRepository(context))
     }
     val messagesMap by viewModel.messagesMap.collectAsState(LinkedHashMap())
-    val filter: MapFilter<TextMessageModel> = remember {
+    val filter: MapFilter<MessageThread> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
-                i.displayName.contains(s, true)
+                i.displayName?.contains(s, true) ?: false
             }.groupBy { c ->
                 Date(c.date).let {
                     "${it.date}.${it.month + 1}.${it.year + 1900}"
@@ -53,14 +53,12 @@ fun TabMessages(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MappedList(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
+            modifier = Modifier.fillMaxSize(),
             mapData = messagesMap,
             showDate = true,
             scrollState = scrollState,
             filterText = filterText,
-            filter = filter as MapFilter<IListItem>
+            filter = filter as MapFilter<Entity>
         )
     }
 }

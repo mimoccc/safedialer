@@ -13,7 +13,7 @@ abstract class HrefListProperty(
         @Deprecated("hrefs is no longer mutable.", level = DeprecationLevel.ERROR)
         fun create(parser: XmlPullParser, list: HrefListProperty): HrefListProperty {
             val hrefs = list.hrefs.toMutableList()
-            XmlReader(parser).readTextPropertyList(DavResource.Companion.HREF, hrefs)
+            XmlReader(parser).readTextPropertyList(DavResource.HREF, hrefs)
             return list
         }
 
@@ -24,7 +24,7 @@ abstract class HrefListProperty(
             ) -> PropertyType
         ): PropertyType {
             val hrefs = mutableListOf<String>()
-            XmlReader(parser).readTextPropertyList(DavResource.Companion.HREF, hrefs)
+            XmlReader(parser).readTextPropertyList(DavResource.HREF, hrefs)
             return constructor(hrefs)
         }
     }

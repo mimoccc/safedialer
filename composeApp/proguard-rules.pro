@@ -1,5 +1,4 @@
 -ignorewarnings
--keep class * { *; }
 -dontwarn com.aayushatharva.brotli4j.Brotli4jLoader
 -dontwarn com.aayushatharva.brotli4j.decoder.DecoderJNI$Status
 -dontwarn com.aayushatharva.brotli4j.decoder.DecoderJNI$Wrapper
@@ -274,3 +273,11 @@
 -dontwarn ch.qos.logback.classic.servlet.**
 -dontwarn freemarker.log._Log4jLoggerFactory$Log4jLogger
 -dontwarn freemarker.ext.jsp.FreeMarkerJspFactory21
+
+-keep class * { *; }
+-keep class org.mjdev.safedialer.providers.** { *; }
+
+-keepclassmembers enum org.mjdev.safedialer.providers.** {
+    public static <fields>;
+    public static <methods>;
+}

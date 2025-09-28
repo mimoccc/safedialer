@@ -13,7 +13,6 @@ import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
 import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
-import android.util.Log
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -23,7 +22,6 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.dao.DAO
-import org.mjdev.safedialer.data.model.MetaData
 import org.mjdev.safedialer.service.calls.CallListener
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.CommandReceiver
@@ -84,13 +82,13 @@ class IncomingCallService :
             serviceStop(true)
         }
         // todo ?
-        runCatching {
-            dao.meta.clear()
-            dao.meta.add(MetaData("test", "test"))
-            dao.meta.asList<MetaData>().forEach { o ->
-                Log.d("DAO", o.toString())
-            }
-        }
+//        runCatching {
+//            dao.meta.clear()
+//            dao.meta.add(MetaData("test", "test"))
+//            dao.meta.asList<MetaData>().forEach { o ->
+//                Log.d("DAO", o.toString())
+//            }
+//        }
     }
 
     override fun onDestroy() {

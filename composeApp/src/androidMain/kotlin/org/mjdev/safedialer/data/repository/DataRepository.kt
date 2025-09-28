@@ -1,197 +1,167 @@
 package org.mjdev.safedialer.data.repository
 
 import android.content.Context
-import android.net.Uri
-import android.provider.CallLog
-import android.provider.ContactsContract
-import android.provider.ContactsContract.CommonDataKinds.Phone.CONTACT_ID
-import android.provider.Telephony
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
-import org.mjdev.safedialer.R
-import org.mjdev.safedialer.data.enums.CallType
-import org.mjdev.safedialer.data.lists.CallLogList
-import org.mjdev.safedialer.data.lists.ContactList
-import org.mjdev.safedialer.data.lists.EmailMessageList
-import org.mjdev.safedialer.data.lists.TextMessagesList
-import org.mjdev.safedialer.data.model.CallModel
-import org.mjdev.safedialer.data.model.ContactModel
-import org.mjdev.safedialer.data.model.EmailMessageModel
-import org.mjdev.safedialer.data.model.TextMessageModel
-import org.mjdev.safedialer.data.repository.base.DataRepositoryUtils.findContactByPhone
-import org.mjdev.safedialer.data.repository.base.DataRepositoryUtils.findContactBySender
+import kotlinx.coroutines.flow.stateIn
+import org.kodein.di.instance
+import org.mjdev.safedialer.data.custom.Message
+import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.data.custom.MessageType
 import org.mjdev.safedialer.data.repository.base.IDataRepository
-import org.mjdev.safedialer.extensions.CursorFlow.cursorFlow
-import org.mjdev.safedialer.extensions.CustomExt.SMS_URI
-import org.mjdev.safedialer.helpers.Cache
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_BODY
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_CREATED_AT_MILLIS
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_ID
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_IS_DELETED
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_IS_FLAGGED
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_MAILBOX_NAME
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_RECIPIENTS_CSV
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_SENDER_EMAIL
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_SENDER_NAME
-import org.mjdev.safedialer.sync.emails.ProviderEmails.Companion.MAIL_ITEM_SUBJECT
-import android.provider.CallLog.Calls.DATE as CALL_DATE
-import android.provider.CallLog.Calls.DURATION as CALL_DURATION
-import android.provider.CallLog.Calls.NUMBER as CALL_NUMBER
-import android.provider.CallLog.Calls.TYPE as CALL_TYPE
-import android.provider.CallLog.Calls._ID as CALL_ID
-import android.provider.ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME as CONTACT_DISPLAY_NAME
-import android.provider.ContactsContract.CommonDataKinds.Phone.NUMBER as CONTACT_NUMBER
-import android.provider.ContactsContract.CommonDataKinds.Phone.PHOTO_THUMBNAIL_URI as CONTACT_PHOTO_THUMBNAIL_URI
-import android.provider.ContactsContract.CommonDataKinds.Phone.PHOTO_URI as CONTACT_PHOTO_URI
+import org.mjdev.safedialer.providers.android.calllog.CallsProvider
+import org.mjdev.safedialer.providers.android.contacts.ContactsProvider
+import org.mjdev.safedialer.providers.android.telephony.Mms
+import org.mjdev.safedialer.providers.android.telephony.Sms
+import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
+import org.mjdev.safedialer.providers.custom.email.EmailsProvider
+import java.text.SimpleDateFormat
+import java.util.Date
 
 @Suppress("UNCHECKED_CAST", "DEPRECATION")
 class DataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
-    cache: Cache = Cache(),
-) : IDataRepository(context, scope, cache) {
+) : IDataRepository(context, scope) {
+    val sdf = SimpleDateFormat("dd.MM.yyyy")
 
-    override fun getContacts(): Flow<List<ContactModel>> = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI
-    ) { _, cursor ->
-        ContactList().apply {
-            val idIndex = cursor.getColumnIndex(CONTACT_ID)
-            val nameIndex = cursor.getColumnIndex(CONTACT_DISPLAY_NAME)
-            val numberIndex = cursor.getColumnIndex(CONTACT_NUMBER)
-            val photoUriIndex = cursor.getColumnIndex(CONTACT_PHOTO_URI)
-            val photoThumbNailIndex = cursor.getColumnIndex(CONTACT_PHOTO_THUMBNAIL_URI)
-            while (cursor.moveToNext()) {
-                val phoneNum = cursor.getString(numberIndex)
-                ContactModel(
-                    contactId = cursor.getString(idIndex),
-                    displayName = cursor.getString(nameIndex),
-                    phoneNumber = phoneNum,
-                    photoThumbnailUri = cursor.getString(photoThumbNailIndex),
-                    photoUri = cursor.getString(photoUriIndex),
-                    isBlocked = false, // todo
-                ).also { contact ->
-                    add(contact)
-                }
-            }
-        }.filter { pn ->
-            pn.displayName.isNotBlank() && pn.phoneNumber.isNotBlank()
-        }.distinctBy { contact ->
+    val contactsProvider: ContactsProvider by instance()
+    val callsProvider: CallsProvider by instance()
+    val telephonyProvider: TelephonyProvider by instance()
+    val emailsProvider: EmailsProvider by instance()
+
+    val contacts = providerObserver(contactsProvider) {
+        getContacts()?.getList()?.filter { pn ->
+            pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
+        }?.mergeBy { contact ->
             contact.contactId
-        }.sortedBy { contact ->
+        }?.sortedBy { contact ->
             contact.displayName
-        }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(scope, Eagerly, 1)
+        } ?: emptyList()
+    }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
 
-    override fun getCalls(): Flow<List<CallModel>> = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = CallLog.Calls.CONTENT_URI
-    ) { _, cursor ->
-        CallLogList().apply {
-            val idIndex = cursor.getColumnIndex(CALL_ID)
-            val numberIndex = cursor.getColumnIndex(CALL_NUMBER)
-            val typeIndex = cursor.getColumnIndex(CALL_TYPE)
-            val dateIndex = cursor.getColumnIndex(CALL_DATE)
-            val durationIndex = cursor.getColumnIndex(CALL_DURATION)
-            while (cursor.moveToNext()) {
-                val phoneNumber = cursor.getString(numberIndex)
-                CallModel(
-                    callId = cursor.getString(idIndex),
-                    phoneNumber = phoneNumber,
-                    type = CallType(Integer.parseInt(cursor.getString(typeIndex))),
-                    date = cursor.getString(dateIndex).toLong(),
-                    duration = cursor.getString(durationIndex).toLong(),
-                    contact = findContactByPhone(phoneNumber),
-                    // details = contact.details, // todo
-                ).also { call ->
-                    add(call)
-                }
+    val calls = contacts.combine(providerObserver(callsProvider) {
+        getCalls()?.getList()?.filter { call ->
+            call.name.isNotNBlank() && call.number.isNotNBlank()
+        } ?: emptyList()
+    }) { lastContacts, callList ->
+        callList.map { call ->
+            call.contact = lastContacts.firstOrNull { c ->
+                Log.d(TAG, "${c.phone} == ${call.number}")
+                c.phone.removeWhites() == call.number.removeWhites()
             }
-        }.sortedByDescending { pn ->
-            pn.date
-        }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(scope, Eagerly, 1)
+            call
+        }.sortedByDescending { call -> call.callDate }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override fun getTextMessages(): Flow<List<TextMessageModel>> = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = SMS_URI
-    ) { _, cursor ->
-        TextMessagesList().apply {
-            while (cursor.moveToNext()) {
-                val idIndex = cursor.getColumnIndex(Telephony.Sms._ID)
-                val numberIndex = cursor.getColumnIndex(Telephony.Sms.ADDRESS)
-                val dateIndex = cursor.getColumnIndex(Telephony.Sms.DATE_SENT)
-                val phoneNumber = cursor.getString(numberIndex)
-                TextMessageModel(
-                    smsId = cursor.getString(idIndex),
-                    phoneNumber = phoneNumber,
-                    contact = findContactByPhone(phoneNumber),
-                    date = cursor.getString(dateIndex).toLong(),
-                ).also { m ->
-                    add(m)
-                }
+    val contactsMap = contacts.map { cl ->
+        cl.groupBy { c ->
+            c.displayName?.firstOrNull()?.uppercase() ?: ""
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val callsMap = calls.map { cl ->
+        cl.groupBy { c ->
+            Date(c.callDate).let {
+                "${it.date}.${it.month + 1}.${it.year + 1900}"
             }
-        }.sortedByDescending { m ->
-            m.date
         }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override fun getEmails(): Flow<List<EmailMessageModel>> = cursorFlow(
-        context = context,
-        cache = cache,
-        uri = Uri.parse("content://" + context.getString(R.string.authority_emails))
-    ) { _, cursor ->
-        EmailMessageList().apply {
-            val idxIndex = cursor.getColumnIndex(MAIL_ITEM_ID)
-            val idxDate = cursor.getColumnIndex(MAIL_ITEM_CREATED_AT_MILLIS)
-            val idxBody = cursor.getColumnIndex(MAIL_ITEM_BODY)
-            val idxDeleted = cursor.getColumnIndex(MAIL_ITEM_IS_DELETED)
-            val idxFlagged = cursor.getColumnIndex(MAIL_ITEM_IS_FLAGGED)
-            val idxBoxName = cursor.getColumnIndex(MAIL_ITEM_MAILBOX_NAME)
-            val idxRecipients = cursor.getColumnIndex(MAIL_ITEM_RECIPIENTS_CSV)
-            val idxSenderEmail = cursor.getColumnIndex(MAIL_ITEM_SENDER_EMAIL)
-            val idxSenderName = cursor.getColumnIndex(MAIL_ITEM_SENDER_NAME)
-            val idxSubject = cursor.getColumnIndex(MAIL_ITEM_SUBJECT)
-            while (cursor.moveToNext()) {
-                val senderEmail = cursor.getString(idxSenderEmail)
-                val senderName = cursor.getString(idxSenderName)
-                EmailMessageModel(
-                    id = cursor.getLong(idxIndex),
-                    date = cursor.getLong(idxDate),
-                    subject = cursor.getString(idxSubject),
-                    body = cursor.getString(idxBody),
-                    phoneNumber = senderEmail,
-                    senderEmail = senderEmail,
-                    senderName = senderName,
-                    displayName = senderName,
-                    recipients = cursor.getString(idxRecipients).split(","),
-                    mailboxName = cursor.getString(idxBoxName),
-                    isDeleted = cursor.getString(idxDeleted).toBoolean(),
-                    isFlagged = cursor.getString(idxFlagged).toBoolean(),
-                    contact = findContactBySender(senderEmail, senderName),
-                ).also { email ->
-                    add(email)
+    val smsThreads = providerObserver(telephonyProvider) {
+        getSms(TelephonyProvider.Filter.ALL)?.getList() ?: emptyList()
+    }.map { smsList ->
+        smsList.groupBy { it.threadId }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val mmsThreads = providerObserver(telephonyProvider) {
+        getMms(TelephonyProvider.Filter.ALL)?.getList() ?: emptyList()
+    }.map { mmsList ->
+        mmsList.groupBy { it.threadId }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val messageThreads: Flow<Map<Long, List<MessageThread>>> = contacts.combine(
+        smsThreads.combine(mmsThreads) { smsMap, mmsMap ->
+            Pair(smsMap, mmsMap)
+        }
+    ) { contactsList, pair ->
+        val smsMap = pair.first
+        val mmsMap = pair.second
+        val result = mutableMapOf<Long, List<MessageThread>>()
+        val allThreadIds = (smsMap.keys.map { it.toLong() } + mmsMap.keys).toSet()
+        for (threadId in allThreadIds) {
+            val smsList = smsMap[threadId.toInt()] ?: emptyList()
+            val mmsList = mmsMap[threadId] ?: emptyList()
+            val combined = (
+                smsList.map { Message(type = MessageType.SMS, message = it) } +
+                mmsList.map { Message(type = MessageType.MMS, message = it) }
+            )
+            val senderContact = when (val firstMsg = combined.firstOrNull()?.message) {
+                is Sms -> contactsList.firstOrNull { contact ->
+                    val phone = contact.phone?.removeWhites() ?: ""
+                    val normalized = contact.normalizedPhone?.removeWhites() ?: ""
+                    val msgAddress = firstMsg.address?.removeWhites() ?: ""
+                    phone == msgAddress || normalized == msgAddress
                 }
+                is Mms -> null 
+                else -> null
             }
-        }.sortedByDescending { pn ->
-            pn.date
+            val date = (combined.maxOfOrNull {
+                when (it.message) {
+                    is Sms -> it.message.receivedDate
+                    is Mms -> it.message.receivedDate
+                    else -> 0L
+                }
+            } ?: 0L)
+            result[threadId] = listOf(
+                MessageThread(
+                    id = threadId,
+                    contact = senderContact,
+                    messages = combined,
+                    date = date,
+                    lastMessage = combined.lastOrNull()
+                )
+            )
         }
-    }.flowOn(
-        Dispatchers.IO
-    ).shareIn(scope, Eagerly, 1)
+        result
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
+    val messagesMap = messageThreads.map { map ->
+        map.values.flatten().groupBy { mt ->
+            sdf.format(Date(mt.date))
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val emails = providerObserver(emailsProvider) {
+        getEmails()?.getList() ?: emptyList()
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val emailsMap = emails.map { list ->
+        list.groupBy { em ->
+            sdf.format(Date(em.createdAtMillis))
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    fun String?.isNotNBlank(): Boolean =
+        this?.isNotBlank() ?: false
+
+    fun String?.removeWhites(): String =
+        this?.replace(Regex("\\s+"), "") ?: ""
+
+    // todo some more intelligent solution
+    fun <T, K> Iterable<T>.mergeBy(
+        selector: (T) -> K
+    ): List<T> = distinctBy(selector)
+
+    companion object {
+        val TAG: String = DataRepository::class.java.simpleName
+    }
 }

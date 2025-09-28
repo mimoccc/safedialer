@@ -2,11 +2,11 @@ package org.mjdev.safedialer.navigation
 
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Mail
-import androidx.compose.material.icons.filled.Message
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,7 +36,7 @@ enum class Tabs(
     ),
     Messages(
         title = "Messages",
-        icon = Icons.Default.Message,
+        icon = Icons.AutoMirrored.Filled.Message,
         content = { ss, ft ->
             TabMessages(ss, ft)
         }

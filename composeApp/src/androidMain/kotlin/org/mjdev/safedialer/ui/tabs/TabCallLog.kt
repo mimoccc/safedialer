@@ -13,11 +13,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.data.list.IListItem
-import org.mjdev.safedialer.data.model.CallModel
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
-import org.mjdev.safedialer.extensions.MapFilter
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.providers.android.calllog.Call
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
 import java.util.Date
@@ -32,13 +32,13 @@ fun TabCallLog(
     val viewModel by rememberViewModelSafe { context ->
         MainViewModel(DataRepository(context))
     }
-    val callLogMap by viewModel.callLogMap.collectAsState(LinkedHashMap())
-    val filter: MapFilter<CallModel> = remember {
+    val callsMap by viewModel.callsMap.collectAsState(LinkedHashMap())
+    val filter: MapFilter<Call> = remember {
         { m, s ->
             m.values.flatten().filter { item ->
-                item.displayName.contains(s, true)
+                item.name?.contains(s, true) ?: false
             }.groupBy { c ->
-                Date(c.date).let {
+                Date(c.callDate).let {
                     "${it.date}.${it.month + 1}.${it.year + 1900}"
                 }
             }
@@ -50,11 +50,11 @@ fun TabCallLog(
     ) {
         MappedList(
             modifier = Modifier.fillMaxSize(),
-            mapData = callLogMap,
+            mapData = callsMap,
             showDate = true,
             scrollState = scrollState,
             filterText = filterText,
-            filter = filter as MapFilter<IListItem>
+            filter = filter as MapFilter<Entity>
         )
     }
 }

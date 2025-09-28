@@ -1,71 +1,85 @@
 package org.mjdev.safedialer.data.repository.base
 
-import org.mjdev.safedialer.data.model.ContactModel
 
 object DataRepositoryUtils {
 
-    private fun createContact(caller: String?): ContactModel = ContactModel(
-        displayName = caller ?: "",
-        phoneNumber = caller ?: "",
-    )
+//    fun IDataRepository.findContactByPhone(
+//        caller: String?
+//    ): kotlinx.coroutines.flow.Flow<ContactModel> {
+//        val phone = runCatching {
+//            pnu.parse(caller, null)
+//        }.getOrNull()?.nationalNumber?.toString()
+//        return rawContacts.map { allContacts ->
+//            when {
+//                phone == null -> createContact(caller)
+//                else -> {
+//                    val found: List<ContactModel> = allContacts.filter { entry ->
+//                        val hasPhone = entry.phone?.contains(phone, true) ?: false
+//                        val hsName = entry.displayName?.contains(phone, true) ?: false
+//                        hasPhone || hsName
+//                    }.map { contact ->
+//                        ContactModel(
+//                            contactId = contact.id,
+//                            displayName = contact.displayName ?: "",
+//                            phoneNumber = contact.phone ?: "",
+//                            photoThumbnailUri = contact.uriPhoto,
+//                            photoUri = contact.uriPhoto,
+//                            isBlocked = false, // todo
+//                        )
+//                    }
+//                    found.let { cts ->
+//                        when {
+//                            cts.isEmpty() -> createContact(phone)
+//                            (cts.size == 1) -> found.first()
+//                            else -> cts.firstOrNull { fc ->
+//                                fc.phoneNumber.removeWhites().contentEquals(phone, true)
+//                            } ?: createContact(phone)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-    fun IDataRepository.findContactByPhone(
-        caller: String?
-    ): ContactModel {
-        val phone = runCatching {
-            pnu.parse(caller, null)
-        }.getOrNull()?.nationalNumber?.toString()
-        return when {
-            phone == null -> createContact(caller)
-            else -> {
-                val found: List<ContactModel> = contactSearchMap.filter { entry ->
-                    entry.key.contains(phone, true) ||
-                            entry.value.displayName.contains(phone, true)
-                }.map { entry ->
-                    entry.value
-                }
-                found.let { fphones ->
-                    when {
-                        fphones.isEmpty() -> createContact(caller)
-                        (fphones.size == 1) -> found.first()
-                        else -> fphones.firstOrNull { fp ->
-                            fp.phoneNumber.removeWhites().contentEquals(phone, true)
-                        } ?: createContact(caller)
-                    }
-                }
-            }
-        }
-    }
+//    fun IDataRepository.findContactBySender(
+//        email: String?,
+//        senderName: String?
+//    ): kotlinx.coroutines.flow.Flow<ContactModel> {
+//        val sender = email ?: senderName
+//        return rawContacts.map { allContacts ->
+//            when {
+//                sender == null -> createContact(sender)
+//                else -> {
+//                    val found: List<ContactModel> = allContacts.filter { entry ->
+//                        val hasEmail = entry.email?.contains(sender, true) ?: false
+//                        val hasName = entry.displayName?.contentEquals(senderName, true) ?: false
+//                        hasEmail || hasName
+//                    }.map { contact ->
+//                        ContactModel(
+//                            contactId = contact.id,
+//                            displayName = contact.displayName ?: "",
+//                            phoneNumber = contact.phone ?: "",
+//                            photoThumbnailUri = contact.uriPhoto,
+//                            photoUri = contact.uriPhoto,
+//                            isBlocked = false, // todo
+//                        )
+//                    }
+//                    found.let { cts ->
+//                        when {
+//                            cts.isEmpty() -> createContact(sender)
+//                            (cts.size == 1) -> found.first()
+//                            else -> cts.firstOrNull { fp ->
+//                                // todo
+//                                fp.phoneNumber.removeWhites().contentEquals(sender, true)
+//                            } ?: createContact(sender)
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
 
-    fun IDataRepository.findContactBySender(
-        email: String?,
-        senderName: String?
-    ): ContactModel {
-        val sender = email ?: senderName
-        return when {
-            sender == null -> createContact(sender)
-            else -> {
-                val found: List<ContactModel> = contactSearchMap.filter { entry ->
-                    entry.value.emails.any { email ->
-                        email.contains(email, true)
-                    } || entry.value.displayName.contentEquals(senderName, true)
-                }.map { entry ->
-                    entry.value
-                }
-                found.let { fphones ->
-                    when {
-                        fphones.isEmpty() -> createContact(sender)
-                        (fphones.size == 1) -> found.first()
-                        else -> fphones.firstOrNull { fp ->
-                            fp.phoneNumber.removeWhites().contentEquals(sender, true)
-                        } ?: createContact(sender)
-                    }
-                }
-            }
-        }
-    }
-
-    private fun String.removeWhites() = replace("-", "")
-        .replace(" ", "")
-        .trim()
+//    private fun String.removeWhites() = replace("-", "")
+//        .replace(" ", "")
+//        .trim()
 }

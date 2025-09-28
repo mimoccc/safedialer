@@ -8,7 +8,9 @@ enum class ServiceCommand {
     Stop;
 
     companion object {
-        operator fun invoke(command: String): ServiceCommand? {
+        operator fun invoke(
+            command: String
+        ): ServiceCommand? {
             return entries.find { it.name.equals(command, ignoreCase = true) }
         }
     }

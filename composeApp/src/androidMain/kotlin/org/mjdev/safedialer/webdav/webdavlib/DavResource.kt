@@ -445,8 +445,8 @@ open class DavResource @JvmOverloads constructor(
             while (!(eventType == XmlPullParser.END_TAG && parser.depth == depth)) {
                 if (eventType == XmlPullParser.START_TAG && parser.depth == depth + 1)
                     when (parser.propertyName()) {
-                        org.mjdev.safedialer.webdav.webdavlib.Response.Companion.RESPONSE ->
-                            org.mjdev.safedialer.webdav.webdavlib.Response.Companion.parse(parser, location, callback)
+                        org.mjdev.safedialer.webdav.webdavlib.Response.RESPONSE ->
+                            org.mjdev.safedialer.webdav.webdavlib.Response.parse(parser, location, callback)
                         SyncToken.NAME ->
                             XmlReader(parser).readText()?.let {
                                 responseProperties += SyncToken(it)
@@ -461,7 +461,7 @@ open class DavResource @JvmOverloads constructor(
             var eventType = parser.eventType
             while (eventType != XmlPullParser.END_DOCUMENT) {
                 if (eventType == XmlPullParser.START_TAG && parser.depth == 1)
-                    if (parser.propertyName() == org.mjdev.safedialer.webdav.webdavlib.Response.Companion.MULTISTATUS)
+                    if (parser.propertyName() == org.mjdev.safedialer.webdav.webdavlib.Response.MULTISTATUS)
                         return parseMultiStatus()
                 eventType = parser.next()
             }

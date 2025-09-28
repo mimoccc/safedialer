@@ -3,6 +3,7 @@
     ExperimentalKotlinGradlePluginApi::class
 )
 
+import ProjectPlugin.Companion.credentialsMap
 import com.android.build.api.dsl.VariantDimension
 import org.gradle.api.JavaVersion.VERSION_17
 import org.jetbrains.compose.ExperimentalComposeLibrary
@@ -11,7 +12,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
 import org.gradle.kotlin.dsl.kotlin
-import ProjectPlugin.Companion.credentialsMap
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
