@@ -1,7 +1,10 @@
 package org.mjdev.safedialer.providers.custom.email
 
 import android.net.Uri
+import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.core.Entity.CompanionWithUri
+import org.mjdev.safedialer.providers.core.IgnoreMapping
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.sync.emails.ProviderEmails
 
@@ -64,7 +67,10 @@ data class MailItem(
         ProviderEmails.MAIL_ITEM_IS_FLAGGED,
         FieldMapping.PhysicalType.Boolean
     )
-    val isFlagged: Boolean = false
+    val isFlagged: Boolean = false,
+
+    @IgnoreMapping
+    val contact : Contact? = null
 ) : Entity() {
     companion object : CompanionWithUri {
         override val uri = Uri.EMPTY

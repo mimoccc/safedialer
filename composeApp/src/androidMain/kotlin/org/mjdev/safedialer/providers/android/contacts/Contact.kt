@@ -53,13 +53,13 @@ data class Contact(
         columnName = Email.ADDRESS,
         physicalType = FieldMapping.PhysicalType.String
     )
-    var email: String? = null
+    var emails: List<String?>? = null
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping
         override val uri: Uri = Phone.CONTENT_URI
 
-//        @IgnoreMapping
-//        val uriEmail: Uri = Email.CONTENT_URI
+        @IgnoreMapping
+        val uriEmail: Uri = Email.CONTENT_URI
     }
 }

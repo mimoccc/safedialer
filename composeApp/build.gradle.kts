@@ -98,6 +98,10 @@ kotlin {
             implementation(libs.jakarta.mail)
             implementation(libs.jakarta.activation)
             implementation(libs.ez.vcard)
+            implementation("org.bouncycastle:bcprov-jdk18on:1.78")
+            implementation("org.bouncycastle:bcpg-jdk18on:1.78")
+            implementation("org.bouncycastle:bcmail-jdk18on:1.78")
+            implementation("org.bouncycastle:bcpkix-jdk18on:1.78")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -156,6 +160,7 @@ android {
     }
     packaging {
         resources {
+            excludes += "META-INF/mailcap"
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
             excludes += "/META-INF/DEPENDENCIES"
             excludes += "/META-INF/LICENSE"

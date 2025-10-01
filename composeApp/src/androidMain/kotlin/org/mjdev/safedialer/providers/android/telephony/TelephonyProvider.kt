@@ -17,7 +17,7 @@ class TelephonyProvider(context: Context) : AbstractProvider(context) {
         DRAFT
     }
 
-    fun getSms(filter: Filter): Data<Sms>? {
+    fun getSms(filter: Filter): List<Sms>? {
         val uri = when (filter) {
             Filter.ALL -> Sms.uri
             Filter.INBOX -> Sms.uriInbox
@@ -25,10 +25,10 @@ class TelephonyProvider(context: Context) : AbstractProvider(context) {
             Filter.SENT -> Sms.uriSent
             Filter.DRAFT -> Sms.uriDraft
         }
-        return getContentTableData(uri, Sms::class.java)
+        return getContentTableData(uri, Sms::class.java)?.getList()
     }
 
-    fun getMms(filter: Filter): Data<Mms>? {
+    fun getMms(filter: Filter): List<Mms>? {
         val uri = when (filter) {
             Filter.ALL -> Mms.uri
             Filter.INBOX -> Mms.uriInbox
@@ -36,12 +36,15 @@ class TelephonyProvider(context: Context) : AbstractProvider(context) {
             Filter.SENT -> Mms.uriSent
             Filter.DRAFT -> Mms.uriDraft
         }
-        return getContentTableData(uri, Mms::class.java)
+        return getContentTableData(uri, Mms::class.java)?.getList()
     }
 
-    fun getConversations(): Data<Conversation>? =
-        getContentTableData(Conversation.uri, Conversation::class.java)
+    fun getConversations(): List<Conversation>? =
+        getContentTableData(Conversation.uri, Conversation::class.java)?.getList()
 
-    fun getThreads(): Data<Thread>? = getContentTableData(Thread.uri, Thread::class.java)
-    fun getCarriers(): Data<Carrier>? = getContentTableData(Carrier.uri, Carrier::class.java)
+    fun getThreads(): List<Thread>? =
+        getContentTableData(Thread.uri, Thread::class.java)?.getList()
+
+    fun getCarriers(): List<Carrier>? =
+        getContentTableData(Carrier.uri, Carrier::class.java)?.getList()
 }

@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.app.MainApp.Companion.mainDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Entity
 import kotlin.reflect.full.companionObjectInstance
@@ -22,7 +23,7 @@ abstract class IDataRepository(
     val context: Context,
     val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : DIAware {
-    override val di: DI by closestDI(context)
+    override val di: DI = closestDI(context) { mainDI(context) }
 
     inline fun <reified E : AbstractProvider, reified T : Entity> providerObserver(
         provider: E,
@@ -45,7 +46,7 @@ abstract class IDataRepository(
             }
         }
         runCatching {
-            if(uri != Uri.EMPTY) {
+            if (uri != Uri.EMPTY) {
                 provider.registerContentObserver(uri, observer)
             } else {
                 Log.e(TAG, "Got empty uri. No observer registered.")

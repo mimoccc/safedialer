@@ -10,15 +10,15 @@ import kotlin.jvm.java
 class EmailsProvider(
     context: Context
 ) : AbstractProvider(context) {
-    fun getMailFolders(): Data<MailFolder>? {
+    fun getMailFolders(): List<MailFolder>? {
         val uri = Uri.parse("content://" + context.getString(R.string.authority_emails))
         val emails: Data<MailFolder>? = getContentTableData(uri, MailFolder::class.java)
-        return emails
+        return emails?.getList()
     }
 
-    fun getEmails(): Data<MailItem>? {
+    fun getEmails(): List<MailItem>? {
         val uri = Uri.parse("content://" + context.getString(R.string.authority_emails))
         val emails: Data<MailItem>? = getContentTableData(uri, MailItem::class.java)
-        return emails
+        return emails?.getList()
     }
 }

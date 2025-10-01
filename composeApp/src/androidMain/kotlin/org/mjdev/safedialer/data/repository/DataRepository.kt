@@ -1,7 +1,6 @@
 package org.mjdev.safedialer.data.repository
 
 import android.content.Context
-import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,11 +17,13 @@ import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.data.custom.MessageType
 import org.mjdev.safedialer.data.repository.base.IDataRepository
 import org.mjdev.safedialer.providers.android.calllog.CallsProvider
+import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.contacts.ContactsProvider
 import org.mjdev.safedialer.providers.android.telephony.Mms
 import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
 import org.mjdev.safedialer.providers.custom.email.EmailsProvider
+import org.mjdev.safedialer.providers.custom.email.MailItem
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -39,7 +40,7 @@ class DataRepository(
     val emailsProvider: EmailsProvider by instance()
 
     val contacts = providerObserver(contactsProvider) {
-        getContacts()?.getList()?.filter { pn ->
+        getContacts()?.filter { pn ->
             pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
         }?.mergeBy { contact ->
             contact.contactId
@@ -48,14 +49,15 @@ class DataRepository(
         } ?: emptyList()
     }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
 
-    val calls = contacts.combine(providerObserver(callsProvider) {
-        getCalls()?.getList()?.filter { call ->
-            call.name.isNotNBlank() && call.number.isNotNBlank()
-        } ?: emptyList()
-    }) { lastContacts, callList ->
+    val calls = contacts.combine(
+        providerObserver(callsProvider) {
+            getCalls()?.filter { call ->
+                call.name.isNotNBlank() && call.number.isNotNBlank()
+            } ?: emptyList()
+        }
+    ) { lastContacts, callList ->
         callList.map { call ->
             call.contact = lastContacts.firstOrNull { c ->
-                Log.d(TAG, "${c.phone} == ${call.number}")
                 c.phone.removeWhites() == call.number.removeWhites()
             }
             call
@@ -77,13 +79,13 @@ class DataRepository(
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     val smsThreads = providerObserver(telephonyProvider) {
-        getSms(TelephonyProvider.Filter.ALL)?.getList() ?: emptyList()
+        getSms(TelephonyProvider.Filter.ALL) ?: emptyList()
     }.map { smsList ->
         smsList.groupBy { it.threadId }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     val mmsThreads = providerObserver(telephonyProvider) {
-        getMms(TelephonyProvider.Filter.ALL)?.getList() ?: emptyList()
+        getMms(TelephonyProvider.Filter.ALL) ?: emptyList()
     }.map { mmsList ->
         mmsList.groupBy { it.threadId }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
@@ -101,9 +103,9 @@ class DataRepository(
             val smsList = smsMap[threadId.toInt()] ?: emptyList()
             val mmsList = mmsMap[threadId] ?: emptyList()
             val combined = (
-                smsList.map { Message(type = MessageType.SMS, message = it) } +
-                mmsList.map { Message(type = MessageType.MMS, message = it) }
-            )
+                    smsList.map { Message(type = MessageType.SMS, message = it) } +
+                            mmsList.map { Message(type = MessageType.MMS, message = it) }
+                    )
             val senderContact = when (val firstMsg = combined.firstOrNull()?.message) {
                 is Sms -> contactsList.firstOrNull { contact ->
                     val phone = contact.phone?.removeWhites() ?: ""
@@ -111,7 +113,8 @@ class DataRepository(
                     val msgAddress = firstMsg.address?.removeWhites() ?: ""
                     phone == msgAddress || normalized == msgAddress
                 }
-                is Mms -> null 
+
+                is Mms -> null
                 else -> null
             }
             val date = (combined.maxOfOrNull {
@@ -140,10 +143,21 @@ class DataRepository(
         }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    val emails = providerObserver(emailsProvider) {
-        getEmails()?.getList() ?: emptyList()
+    val emails = contacts.combine(providerObserver(emailsProvider) {
+        getEmails() ?: emptyList()
+    }) { lastContacts, emailList ->
+        emailList.map { email ->
+            email.copy(
+                contact = lastContacts.firstOrNull { c ->
+                    c.emails?.any { e ->
+                        e.removeWhites() == email.senderEmail.removeWhites()
+                    } ?: false
+                }
+            )
+        }.sortedByDescending { email -> email.createdAtMillis }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
+    // todo mail threads
     val emailsMap = emails.map { list ->
         list.groupBy { em ->
             sdf.format(Date(em.createdAtMillis))

@@ -3,27 +3,39 @@ package org.mjdev.safedialer.providers.android.contacts
 import android.annotation.TargetApi
 import android.content.ContentUris
 import android.content.Context
-import android.database.Cursor
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
-import android.provider.ContactsContract.CommonDataKinds.Email
-import android.provider.ContactsContract.CommonDataKinds.Phone
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Data
-import org.mjdev.safedialer.providers.core.IgnoreMapping
 import java.io.ByteArrayInputStream
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 class ContactsProvider(
     context: Context
 ) : AbstractProvider(context) {
-    fun getContacts(): Data<Contact>? {
-        val contactsNoEmail = getContentTableData(Contact.uri, Contact::class.java)
-//        val contactsWithEmail = getContentTableData(uriEmail, Contact::class.java)
-        return contactsNoEmail
+    fun getContacts(): List<Contact>? {
+        val contactsNoEmail = getContactsNoEmail()
+        val contactsWithEmail = getEmailContacts()
+        val emailContactsMap = contactsWithEmail?.associateBy {
+            it.contactId
+        } ?: emptyMap()
+        val mergedContacts = contactsNoEmail?.map { contact ->
+            contact.copy(
+                emails =  emailContactsMap[contact.contactId]?.emails
+            )
+        }
+        return mergedContacts
+    }
+
+    private fun getContactsNoEmail(): List<Contact>? {
+        return getContentTableData(Contact.uri, Contact::class.java)?.getList()
+    }
+
+    private fun getEmailContacts() : List<Contact>? {
+        return getContentTableData(Contact.uriEmail, Contact::class.java)?.getList()
     }
 
     fun getPhotoUri(

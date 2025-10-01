@@ -35,6 +35,9 @@ class MailClient(
     val pgpCertData: ByteArray = ByteArray(0),
     val pgpPassword: String = ""
 ) {
+    private val isPGPEnabled: Boolean
+        get() = pgpCertData.isNotEmpty() && pgpPassword.isNotEmpty()
+
     val mailFolders = flow {
         runCatching {
             listMailFolders().onSuccess { data ->
@@ -70,12 +73,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -131,12 +132,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -192,12 +191,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -256,12 +253,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -324,8 +319,17 @@ class MailClient(
         subject: String,
         body: String,
         context: Context? = null,
+        encrypt: Boolean = true
     ) = runCatching {
         Log.d(TAG, "Sending mail via SMTP server at $hostSmtp:$portSmtp")
+        val finalBody = if (encrypt && isPGPEnabled) {
+            try {
+                PGPHelper.encryptMessage(body, pgpCertData)
+            } catch (e: Exception) {
+                Log.e(TAG, "PGP encryption failed, sending plain: ${e.message}")
+                body
+            }
+        } else body
         val properties = Properties().apply {
             putAll(props)
             setProperty("mail.smtp.host", hostSmtp)
@@ -336,17 +340,14 @@ class MailClient(
                     setProperty("mail.smtp.ssl.enable", "true")
                     setProperty("mail.smtp.starttls.enable", "false")
                 }
-
                 587 -> {
                     setProperty("mail.smtp.ssl.enable", "false")
                     setProperty("mail.smtp.starttls.enable", "true")
                 }
-
                 25 -> {
                     setProperty("mail.smtp.ssl.enable", "false")
                     setProperty("mail.smtp.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.smtp.ssl.enable", "true")
                     setProperty("mail.smtp.starttls.enable", "true")
@@ -366,7 +367,7 @@ class MailClient(
                 addRecipient(Message.RecipientType.TO, InternetAddress(recipient))
             }
             setSubject(subject)
-            setContent(body, "text/html; charset=utf-8")
+            setContent(finalBody, "text/plain; charset=utf-8")
         }
         Transport.send(message)
         Log.d(TAG, "Mail sent successfully to ${to.joinToString(", ")}")
@@ -407,12 +408,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -455,12 +454,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -517,12 +514,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -572,12 +567,10 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
-
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
-
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -642,10 +635,17 @@ class MailClient(
     private fun extractTextFromPartSafe(
         part: Part
     ): String = runCatching {
-        extractTextFromPart(part)
+        val text = extractTextFromPart(part)
+        if (isPGPEnabled && text.contains("-----BEGIN PGP MESSAGE-----")) {
+            try {
+                PGPHelper.decryptMessage(text, pgpCertData, pgpPassword)
+            } catch (e: Exception) {
+                Log.e(TAG, "PGP decryption failed: ${e.message}")
+                text
+            }
+        } else text
     }.getOrElse {
         Log.e(TAG, "Failed to extract text from part: ${it.message}")
-        Log.e(TAG, it.message ?: "error", it)
         ""
     }
 
@@ -658,18 +658,15 @@ class MailClient(
             val inputStream = ByteArrayInputStream(bos.toByteArray())
             MimeMessage(part.session, inputStream)
         } else part
-
         when {
             contentPart.isMimeType("text/plain") -> {
                 (contentPart.content as? String) ?: ""
             }
-
             contentPart.isMimeType("text/html") -> {
                 (contentPart.content as? String)
                     ?.replace("<[^>]+>".toRegex(), " ")
                     ?: ""
             }
-
             contentPart.isMimeType("multipart/*") -> {
                 val mp = contentPart.content as? Multipart
                 if (mp != null) {
@@ -685,7 +682,6 @@ class MailClient(
                     }
                 } else ""
             }
-
             else -> {
                 contentPart.content as? String ?: ""
             }
