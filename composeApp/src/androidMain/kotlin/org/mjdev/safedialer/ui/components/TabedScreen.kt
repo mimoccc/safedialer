@@ -87,15 +87,12 @@ fun TabbedScreen(
     )
     TabsBottomBar(
         tabState = tabState,
+        shape = shape,
         modifier = Modifier
             .padding(2.dp)
             .fillMaxWidth()
             .clip(shape)
-            .border(
-                width = 2.dp,
-                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
-                shape = shape,
-            ).let { m ->
+            .let { m ->
                 if (useBlur) m.hazeChild(
                     state = hazeState,
                     shape = shape,
