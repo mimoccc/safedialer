@@ -41,8 +41,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
+import org.mjdev.safedialer.di.mainDI
 import org.slf4j.event.Level
 import java.net.Inet4Address
 import kotlin.time.Duration.Companion.seconds
@@ -52,7 +53,7 @@ class ManagementServer(
     val context: Context,
     val port: Int = 0,
 ) : DIAware {
-    override val di: DI by closestDI(context)
+    override val di: DI by context.closestDI { mainDI(context) }
 
     val connectivityManager by instance<ConnectivityManager>()
     val messageResponseFlow = MutableSharedFlow<String>()

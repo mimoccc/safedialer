@@ -8,41 +8,26 @@
 //import kotlinx.coroutines.flow.SharingStarted
 //import kotlinx.coroutines.flow.flow
 //import kotlinx.coroutines.flow.flowOn
+//import kotlinx.coroutines.flow.internal.NopCollector.emit
 //import kotlinx.coroutines.flow.shareIn
-//import org.mjdev.safedialer.data.enums.CallType
-//import org.mjdev.safedialer.data.lists.CallLogList
-//import org.mjdev.safedialer.data.lists.ContactList
-//import org.mjdev.safedialer.data.lists.EmailMessageList
-//import org.mjdev.safedialer.data.lists.TextMessagesList
-//import org.mjdev.safedialer.data.model.CallModel
-//import org.mjdev.safedialer.data.model.ContactModel
 //import org.mjdev.safedialer.data.repository.base.IDataRepository
-//import org.mjdev.safedialer.helpers.Cache
+//import org.mjdev.safedialer.providers.android.calllog.Call
+//import org.mjdev.safedialer.providers.android.contacts.Contact
 //
-//@Suppress("UNCHECKED_CAST", "DEPRECATION")
 //class DataRepository(
 //    context: Context,
 //    scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
-//    cache: Cache = Cache(),
-//) : IDataRepository(context, scope, cache) {
+//) : IDataRepository(context, scope) {
 //
-//    override fun getContacts(): Flow<ContactList> = flow {
-//        ContactList().apply {
-//            addAll(mockContacts)
-//        }.apply {
-//            emit(this)
-//        }
+//    val contacts: Flow<List<Contact>> = flow {
+//        emit(mockContacts)
 //    }.flowOn(Dispatchers.IO).shareIn(scope, SharingStarted.Eagerly, 1)
 //
-//    override fun getCalls(): Flow<CallLogList> = flow {
-//        CallLogList().apply {
-//            addAll(mockCalls)
-//        }.apply {
-//            emit(this)
-//        }
+//    val calls: Flow<List<Call>> = flow {
+//        emit(mockCalls)
 //    }.flowOn(Dispatchers.IO).shareIn(scope, SharingStarted.Eagerly, 1)
 //
-//    override fun getTextMessages(): Flow<TextMessagesList> = flow {
+//    val : Flow<TextMessagesList> = flow {
 //        TextMessagesList().apply {
 //            // todo
 //        }.apply {
@@ -64,31 +49,26 @@
 //
 //    companion object {
 //        val mockContacts = (1..8).map { idx ->
-//            ContactModel(
-//                phoneNumber = "+421 999 000 99$idx",
+//            Contact(
+//                phone = "+421 999 000 99$idx",
 //                displayName = "John Doe $idx",
-//                date = System.currentTimeMillis(),
+//                normalizedPhone = "+421 999 000 99$idx",
 //                contactId = idx.toLong(),
 //                id = idx.toLong(),
-//                photoThumbnailUri = "https://example.com/johndoe.jpg",
-//                photoUri = null,
-//                isBlocked = false,
-//                isDanger = false,
-//                isFine = true,
 //                emails = listOf("john.doe$idx@example.com"),
 //            )
 //        }
 //
 //        val mockCalls = (1..8).map { idx ->
-//            CallModel(
-//                "+421 999 000 99$idx",
-//                System.currentTimeMillis(),
-//                idx.toLong(),
-//                idx.toLong(),
-//                1200,
-//                CallType.INCOMING,
-//                mockContacts.firstOrNull { fc -> fc.phoneNumber == "+421 999 000 999" },
-//                ""
+//            Call(
+//                id = idx.toLong(),
+//                name = "John Doe $idx",
+//                callDate = System.currentTimeMillis(),
+//                duration = 1000,
+//                isRead = false,
+//                number = "+421 999 000 99$idx",
+//                type = Call.CallType.INCOMING,
+//                contact = mockContacts.firstOrNull { fc -> fc.phone == "+421 999 000 99$idx" },
 //            )
 //        }
 //    }

@@ -58,10 +58,12 @@ class ContactDetails(
     val phoneNumber: String? = "+420702568909",
 ) {
     companion object {
+        // todo
         @Composable
-        fun rememberContactDetails(phoneNumber: String? = "+420702568909") =
-            remember(phoneNumber) {
-                ContactDetails(phoneNumber)
-            }
+        fun rememberContactDetails(
+            phoneNumber: String? = "+420702568909"
+        ) = remember(phoneNumber) {
+            ContactDetails(phoneNumber)
+        }
     }
 }

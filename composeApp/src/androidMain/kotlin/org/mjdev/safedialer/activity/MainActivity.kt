@@ -12,9 +12,10 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.compose.withDI
 import org.kodein.di.instance
+import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.helpers.Previews
@@ -26,11 +27,13 @@ import org.mjdev.safedialer.ui.theme.AppTheme
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity(), DIAware {
-    override val di by closestDI()
+    override val di by closestDI { mainDI(this) }
 
     private val permissions by instance<Array<String>>("permissions")
     private val options by instance<Permissions.Options>("permissionOptions")
     private val preferencesManager by instance<PreferencesManager>()
+
+    // todo translations
     private val rationale = "Prosím povolte přístup k telefonním císlum, " +
             "abychom mohli sledovat prichozí hovory."
     private val wasPermissionsGranted

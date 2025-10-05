@@ -24,11 +24,11 @@ class ProjectPlugin : BasePlugin() {
     }
 
     override fun Project.registerTasks() {
-//        registerTask<TaskSiteBuild>()
+        registerTask<TaskSiteBuild>()
         registerTask<TaskDeleteTemporaryFiles>()
-//        registerTask<TaskUpdateSiteData>()
-//        registerTask<TaskGenerateChangelog>()
-//        registerTask<TaskGenerateScreenshots>()
+        registerTask<TaskUpdateSiteData>()
+        registerTask<TaskGenerateChangelog>()
+        registerTask<TaskGenerateScreenshots>()
     }
 
     override fun Project.onBeforeEvaluate() {
@@ -37,18 +37,18 @@ class ProjectPlugin : BasePlugin() {
     override fun Project.onAfterEvaluate() {
         buildTask {
             finalizedByTask(
-//                TaskGenerateChangelog::class,
-//                TaskUpdateSiteData::class,
-//                TaskGenerateScreenshots::class,
-//                TaskSiteBuild::class
+                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
             )
         }
         assembleTask {
             finalizedByTask(
-//                TaskGenerateChangelog::class,
-//                TaskUpdateSiteData::class,
-//                TaskGenerateScreenshots::class,
-//                TaskSiteBuild::class
+                TaskGenerateChangelog::class,
+                TaskUpdateSiteData::class,
+                TaskGenerateScreenshots::class,
+                TaskSiteBuild::class
             )
         }
         cleanTask {

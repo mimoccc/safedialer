@@ -1,18 +1,12 @@
 package org.mjdev.safedialer.app
 
 import android.app.Application
-import android.content.Context
 import androidx.core.telecom.CallsManager
 import kotbase.CouchbaseLite
-import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.LazyDI
-import org.kodein.di.bindSingleton
 import org.kodein.di.instance
-import org.mjdev.safedialer.di.appModule
-import org.mjdev.safedialer.di.permissionsModule
-import org.mjdev.safedialer.di.providersModule
-import org.mjdev.safedialer.di.viewModelsModule
+import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.service.IncomingCallService
 
 class MainApp : Application(), DIAware {
@@ -27,17 +21,5 @@ class MainApp : Application(), DIAware {
         CouchbaseLite.init(this)
         // todo check if from boot & permissions granted & permission activity
         IncomingCallService.start(this)
-    }
-
-    companion object {
-        fun mainDI(
-            context: Context
-        ): LazyDI = DI.lazy {
-            bindSingleton<Context> { context }
-            import(appModule)
-            import(viewModelsModule)
-            import(permissionsModule)
-            import(providersModule)
-        }
     }
 }

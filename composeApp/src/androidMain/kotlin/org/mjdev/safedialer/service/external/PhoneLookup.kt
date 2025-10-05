@@ -8,15 +8,17 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.data.list.ListItem
+import org.mjdev.safedialer.di.mainDI
 
-@Suppress("unused", "CanBeParameter")
+@Suppress("unused")
 class PhoneLookup(
     private val context: Context
 ) : DIAware {
-    override val di: DI by closestDI(context)
+    override val di: DI by context.closestDI { mainDI(context) }
+
     private val pnu: PhoneNumberUtil by instance()
     private val httpAddressTemplate = "https://mjdev.org/phone/%s"
     private val httpClient by instance<OkHttpClient>()

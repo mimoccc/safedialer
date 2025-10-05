@@ -81,8 +81,7 @@ internal class HttpResponseInfo private constructor(
         }
 
         private fun MediaType.isText() =
-            type == "text" ||
-                    (type == "application" && subtype in arrayOf("html", "xml"))
+            type == "text" || (type == "application" && subtype in arrayOf("html", "xml"))
 
         private fun MediaType.isXml() =
             type in arrayOf("application", "text") && subtype == "xml"

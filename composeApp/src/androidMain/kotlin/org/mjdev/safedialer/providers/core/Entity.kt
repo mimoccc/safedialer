@@ -104,11 +104,6 @@ abstract class Entity {
                             value.toString().toDoubleOrNull()
                         )
 
-                        FieldMapping.PhysicalType.Boolean -> contentValues.put(
-                            column,
-                            value.toString().toBoolean()
-                        )
-
                         // todo, base 64 string ?
                         FieldMapping.PhysicalType.Blob -> {
                             contentValues.put(

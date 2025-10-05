@@ -3,7 +3,6 @@ package org.mjdev.safedialer.providers.custom.email
 import android.net.Uri
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.Entity.CompanionWithUri
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.sync.emails.ProviderEmails
@@ -59,13 +58,13 @@ data class MailItem(
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_IS_DELETED,
-        FieldMapping.PhysicalType.Boolean
+        FieldMapping.PhysicalType.String
     )
     val isDeleted: Boolean = false,
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_IS_FLAGGED,
-        FieldMapping.PhysicalType.Boolean
+        FieldMapping.PhysicalType.String
     )
     val isFlagged: Boolean = false,
 

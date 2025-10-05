@@ -14,8 +14,7 @@ annotation class FieldMapping(
         Long,
         Int,
         Double,
-        Blob,
-        Boolean
+        Blob
     }
 
     enum class LogicalType {

@@ -224,6 +224,7 @@ tasks.withType<Test> {
         "-XX:+EnableDynamicAgentLoading",
         "-Xconsistent-data-class-copy-visibility",
     )
+    systemProperty("project.rootDir", rootDir.absolutePath)
 }
 
 buildkonfig {

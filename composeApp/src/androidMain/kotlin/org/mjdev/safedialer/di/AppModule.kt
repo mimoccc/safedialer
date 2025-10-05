@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.di
 
-import android.R
 import android.app.Application
 import android.app.KeyguardManager
 import android.app.Notification
@@ -10,9 +9,7 @@ import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Context.MODE_PRIVATE
 import android.net.ConnectivityManager
-import android.os.Build
 import android.view.WindowManager
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.telecom.CallsManager
 import coil.ImageLoader
@@ -34,6 +31,8 @@ import org.kodein.di.instance
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.data.repository.DataRepository
+import org.mjdev.safedialer.extensions.CustomExt
+import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.providers.custom.email.MailClient
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
@@ -52,14 +51,14 @@ val appModule = DI.Module("AppModule") {
     bindConstant<NotificationChannel>("notificationChannel") {
         NotificationChannel(
             CHANNEL_ID,
-            "Sledování hovorů",
+            "Sledování hovorů", // todo strings from resources
             NotificationManager.IMPORTANCE_LOW,
         )
     }
     bindProvider<Application> {
-        instance<Context>().let { context ->
-            context.applicationContext as Application
-        }
+        val context = instance<Context>()
+        (context.applicationContext as? Application)
+            ?: error("Context is not an Application instance.")
     }
     bindProvider<PreferencesManager> {
         PreferencesManager(
@@ -103,9 +102,18 @@ val appModule = DI.Module("AppModule") {
         PhoneLookup(instance())
     }
     bindSingleton<okhttp3.Cache> {
-        val application: Application = instance()
+        val context: Context = instance()
+        val systemCachePath = System.getProperty("java.io.tmpdir")
+        val systemCacheDir = File(systemCachePath, "http_cache")
+        val cacheDir = runCatching {
+            context.cacheDir?.let {
+                File(it, "http_cache")
+            }
+        }.onFailure { e ->
+            e.printStackTrace()
+        }.getOrNull() ?: systemCacheDir
         okhttp3.Cache(
-            directory = File(application.cacheDir, "http_cache"),
+            directory = cacheDir ,
             maxSize = 1024L * 1024L * 1024L // 1GB
         )
     }
@@ -123,10 +131,18 @@ val appModule = DI.Module("AppModule") {
         )
     }
     bindSingleton<ImageLoader> {
-        val application: Application = instance()
+        val context: Context = instance()
+        val systemCachePath = System.getProperty("java.io.tmpdir")
+        val systemCacheDir = File(systemCachePath, "image_cache")
+        val cacheDir = runCatching {
+            context.cacheDir?.let {
+                File(it, "http_cache")
+            }
+        }.onFailure { e ->
+            e.printStackTrace()
+        }.getOrNull() ?: systemCacheDir
         val okhttpClient: OkHttpClient = instance()
-        val cacheDir = application.cacheDir.resolve("image_cache")
-        ImageLoader.Builder(application)
+        ImageLoader.Builder(context)
             .okHttpClient { okhttpClient }
             .crossfade(false)
             .diskCache {
@@ -138,18 +154,22 @@ val appModule = DI.Module("AppModule") {
                 // Add any custom components here if needed
             }
             .memoryCache {
-                MemoryCache.Builder(application)
+                MemoryCache.Builder(context)
                     .maxSizePercent(0.5)
                     .build()
             }
             .build()
     }
     bindSingleton<OkHttpClient> {
-        OkHttpClient.Builder()
-            .cache(instance())
-            .connectTimeout(60000, TimeUnit.MILLISECONDS)
-            .callTimeout(60000, TimeUnit.MILLISECONDS)
-            .build()
+        if (isInPreviewMode) {
+            OkHttpClient.Builder().build()
+        } else {
+            OkHttpClient.Builder()
+                .cache(instance())
+                .connectTimeout(60000, TimeUnit.MILLISECONDS)
+                .callTimeout(60000, TimeUnit.MILLISECONDS)
+                .build()
+        }
     }
     bindSingleton<DataRepository> {
         DataRepository(
@@ -164,9 +184,11 @@ val appModule = DI.Module("AppModule") {
     bindSingleton<Notification>("notification") {
         instance<Context>().let { context ->
             NotificationCompat.Builder(context, CHANNEL_ID)
+                // todo resources
                 .setContentTitle("Sledování hovorů")
+                // todo resources
                 .setContentText("Služba běží na pozadí a sleduje příchozí hovory.")
-                .setSmallIcon(R.drawable.sym_call_incoming)
+                .setSmallIcon(android.R.drawable.sym_call_incoming)
                 .build()
         }
     }

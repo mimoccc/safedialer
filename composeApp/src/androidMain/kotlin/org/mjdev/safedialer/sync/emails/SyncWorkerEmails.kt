@@ -7,14 +7,15 @@ import android.content.Context
 import android.content.SyncResult
 import android.os.Bundle
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.di.mainDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import kotlin.getValue
 
 @Suppress("unused")
 class SyncWorkerEmails(
     context: Context,
 ) : AbstractThreadedSyncAdapter(context, true), DIAware {
-    override val di by closestDI()
+    override val di by closestDI { mainDI(context) }
 
 //    val mailClient by lazy {
 //        MailClient(

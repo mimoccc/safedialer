@@ -54,8 +54,9 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
+import org.mjdev.safedialer.di.mainDI
 
 @Suppress("unused", "DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
 class ComposeFloatingWindow(
@@ -65,7 +66,7 @@ class ComposeFloatingWindow(
     val onHidden: ComposeFloatingWindow.() -> Unit = {},
     block: ComposeFloatingWindow.() -> Unit = {}
 ) : DIAware, SavedStateRegistryOwner, ViewModelStoreOwner, HasDefaultViewModelProviderFactory {
-    override val di: DI by closestDI(context)
+    override val di: DI by context.closestDI { mainDI(context) }
 
     val windowManager by instance<WindowManager>()
 

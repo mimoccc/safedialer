@@ -25,14 +25,11 @@ import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
 import coil.ImageLoader
-import coil.disk.DiskCache
-import coil.memory.MemoryCache
-import okhttp3.OkHttpClient
 import org.kodein.di.LazyDI
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.direct
 import org.kodein.di.instance
-import org.mjdev.safedialer.app.MainApp.Companion.mainDI
+import org.mjdev.safedialer.di.mainDI
 
 object ComposeExt1 {
 
@@ -47,8 +44,8 @@ object ComposeExt1 {
     inline fun <reified VM : ViewModel> rememberViewModelSafe(
         tag: Any? = null,
         context: Context = LocalContext.current,
-        localDi: LazyDI? = mainDI(context),
-        crossinline mockModelFactory: (Context) -> VM
+        localDi: LazyDI? = mainDI(context), // todo : remove?
+        crossinline mockModelFactory: (Context) -> VM // todo ???
     ): Lazy<VM> {
         val viewModelStoreOwner = LocalViewModelStoreOwner.current
         return remember {
@@ -75,8 +72,8 @@ object ComposeExt1 {
     fun rememberImageLoader(
         context: Context = LocalContext.current,
     ) = remember {
-        val di by closestDI(context)
-        val imageLoader : ImageLoader by di.instance()
+        val di by context.closestDI { mainDI(context) }
+        val imageLoader: ImageLoader by di.instance()
         imageLoader
     }
 

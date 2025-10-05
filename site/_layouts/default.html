@@ -98,6 +98,8 @@
             width: 100%;
             height: 200px;
             display: block;
+            overflow-x : auto;
+            overflow-y : hidden;
         }
         div.gallery a img {
             height: 200px;
@@ -172,30 +174,39 @@
     </div>
 </div>
 <div class="content_area">
-    <div class="gallery">
-        <a href="assets/screenshots/mainscreen_calllog.png" data-caption="Call Log">
-            <img src="assets/screenshots/mainscreen_calllog.png" alt="Call Log">
-        </a>
-        <a href="assets/screenshots/mainscreen_contacts.png" data-caption="Contact List">
-            <img src="assets/screenshots/mainscreen_contacts.png" alt="Contact List">
-        </a>
-        <a href="assets/screenshots/mainscreen_messages.png" data-caption="Message List">
-            <img src="assets/screenshots/mainscreen_messages.png" alt="Message List">
-        </a>
-    </div>
+    <div class="gallery"></div>
     <div class="content">
         {{ content }}
     </div>
 </div>
 </body>
 <script language="JavaScript">
-    window.addEventListener('load', function() {
+window.addEventListener('load', function() {
+    var jsonFilePath = "assets/screenshots/screenshots.json"
+    fetch(jsonFilePath).then(response => response.json()).then(data => {
+        const galleryDiv = document.querySelector('.gallery');
+        if (!galleryDiv) return;
+        galleryDiv.innerHTML = '';
+        data.forEach(item => {
+            const a = document.createElement('a');
+            a.href = 'assets/screenshots/' + item.filename;
+            a.setAttribute('data-caption', item.caption || '');
+            const img = document.createElement('img');
+            img.src = 'assets/screenshots/' + item.filename;
+            img.alt = item.alt || '';
+            img.setAttribute('class', 'gallery-item');
+            a.appendChild(img);
+            galleryDiv.appendChild(a);
+        });
         baguetteBox.run('.gallery', {
             captions : true,
             fullScreen : false,
             noScrollbars : true,
             preload : 3,
         });
+    }).catch(err => {
+        console.error('Error:', err);
     });
+});
 </script>
 </html>

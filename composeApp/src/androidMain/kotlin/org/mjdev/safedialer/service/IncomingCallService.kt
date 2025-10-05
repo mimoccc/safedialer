@@ -19,9 +19,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
-import org.kodein.di.android.closestDI
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.dao.DAO
+import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.service.calls.CallListener
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.CommandReceiver
@@ -38,7 +39,7 @@ class IncomingCallService :
     Service(),
     CallListener,
     CommandReceiver, DIAware {
-    override val di by closestDI()
+    override val di by closestDI { mainDI(this) }
     private val notificationManager by instance<NotificationManager>()
     private val notification by instance<Notification>("notification")
     private val incomingCallReceiver by instance<IncomingCallBroadcastReceiver>()

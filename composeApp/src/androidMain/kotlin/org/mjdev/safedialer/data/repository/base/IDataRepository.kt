@@ -12,18 +12,17 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.app.MainApp.Companion.mainDI
+import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Entity
 import kotlin.reflect.full.companionObjectInstance
 
-@Suppress("DEPRECATION")
 abstract class IDataRepository(
     val context: Context,
     val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : DIAware {
-    override val di: DI = closestDI(context) { mainDI(context) }
+    override val di: DI by context.closestDI { mainDI(context) }
 
     inline fun <reified E : AbstractProvider, reified T : Entity> providerObserver(
         provider: E,
