@@ -39,6 +39,7 @@ class ProviderEmails() : ContentProvider(), DIAware {
         context?.applicationContext?.let { application ->
             CouchbaseLite.init(application)
         }
+        localEmails = dao.emails.asList()
         startPeriodicUpdates()
         return true
     }
