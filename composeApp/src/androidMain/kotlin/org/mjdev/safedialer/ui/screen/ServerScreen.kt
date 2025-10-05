@@ -38,15 +38,14 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.server.ManagementServer
 import org.mjdev.safedialer.server.ManagementServer.Companion.rememberCallServer
 import org.mjdev.safedialer.ui.components.TitleBar
 import org.mjdev.safedialer.ui.theme.AppTheme
 import org.mjdev.safedialer.viewmodel.MainViewModel
-import kotlin.getValue
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Previews
@@ -153,7 +152,7 @@ fun ServerScreen(
             // todo check if works
             LaunchedEffect(visibleState.value) {
                 when (visibleState.value) {
-                    true -> server.startServer { server, address ->
+                    true -> server.startServer { _, address ->
                         Log.d("MainActivity", "Server started at : $address")
                         httpAddress = address
                     }

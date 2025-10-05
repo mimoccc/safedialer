@@ -6,9 +6,6 @@ import android.content.ContentProviderClient
 import android.content.Context
 import android.content.SyncResult
 import android.os.Bundle
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 @Suppress("unused")
 class SyncWorkerContacts(
@@ -47,8 +44,5 @@ class SyncWorkerContacts(
         provider: ContentProviderClient?,
         syncResult: SyncResult?
     ) {
-        CoroutineScope(Dispatchers.IO).launch {
-
-        }
     }
 }

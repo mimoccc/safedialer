@@ -37,7 +37,7 @@ class ProjectPlugin : BasePlugin() {
     override fun Project.onAfterEvaluate() {
         buildTask {
             finalizedByTask(
-                TaskGenerateChangelog::class,
+//                TaskGenerateChangelog::class,
                 TaskUpdateSiteData::class,
                 TaskGenerateScreenshots::class,
                 TaskSiteBuild::class
@@ -45,7 +45,7 @@ class ProjectPlugin : BasePlugin() {
         }
         assembleTask {
             finalizedByTask(
-                TaskGenerateChangelog::class,
+//                TaskGenerateChangelog::class,
                 TaskUpdateSiteData::class,
                 TaskGenerateScreenshots::class,
                 TaskSiteBuild::class

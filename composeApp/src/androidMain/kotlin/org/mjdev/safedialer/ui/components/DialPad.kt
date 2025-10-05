@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Backspace
-import androidx.compose.material.icons.filled.Backspace
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Phone
 import androidx.compose.material3.*
@@ -30,7 +29,7 @@ import org.mjdev.safedialer.helpers.Previews
 fun DialPad(
     modifier: Modifier = Modifier,
     phoneNumber: MutableState<String> = remember { mutableStateOf("") },
-    visible: Boolean = false,
+    visible: Boolean = false, //  isInPreviewMode,
     context: Context = LocalContext.current,
     onNumberPressed: (String) -> Unit = { digit ->
         phoneNumber.value += digit
@@ -50,7 +49,8 @@ fun DialPad(
         listOf("*", "0", "#")
     )
     Box(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.BottomCenter
     ) {
         AnimatedVisibility(
             visible = visible,

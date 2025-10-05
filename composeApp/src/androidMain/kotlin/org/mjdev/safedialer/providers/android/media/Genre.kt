@@ -22,6 +22,7 @@ data class Genre(
 ) : Entity() {
     companion object : CompanionWithUri {
         // todo ?
+        @IgnoreMapping
         override val uri: Uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
 
         @IgnoreMapping

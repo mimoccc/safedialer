@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.data.list.ListItem
+import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.Previews
 
 @Previews
@@ -34,7 +35,7 @@ fun ContactButtonsDefault(
     iconSize: Dp = 32.dp,
     context: Context = LocalContext.current,
 ) = Row {
-    if (item.itemPhone.isNotEmpty()) {
+    if (item.itemPhone.isNotEmpty() || isInPreviewMode) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {

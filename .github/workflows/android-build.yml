@@ -43,7 +43,7 @@ jobs:
     - name: Build with Gradle
       id: build
       run: |
-        ./gradlew clean build -x lint
+        ./gradlew clean build -x lint --stacktrace
     - name: List built artifacts
       id: list_artifacts
       run: |

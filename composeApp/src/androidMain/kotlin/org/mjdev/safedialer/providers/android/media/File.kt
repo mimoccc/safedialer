@@ -4,7 +4,6 @@ import android.net.Uri
 import android.provider.BaseColumns
 import android.provider.MediaStore
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 
@@ -70,6 +69,7 @@ data class File(
 ) : Entity() {
     companion object : CompanionWithUri {
         // todo ?
+        @IgnoreMapping
         override val uri: Uri = MediaStore.Audio.Albums.EXTERNAL_CONTENT_URI
 
         @IgnoreMapping
@@ -77,20 +77,5 @@ data class File(
 
         @IgnoreMapping
         val uriInternal: Uri = MediaStore.Files.getContentUri("internal")
-    }
-
-    @Suppress("DEPRECATION")
-    enum class MediaType(val value: Int) : EnumInt {
-        NONE(MediaStore.Files.FileColumns.MEDIA_TYPE_NONE),
-        IMAGE(MediaStore.Files.FileColumns.MEDIA_TYPE_IMAGE),
-        AUDIO(MediaStore.Files.FileColumns.MEDIA_TYPE_AUDIO),
-        VIDEO(MediaStore.Files.FileColumns.MEDIA_TYPE_VIDEO),
-        PLAYLIST(MediaStore.Files.FileColumns.MEDIA_TYPE_PLAYLIST);
-
-        companion object {
-            fun fromInt(
-                value: Int
-            ): MediaType? = entries.find { it.value == value }
-        }
     }
 }

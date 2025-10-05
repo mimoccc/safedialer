@@ -15,10 +15,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.providers.custom.email.MailItem
+import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
@@ -32,7 +32,7 @@ fun TabEmails(
     filterText: MutableState<String> = remember { mutableStateOf("") },
 ) {
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(DataRepository(context))
+        MainViewModel(MockDataRepository(context))
     }
     val emailMessagesMap by viewModel.emailMessages.collectAsState(LinkedHashMap())
     val filter: MapFilter<MailItem> = remember {

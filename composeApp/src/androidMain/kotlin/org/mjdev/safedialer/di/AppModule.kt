@@ -21,7 +21,6 @@ import com.google.i18n.phonenumbers.PhoneNumberUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.kodein.di.DI
 import org.kodein.di.bindConstant
@@ -30,11 +29,13 @@ import org.kodein.di.bindSingleton
 import org.kodein.di.instance
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
-import org.mjdev.safedialer.data.repository.DataRepository
-import org.mjdev.safedialer.extensions.CustomExt
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
-import org.mjdev.safedialer.providers.custom.email.MailClient
+import org.mjdev.safedialer.helpers.InvalidContextException
 import org.mjdev.safedialer.helpers.PreferencesManager
+import org.mjdev.safedialer.providers.custom.email.MailClient
+import org.mjdev.safedialer.repository.DataRepository
+import org.mjdev.safedialer.repository.IDataRepository
+import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
@@ -113,7 +114,7 @@ val appModule = DI.Module("AppModule") {
             e.printStackTrace()
         }.getOrNull() ?: systemCacheDir
         okhttp3.Cache(
-            directory = cacheDir ,
+            directory = cacheDir,
             maxSize = 1024L * 1024L * 1024L // 1GB
         )
     }
@@ -141,28 +142,35 @@ val appModule = DI.Module("AppModule") {
         }.onFailure { e ->
             e.printStackTrace()
         }.getOrNull() ?: systemCacheDir
-        val okhttpClient: OkHttpClient = instance()
-        ImageLoader.Builder(context)
-            .okHttpClient { okhttpClient }
-            .crossfade(false)
-            .diskCache {
-                DiskCache.Builder()
-                    .directory(cacheDir)
-                    .build()
-            }
-            .components {
-                // Add any custom components here if needed
-            }
-            .memoryCache {
-                MemoryCache.Builder(context)
-                    .maxSizePercent(0.5)
-                    .build()
-            }
-            .build()
+        if (isInPreviewMode) {
+            ImageLoader.Builder(context)
+                .crossfade(false)
+                .build()
+        } else {
+            val okhttpClient: OkHttpClient = instance()
+            ImageLoader.Builder(context)
+                .okHttpClient { okhttpClient }
+                .crossfade(false)
+                .diskCache {
+                    DiskCache.Builder()
+                        .directory(cacheDir)
+                        .build()
+                }
+                .components {
+                    // Add any custom components here if needed
+                }
+                .memoryCache {
+                    MemoryCache.Builder(context)
+                        .maxSizePercent(0.5)
+                        .build()
+                }
+                .build()
+        }
     }
     bindSingleton<OkHttpClient> {
+        val context: Context = instance()
         if (isInPreviewMode) {
-            OkHttpClient.Builder().build()
+            throw (InvalidContextException(context))
         } else {
             OkHttpClient.Builder()
                 .cache(instance())
@@ -171,12 +179,19 @@ val appModule = DI.Module("AppModule") {
                 .build()
         }
     }
-    bindSingleton<DataRepository> {
-        DataRepository(
-            context = instance(),
-            scope = instance(),
-        ).apply {
-            CoroutineScope(Dispatchers.IO).launch {
+    bindSingleton<IDataRepository> {
+        if (isInPreviewMode) {
+            MockDataRepository(
+                context = instance(),
+                scope = instance(),
+            ).apply {
+                preloadContacts()
+            }
+        } else {
+            DataRepository(
+                context = instance(),
+                scope = instance(),
+            ).apply {
                 preloadContacts()
             }
         }

@@ -40,7 +40,7 @@ class SyncWorkerEmails(
         provider: ContentProviderClient?,
         syncResult: SyncResult?
     ) {
-//        CoroutineScope(Dispatchers.IO).launch {
+//        CoroutineScope(Dispatchers.IO + Job()).launch {
 //            mailClient.allMails.collectLatest { emails ->
 //                emails.forEach { email ->
 //                    dao.emails.add(email)

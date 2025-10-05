@@ -3,11 +3,11 @@ package org.mjdev.safedialer.providers.android.telephony
 import android.annotation.TargetApi
 import android.net.Uri
 import android.os.Build
-import android.provider.MediaStore
 import android.provider.Telephony.Carriers
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
+import org.mjdev.safedialer.providers.core.safeUri
 
 @Suppress("DEPRECATION")
 @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -142,6 +142,8 @@ data class Carrier(
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping
-        override val uri: Uri = Carriers.CONTENT_URI
+        override val uri: Uri = safeUri {
+            Carriers.CONTENT_URI
+        }
     }
 }

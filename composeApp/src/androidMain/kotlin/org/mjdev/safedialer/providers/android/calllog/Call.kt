@@ -1,17 +1,14 @@
 package org.mjdev.safedialer.providers.android.calllog
 
-import android.annotation.TargetApi
 import android.net.Uri
-import android.os.Build
 import android.provider.BaseColumns
 import android.provider.CallLog.Calls
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
+import org.mjdev.safedialer.providers.core.safeUri
 
-@TargetApi(Build.VERSION_CODES.KITKAT)
 data class Call(
     @FieldMapping(
         columnName = BaseColumns._ID,
@@ -58,29 +55,12 @@ data class Call(
     var type: CallType? = null,
 
     @IgnoreMapping
-    var contact : Contact? = null
+    var contact: Contact? = null
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping
-        override val uri: Uri = Calls.CONTENT_URI
-    }
-
-    enum class CallType(
-        val value: Int
-    ) : EnumInt {
-        INCOMING(Calls.INCOMING_TYPE),
-        OUTGOING(Calls.OUTGOING_TYPE),
-        BLOCKED(Calls.BLOCKED_TYPE),
-        VOICEMAIL(Calls.VOICEMAIL_TYPE),
-        REJECTED(Calls.REJECTED_TYPE),
-        MISSED(Calls.MISSED_TYPE);
-
-        companion object : CompanionWithUri {
-            override val uri: Uri = Calls.CONTENT_URI
-
-            fun fromInt(
-                value: Int
-            ): CallType? = entries.find { it.value == value }
+        override val uri: Uri = safeUri {
+            Calls.CONTENT_URI
         }
     }
 }

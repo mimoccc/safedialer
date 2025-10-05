@@ -6,7 +6,6 @@ import android.os.Build
 import android.provider.BaseColumns
 import android.provider.CalendarContract.Reminders
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 
@@ -40,21 +39,5 @@ data class Reminder(
     companion object : CompanionWithUri {
         @IgnoreMapping
         override val uri: Uri = Reminders.CONTENT_URI
-    }
-
-    enum class MethodType(
-        val value: Int
-    ) : EnumInt {
-        DEFAULT(0),
-        ALERT(1),
-        EMAIL(2),
-        SMS(3),
-        ALARM(4);
-
-        companion object {
-            fun fromInt(
-                value: Int
-            ): MethodType = entries.find { it.value == value } ?: DEFAULT
-        }
     }
 }

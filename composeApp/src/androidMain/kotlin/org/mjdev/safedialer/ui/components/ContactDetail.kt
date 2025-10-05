@@ -36,11 +36,11 @@ import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
-import org.mjdev.safedialer.data.repository.DataRepository
+import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.providers.android.calllog.Call
+import org.mjdev.safedialer.providers.android.calllog.CallType
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.ui.shapes.DottedShape
@@ -54,7 +54,7 @@ fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
     item: Entity? = null,
-    buttons: @Composable (item: ListItem) -> Unit = { item -> ContactButtonsDefault(item) },
+    buttons: @Composable (item: ListItem) -> Unit = { i -> ContactButtonsDefault(i) },
     imageLoader: ImageLoader = rememberImageLoader(),
     textStyle: TextStyle = TextStyle(color = MaterialTheme.colorScheme.primary),
     fontFamily: FontFamily = FontFamily.Default,
@@ -116,11 +116,11 @@ fun ContactDetail(
                                 .border(
                                     2.dp,
                                     when (listItem.itemCallType) {
-                                        Call.CallType.BLOCKED -> Color.Red
-                                        Call.CallType.MISSED -> Color.Red
-                                        Call.CallType.REJECTED -> Color.Red
-                                        Call.CallType.VOICEMAIL -> Color.Blue
-                                        Call.CallType.OUTGOING -> Color.Green
+                                        CallType.BLOCKED -> Color.Red
+                                        CallType.MISSED -> Color.Red
+                                        CallType.REJECTED -> Color.Red
+                                        CallType.VOICEMAIL -> Color.Blue
+                                        CallType.OUTGOING -> Color.Green
                                         else -> when {
                                             listItem.isStored -> Color.Green
                                             else -> Color.White.copy(alpha = 0.5f)

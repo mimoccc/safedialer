@@ -6,9 +6,9 @@ import android.os.Build
 import android.provider.BaseColumns
 import android.provider.Telephony.BaseMmsColumns
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
+import org.mjdev.safedialer.providers.core.safeUri
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 data class Mms(
@@ -71,7 +71,7 @@ data class Mms(
         physicalType = FieldMapping.PhysicalType.Int,
         logicalType = FieldMapping.LogicalType.EnumInt
     )
-    var type: MessageType? = null,
+    var type: MmsMessageType? = null,
 
     @FieldMapping(
         columnName = BaseMmsColumns.MESSAGE_CLASS,
@@ -209,35 +209,31 @@ data class Mms(
     )
     var transactionId: String? = null
 ) : Entity() {
-    companion object  : CompanionWithUri {
+    companion object : CompanionWithUri {
         // todo ?
         @IgnoreMapping
-        override val uri: Uri = android.provider.Telephony.Mms.CONTENT_URI
+        override val uri: Uri = safeUri {
+            android.provider.Telephony.Mms.CONTENT_URI
+        }
 
         @IgnoreMapping
-        val uriInbox: Uri = android.provider.Telephony.Mms.Inbox.CONTENT_URI
+        val uriInbox: Uri = safeUri {
+            android.provider.Telephony.Mms.Inbox.CONTENT_URI
+        }
 
         @IgnoreMapping
-        val uriOutbox: Uri = android.provider.Telephony.Mms.Outbox.CONTENT_URI
+        val uriOutbox: Uri = safeUri {
+            android.provider.Telephony.Mms.Outbox.CONTENT_URI
+        }
 
         @IgnoreMapping
-        val uriSent: Uri = android.provider.Telephony.Mms.Sent.CONTENT_URI
+        val uriSent: Uri = safeUri {
+            android.provider.Telephony.Mms.Sent.CONTENT_URI
+        }
 
         @IgnoreMapping
-        val uriDraft: Uri = android.provider.Telephony.Mms.Draft.CONTENT_URI
-    }
-
-    enum class MessageType(val value: Int) : EnumInt {
-        ALL(BaseMmsColumns.MESSAGE_BOX_ALL),
-        INBOX(BaseMmsColumns.MESSAGE_BOX_INBOX),
-        SENT(BaseMmsColumns.MESSAGE_BOX_SENT),
-        DRAFT(BaseMmsColumns.MESSAGE_BOX_DRAFTS),
-        OUTBOX(BaseMmsColumns.MESSAGE_BOX_OUTBOX);
-
-        companion object {
-            fun fromInt(
-                value: Int
-            ): MessageType? = entries.find { it.value == value }
+        val uriDraft: Uri = safeUri {
+            android.provider.Telephony.Mms.Draft.CONTENT_URI
         }
     }
 }

@@ -3,18 +3,15 @@ package org.mjdev.safedialer.data.list
 import android.net.Uri
 import androidx.core.net.toUri
 import org.mjdev.safedialer.helpers.SafeMap
-import org.mjdev.safedialer.providers.android.calllog.Call
+import org.mjdev.safedialer.providers.android.calllog.CallType
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
 
+@Suppress("unused")
 data class ListItem(
     val entity: Entity? = null,
     val customMapper: (Entity?) -> Map<String, String> = { mapOf() } // todo
 ) : SafeMap(entity) {
-//    init {
-//        Log.d(TAG, "ListItem: $this")
-//    }
-
     private val id: Long by this
     private val callId: Long by this
     private val contactId: Long by this
@@ -33,8 +30,8 @@ data class ListItem(
     private val date: Long by this
     private val callDate: Long by this
 
-    private val type: Call.CallType? by this
-    private val callType: Call.CallType? by this
+    private val type: CallType? by this
+    private val callType: CallType? by this
 
     private val photoThumbnailUri: Uri by this
     private val photoUri: Uri by this
@@ -103,7 +100,7 @@ data class ListItem(
     val itemDate: Long
         get() = callDate.ifZero { date }
 
-    val itemCallType: Call.CallType?
+    val itemCallType: CallType?
         get() = type.ifNull { callType }
 
     companion object {

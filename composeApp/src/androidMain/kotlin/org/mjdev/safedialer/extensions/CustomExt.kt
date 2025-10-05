@@ -11,11 +11,12 @@ import kotlin.reflect.KProperty
 
 object CustomExt {
 
-    val IS_DEBUG: Boolean = IncomingCallService.isStarted.not()
+    val isDebug: Boolean = IncomingCallService.isStarted.not()
 
     val isInPreviewMode: Boolean
-        get() = System.getProperty("java.runtime.name")
-            ?.contains("LayoutLib", ignoreCase = true) == true
+        get() = isDebug ||
+                System.getProperty("java.runtime.name")
+                    ?.contains("LayoutLib", ignoreCase = true) == true
 
     fun <T : Context> T.closestDI(
         mockBuilder: (Context) -> DI? = { null }

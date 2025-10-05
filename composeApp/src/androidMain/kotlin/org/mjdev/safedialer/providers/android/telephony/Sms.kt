@@ -6,9 +6,9 @@ import android.os.Build
 import android.provider.BaseColumns
 import android.provider.Telephony.TextBasedSmsColumns
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
+import org.mjdev.safedialer.providers.core.safeUri
 
 @TargetApi(Build.VERSION_CODES.KITKAT)
 data class Sms(
@@ -92,7 +92,7 @@ data class Sms(
         physicalType = FieldMapping.PhysicalType.Int,
         logicalType = FieldMapping.LogicalType.EnumInt
     )
-    var status: MessageStatus? = null,
+    var status: SmsMessageStatus? = null,
 
     @FieldMapping(
         columnName = TextBasedSmsColumns.SUBJECT,
@@ -104,58 +104,39 @@ data class Sms(
         columnName = TextBasedSmsColumns.THREAD_ID,
         physicalType = FieldMapping.PhysicalType.Int
     )
-    var threadId: Int = 0,
+    var threadId: Long = 0L,
 
     @FieldMapping(
         columnName = TextBasedSmsColumns.TYPE,
         physicalType = FieldMapping.PhysicalType.Int,
         logicalType = FieldMapping.LogicalType.EnumInt
     )
-    var type: MessageType? = null
+    var type: SmsMessageType? = null
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping
-        override val uri: Uri = android.provider.Telephony.Sms.CONTENT_URI
-
-        @IgnoreMapping
-        val uriInbox: Uri = android.provider.Telephony.Sms.Inbox.CONTENT_URI
-
-        @IgnoreMapping
-        val uriOutbox: Uri = android.provider.Telephony.Sms.Outbox.CONTENT_URI
-
-        @IgnoreMapping
-        val uriSent: Uri = android.provider.Telephony.Sms.Sent.CONTENT_URI
-
-        @IgnoreMapping
-        val uriDraft: Uri = android.provider.Telephony.Sms.Draft.CONTENT_URI
-    }
-
-    enum class MessageType(val value: Int) : EnumInt {
-        ALL(TextBasedSmsColumns.MESSAGE_TYPE_ALL),
-        INBOX(TextBasedSmsColumns.MESSAGE_TYPE_INBOX),
-        SENT(TextBasedSmsColumns.MESSAGE_TYPE_SENT),
-        DRAFT(TextBasedSmsColumns.MESSAGE_TYPE_DRAFT),
-        OUTBOX(TextBasedSmsColumns.MESSAGE_TYPE_OUTBOX),
-        FAILED(TextBasedSmsColumns.MESSAGE_TYPE_FAILED),
-        QUEUED(TextBasedSmsColumns.MESSAGE_TYPE_QUEUED);
-
-        companion object {
-            fun fromInt(
-                value: Int
-            ): MessageType? = entries.find { it.value == value }
+        override val uri: Uri = safeUri {
+            android.provider.Telephony.Sms.CONTENT_URI
         }
-    }
 
-    enum class MessageStatus(val value: Int) : EnumInt {
-        NONE(TextBasedSmsColumns.STATUS_NONE),
-        COMPLETE(TextBasedSmsColumns.STATUS_COMPLETE),
-        PENDING(TextBasedSmsColumns.STATUS_PENDING),
-        FAILED(TextBasedSmsColumns.STATUS_FAILED);
+        @IgnoreMapping
+        val uriInbox: Uri = safeUri {
+            android.provider.Telephony.Sms.Inbox.CONTENT_URI
+        }
 
-        companion object {
-            fun fromInt(
-                value: Int
-            ): MessageStatus? = entries.find { it.value == value }
+        @IgnoreMapping
+        val uriOutbox: Uri = safeUri {
+            android.provider.Telephony.Sms.Outbox.CONTENT_URI
+        }
+
+        @IgnoreMapping
+        val uriSent: Uri = safeUri {
+            android.provider.Telephony.Sms.Sent.CONTENT_URI
+        }
+
+        @IgnoreMapping
+        val uriDraft: Uri = safeUri {
+            android.provider.Telephony.Sms.Draft.CONTENT_URI
         }
     }
 }

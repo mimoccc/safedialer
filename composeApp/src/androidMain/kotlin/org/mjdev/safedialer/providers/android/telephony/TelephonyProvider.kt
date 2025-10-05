@@ -2,39 +2,30 @@ package org.mjdev.safedialer.providers.android.telephony
 
 import android.annotation.TargetApi
 import android.content.Context
-import android.net.Uri
 import android.os.Build
 import org.mjdev.safedialer.providers.core.AbstractProvider
-import org.mjdev.safedialer.providers.core.Data
 
+@Suppress("unused")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 class TelephonyProvider(context: Context) : AbstractProvider(context) {
-    enum class Filter {
-        ALL,
-        INBOX,
-        OUTBOX,
-        SENT,
-        DRAFT
-    }
-
-    fun getSms(filter: Filter): List<Sms>? {
+    fun getSms(filter: TelephonyFilter): List<Sms>? {
         val uri = when (filter) {
-            Filter.ALL -> Sms.uri
-            Filter.INBOX -> Sms.uriInbox
-            Filter.OUTBOX -> Sms.uriOutbox
-            Filter.SENT -> Sms.uriSent
-            Filter.DRAFT -> Sms.uriDraft
+            TelephonyFilter.ALL -> Sms.uri
+            TelephonyFilter.INBOX -> Sms.uriInbox
+            TelephonyFilter.OUTBOX -> Sms.uriOutbox
+            TelephonyFilter.SENT -> Sms.uriSent
+            TelephonyFilter.DRAFT -> Sms.uriDraft
         }
         return getContentTableData(uri, Sms::class.java)?.getList()
     }
 
-    fun getMms(filter: Filter): List<Mms>? {
+    fun getMms(filter: TelephonyFilter): List<Mms>? {
         val uri = when (filter) {
-            Filter.ALL -> Mms.uri
-            Filter.INBOX -> Mms.uriInbox
-            Filter.OUTBOX -> Mms.uriOutbox
-            Filter.SENT -> Mms.uriSent
-            Filter.DRAFT -> Mms.uriDraft
+            TelephonyFilter.ALL -> Mms.uri
+            TelephonyFilter.INBOX -> Mms.uriInbox
+            TelephonyFilter.OUTBOX -> Mms.uriOutbox
+            TelephonyFilter.SENT -> Mms.uriSent
+            TelephonyFilter.DRAFT -> Mms.uriDraft
         }
         return getContentTableData(uri, Mms::class.java)?.getList()
     }

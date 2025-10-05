@@ -222,7 +222,7 @@ dependencies {
 tasks.withType<Test> {
     jvmArgs(
         "-XX:+EnableDynamicAgentLoading",
-        "-Xconsistent-data-class-copy-visibility",
+//        "-Xconsistent-data-class-copy-visibility",
     )
     systemProperty("project.rootDir", rootDir.absolutePath)
 }

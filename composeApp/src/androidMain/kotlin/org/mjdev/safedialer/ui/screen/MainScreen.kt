@@ -24,11 +24,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.navigation.Tabs
+import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen

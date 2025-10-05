@@ -45,7 +45,7 @@ class ProviderEmails() : ContentProvider(), DIAware {
     }
 
     private fun startPeriodicUpdates() = runCatching {
-        periodicJob = CoroutineScope(Dispatchers.IO).launch {
+        periodicJob = CoroutineScope(Dispatchers.IO + Job()).launch {
             while (true) {
                 updateMailsSafely()
                 delay(FIVE_MINUTES_IN_MILLIS)
@@ -59,9 +59,9 @@ class ProviderEmails() : ContentProvider(), DIAware {
         val now = System.currentTimeMillis()
         if (((now - lastUpdate) >= FIVE_MINUTES_IN_MILLIS) || (localEmails == null)) {
             lastUpdate = now
-            updateJob = CoroutineScope(Dispatchers.IO).launch {
+            updateJob = CoroutineScope(Dispatchers.IO + Job()).launch {
                 localEmails = dao.emails.asList<MailItem>()
-                mailClient.allMails.collectLatest { emails ->
+                mailClient.allMails.collectLatest<List<MailItem>> { emails ->
                     dao.emails.clear()
                     dao.emails.addAll(emails)
                     val changes = emails.filter { newItem ->

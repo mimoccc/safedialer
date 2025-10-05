@@ -7,7 +7,6 @@ import android.provider.BaseColumns
 import android.provider.Telephony.Threads
 import android.provider.Telephony.ThreadsColumns
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.core.EnumInt
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 
@@ -44,14 +43,5 @@ data class Thread(
         override val uri: Uri = Threads.CONTENT_URI
     }
 
-    enum class ThreadType(val value: Int) : EnumInt {
-        COMMON(Threads.COMMON_THREAD),
-        BROADCAST(Threads.BROADCAST_THREAD);
 
-        companion object {
-            fun fromInt(
-                value: Int
-            ): ThreadType? = entries.find { it.value == value }
-        }
-    }
 }

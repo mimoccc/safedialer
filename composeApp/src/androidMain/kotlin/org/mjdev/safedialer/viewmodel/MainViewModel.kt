@@ -8,14 +8,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.providers.android.contacts.Contact
+import org.mjdev.safedialer.repository.IDataRepository
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 @Suppress("unused")
 class MainViewModel(
-    val dataRepository: DataRepository
+    val dataRepository: IDataRepository
 ) : ViewModel() {
 
     private val _filterText = MutableStateFlow("")
@@ -52,10 +52,14 @@ class MainViewModel(
 
     suspend fun findContactByPhone(
         phoneNumber: String?
-    ): Contact? = dataRepository.findContactByPhone(phoneNumber)
+    ): Contact? = runCatching {
+        dataRepository.findContactByPhone(phoneNumber)
+    }.getOrNull()
 
     suspend fun findContactBySender(
         email: String? = null,
         senderName: String? = null
-    ): Contact? = dataRepository.findContactBySender(email, senderName)
+    ): Contact? = runCatching {
+        dataRepository.findContactBySender(email, senderName)
+    }.getOrNull()
 }
