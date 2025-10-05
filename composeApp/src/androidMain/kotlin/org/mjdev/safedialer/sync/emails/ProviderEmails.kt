@@ -36,7 +36,9 @@ class ProviderEmails() : ContentProvider(), DIAware {
     private var localEmails: List<MailItem>? = null
 
     override fun onCreate(): Boolean {
-        CouchbaseLite.init(context!!.applicationContext)
+        context?.applicationContext?.let { application ->
+            CouchbaseLite.init(application)
+        }
         startPeriodicUpdates()
         return true
     }

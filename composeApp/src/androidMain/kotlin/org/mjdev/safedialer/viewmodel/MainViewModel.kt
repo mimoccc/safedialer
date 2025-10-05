@@ -50,21 +50,12 @@ class MainViewModel(
         block: suspend CoroutineScope.() -> Unit
     ) = viewModelScope.launch(context, start, block)
 
-    // todo
-    fun getContact(string: String) : Contact? {
-        return null
-    }
+    suspend fun findContactByPhone(
+        phoneNumber: String?
+    ): Contact? = dataRepository.findContactByPhone(phoneNumber)
 
-//    suspend fun findContactByPhone(
-//        phoneNumber: String
-//    ): ContactModel {
-//        return dataRepository.findContactByPhone(phoneNumber).last()
-//    }
-//
-//    suspend fun findContactBySender(
-//        email: String?,
-//        senderName: String?
-//    ): ContactModel {
-//        return dataRepository.findContactBySender(email, senderName).last()
-//    }
+    suspend fun findContactBySender(
+        email: String? = null,
+        senderName: String? = null
+    ): Contact? = dataRepository.findContactBySender(email, senderName)
 }

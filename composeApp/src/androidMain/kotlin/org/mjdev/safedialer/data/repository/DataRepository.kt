@@ -7,15 +7,22 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.map
 import org.kodein.di.instance
 import org.mjdev.safedialer.data.custom.Message
 import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.data.custom.MessageType
 import org.mjdev.safedialer.data.repository.base.IDataRepository
+import org.mjdev.safedialer.extensions.DateExt.formatDate
+import org.mjdev.safedialer.extensions.StringExt.isNotNBlank
+import org.mjdev.safedialer.extensions.StringExt.removeWhites
+import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.calllog.CallsProvider
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.contacts.ContactsProvider
@@ -23,23 +30,21 @@ import org.mjdev.safedialer.providers.android.telephony.Mms
 import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
 import org.mjdev.safedialer.providers.custom.email.EmailsProvider
-import org.mjdev.safedialer.providers.custom.email.MailItem
-import java.text.SimpleDateFormat
-import java.util.Date
 
 @Suppress("UNCHECKED_CAST", "DEPRECATION")
 class DataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : IDataRepository(context, scope) {
-    val sdf = SimpleDateFormat("dd.MM.yyyy")
+    @Volatile
+    private var contactsPreloaded = false
 
     val contactsProvider: ContactsProvider by instance()
     val callsProvider: CallsProvider by instance()
     val telephonyProvider: TelephonyProvider by instance()
     val emailsProvider: EmailsProvider by instance()
 
-    val contacts = providerObserver(contactsProvider) {
+    val contacts: Flow<List<Contact>> = providerObserver(contactsProvider) {
         getContacts()?.filter { pn ->
             pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
         }?.mergeBy { contact ->
@@ -49,7 +54,13 @@ class DataRepository(
         } ?: emptyList()
     }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
 
-    val calls = contacts.combine(
+    val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
+        cl.groupBy { c ->
+            c.displayName?.firstOrNull()?.uppercase() ?: ""
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    val calls: Flow<List<Call>> = contacts.combine(
         providerObserver(callsProvider) {
             getCalls()?.filter { call ->
                 call.name.isNotNBlank() && call.number.isNotNBlank()
@@ -64,17 +75,9 @@ class DataRepository(
         }.sortedByDescending { call -> call.callDate }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    val contactsMap = contacts.map { cl ->
+    val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
         cl.groupBy { c ->
-            c.displayName?.firstOrNull()?.uppercase() ?: ""
-        }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    val callsMap = calls.map { cl ->
-        cl.groupBy { c ->
-            Date(c.callDate).let {
-                "${it.date}.${it.month + 1}.${it.year + 1900}"
-            }
+            c.callDate.formatDate()
         }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
@@ -139,7 +142,7 @@ class DataRepository(
 
     val messagesMap = messageThreads.map { map ->
         map.values.flatten().groupBy { mt ->
-            sdf.format(Date(mt.date))
+            mt.date.formatDate()
         }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
@@ -160,22 +163,45 @@ class DataRepository(
     // todo mail threads
     val emailsMap = emails.map { list ->
         list.groupBy { em ->
-            sdf.format(Date(em.createdAtMillis))
+            em.createdAtMillis.formatDate()
         }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    fun String?.isNotNBlank(): Boolean =
-        this?.isNotBlank() ?: false
+    suspend fun preloadContacts() {
+        if (!contactsPreloaded) {
+            contacts.first<List<Contact>?>()
+            contactsPreloaded = true
+        }
+    }
 
-    fun String?.removeWhites(): String =
-        this?.replace(Regex("\\s+"), "") ?: ""
+    suspend fun findContactByPhone(
+        phoneNumber: String?
+    ): Contact? = if (phoneNumber == null) null
+    else contacts.firstOrNull()?.first { c ->
+        c.phone?.contains(phoneNumber) == true ||
+                c.normalizedPhone?.contains(phoneNumber) == true
+    }
 
-    // todo some more intelligent solution
-    fun <T, K> Iterable<T>.mergeBy(
-        selector: (T) -> K
-    ): List<T> = distinctBy(selector)
+    suspend fun findContactBySender(
+        email: String?,
+        senderName: String?
+    ): Contact? = contacts.firstOrNull()?.first { c ->
+        val isEmail = if (email == null) false else {
+            c.email?.contains(email) == true ||
+            c.emails?.any { e -> e?.contains(email) == true } == true
+        }
+        val isName = if (senderName == null) false else {
+            c.displayName?.contains(senderName) == true
+        }
+        isEmail || isName
+    }
 
     companion object {
-        val TAG: String = DataRepository::class.java.simpleName
+
+        // todo some more intelligent solution
+        fun <T, K> Iterable<T>.mergeBy(
+            selector: (T) -> K
+        ): List<T> = distinctBy(selector)
+
     }
 }

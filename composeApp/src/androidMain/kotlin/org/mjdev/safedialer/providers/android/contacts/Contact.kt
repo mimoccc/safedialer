@@ -53,7 +53,10 @@ data class Contact(
         columnName = Email.ADDRESS,
         physicalType = FieldMapping.PhysicalType.String
     )
-    var emails: List<String?>? = null
+    var email: String? = null,
+
+    @IgnoreMapping
+    var emails : List<String?>? = null
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping

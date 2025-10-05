@@ -34,6 +34,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
+import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
@@ -73,7 +74,12 @@ fun ContactDetail(
         bottomEnd = if (isLast) 16.dp else 0.dp,
         bottomStart = if (isLast) 16.dp else 0.dp,
     )
-    val contact = item ?: viewModel.getContact(caller ?: "")
+    // todo remove blocking call
+    val contact = runBlocking {
+        item
+            ?: viewModel.findContactByPhone(caller)
+            ?: viewModel.findContactBySender(caller)
+    }
     val listItem = ListItem(contact)
     Box(
         modifier = modifier.background(

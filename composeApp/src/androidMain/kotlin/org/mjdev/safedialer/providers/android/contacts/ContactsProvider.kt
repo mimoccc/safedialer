@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.provider.ContactsContract
 import org.mjdev.safedialer.providers.core.AbstractProvider
-import org.mjdev.safedialer.providers.core.Data
 import java.io.ByteArrayInputStream
 
 @TargetApi(Build.VERSION_CODES.KITKAT)

@@ -10,7 +10,9 @@ import android.content.Context
 import android.content.Context.CONNECTIVITY_SERVICE
 import android.content.Context.MODE_PRIVATE
 import android.net.ConnectivityManager
+import android.os.Build
 import android.view.WindowManager
+import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.telecom.CallsManager
 import coil.ImageLoader
@@ -20,8 +22,9 @@ import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import org.kodein.di.DI
 import org.kodein.di.bindConstant
@@ -88,7 +91,7 @@ val appModule = DI.Module("AppModule") {
             .getSystemService(Context.KEYGUARD_SERVICE) as KeyguardManager
     }
     bindSingleton<CoroutineScope> {
-        CoroutineScope(IO + Job())
+        CoroutineScope(Dispatchers.IO + Job())
     }
     bindSingleton<CallsManager> {
         CallsManager(instance())
@@ -152,7 +155,11 @@ val appModule = DI.Module("AppModule") {
         DataRepository(
             context = instance(),
             scope = instance(),
-        )
+        ).apply {
+            CoroutineScope(Dispatchers.IO).launch {
+                preloadContacts()
+            }
+        }
     }
     bindSingleton<Notification>("notification") {
         instance<Context>().let { context ->
