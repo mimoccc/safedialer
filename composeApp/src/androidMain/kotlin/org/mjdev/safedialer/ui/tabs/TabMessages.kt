@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.DateExt.formatDate
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.MapFilter
@@ -40,9 +41,7 @@ fun TabMessages(
             m.values.flatten().filter { i ->
                 i.displayName?.contains(s, true) ?: false
             }.groupBy { c ->
-                Date(c.date).let {
-                    "${it.date}.${it.month + 1}.${it.year + 1900}"
-                }
+                c.date.formatDate()
             }
         }
     }

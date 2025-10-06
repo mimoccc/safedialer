@@ -27,14 +27,10 @@ class MainViewModel(
     private val _isTabsVisible = MutableStateFlow(true)
     val isTabsVisible: StateFlow<Boolean> = _isTabsVisible.asStateFlow()
 
-    val contacts = dataRepository.contacts
     val contactMap = dataRepository.contactsMap
-
-    val calls = dataRepository.calls
     val callsMap = dataRepository.callsMap
     val messagesMap = dataRepository.messagesMap
-    val messageThreads = dataRepository.messageThreads
-    val emailMessages = dataRepository.emailsMap
+    val messageThreads = dataRepository.emailThreads
 
     fun toggleServerState() {
         _serverState.value = !_serverState.value

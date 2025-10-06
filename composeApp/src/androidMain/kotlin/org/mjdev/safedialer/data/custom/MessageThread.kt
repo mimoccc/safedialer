@@ -23,9 +23,7 @@ data class Message(
 data class MessageThread(
     var id: Long = 0,
     val contact: Contact? = null,
-    val messages: List<Message> = emptyList(),
-    val date: Long = 0L,
-    val lastMessage: Message?
+    val messages: List<Message> = emptyList()
 ) : Entity() {
     val displayName: String?
         get() = contact?.displayName ?: lastMessage?.let { lm ->
@@ -34,6 +32,12 @@ data class MessageThread(
                 MessageType.MMS -> null// todo mms sender
             }
         }
+
+    val lastMessage: Message?
+        get() = messages.minByOrNull { it.date }
+
+    val date: Long?
+        get() = lastMessage?.date
 
     companion object : CompanionWithUri {
         override val uri = Uri.EMPTY

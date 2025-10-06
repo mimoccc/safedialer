@@ -9,12 +9,14 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import org.kodein.di.instance
+import org.mjdev.safedialer.data.custom.MailThread
 import org.mjdev.safedialer.data.custom.Message
 import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.data.custom.MessageType
@@ -129,20 +131,11 @@ class DataRepository(
                     is Mms -> null
                     else -> null
                 }
-                val date = (combined.maxOfOrNull {
-                    when (it.message) {
-                        is Sms -> it.message.receivedDate
-                        is Mms -> it.message.receivedDate
-                        else -> 0L
-                    }
-                } ?: 0L)
                 result[threadId] = listOf(
                     MessageThread(
                         id = threadId,
                         contact = senderContact,
                         messages = combined,
-                        date = date,
-                        lastMessage = combined.lastOrNull()
                     )
                 )
             }
@@ -171,12 +164,49 @@ class DataRepository(
             }.sortedByDescending { email -> email.createdAtMillis }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    // todo mail threads
     override val emailsMap
         get() = emails.map { list ->
             list.groupBy { em ->
                 em.createdAtMillis.formatDate()
             }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val emailThreads: Flow<Map<String, List<MailThread>>>
+        get() = emails.map { emailList ->
+            val participants = mutableSetOf<String>()
+            emailList.forEach { mail ->
+                val sender = mail.senderEmail.trim()
+                if (sender.isNotEmpty()) participants += sender.lowercase()
+                val recipients = mail.recipientsCsv
+                    .split(',', ';')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                participants += recipients.map { it.lowercase() }
+            }
+            val result = mutableMapOf<String, List<MailThread>>()
+            for (participant in participants) {
+                val participantMessages = emailList.filter { mail ->
+                    mail.senderEmail.equals(participant, ignoreCase = true) ||
+                            mail.recipientsCsv
+                                .split(',', ';')
+                                .any { it.trim().equals(participant, ignoreCase = true) }
+                }.sortedByDescending { it.createdAtMillis }
+                if (participantMessages.isEmpty()) continue
+                val fromParticipant =
+                    participantMessages.firstOrNull { it.senderEmail.equals(participant, true) }
+                val contact = fromParticipant?.contact
+                val displayName = contact?.displayName?.takeIf { it.isNotBlank() }
+                    ?: fromParticipant?.senderName?.takeIf { it.isNotBlank() }
+                    ?: participant
+                result[displayName] = listOf(
+                    MailThread(
+                        id = 0L,
+                        contact = contact,
+                        messages = participantMessages,
+                    )
+                )
+            }
+            result
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     override fun preloadContacts() {

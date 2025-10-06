@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
+import org.mjdev.safedialer.data.custom.MailThread
 import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
@@ -44,6 +45,7 @@ abstract class IDataRepository(
 
     abstract val emails: Flow<List<MailItem>>
     abstract val emailsMap: Flow<Map<String, List<MailItem>>>
+    abstract val emailThreads: Flow<Map<String, List<MailThread>>>
 
     abstract fun preloadContacts()
 
