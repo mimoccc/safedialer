@@ -30,7 +30,7 @@ class MainViewModel(
     val contactMap = dataRepository.contactsMap
     val callsMap = dataRepository.callsMap
     val messagesMap = dataRepository.messagesMap
-    val messageThreads = dataRepository.emailThreads
+    val messageThreads = dataRepository.emailsMap
 
     fun toggleServerState() {
         _serverState.value = !_serverState.value

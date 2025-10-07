@@ -3,18 +3,16 @@ package org.mjdev.safedialer.extensions
 import android.content.AbstractThreadedSyncAdapter
 import android.content.Context
 import android.content.ContextWrapper
+import android.net.Uri
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.DIPropertyDelegateProvider
-import org.mjdev.safedialer.service.IncomingCallService
 import kotlin.reflect.KProperty
 
 object CustomExt {
 
-    val isDebug: Boolean = IncomingCallService.isStarted.not()
-
     val isInPreviewMode: Boolean
-        get() = isDebug ||
+        get() = //isDebug ||
                 System.getProperty("java.runtime.name")
                     ?.contains("LayoutLib", ignoreCase = true) == true
 
@@ -28,6 +26,18 @@ object CustomExt {
         { context },
         mockBuilder
     )
+
+    fun Uri.ifEmpty(
+        block: () -> Uri
+    ) = if (this == Uri.EMPTY) block() else this
+
+    fun Long.ifZero(
+        block: () -> Long
+    ) = if (this == 0L) block() else this
+
+    fun <T> T?.ifNull(
+        block: () -> T?
+    ) = this ?: block()
 
 //    fun closestDI(
 //        context: Context,

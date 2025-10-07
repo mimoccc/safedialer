@@ -31,17 +31,17 @@ import org.mjdev.safedialer.helpers.Previews
 @Previews
 @Composable
 fun ContactButtonsDefault(
-    item: ListItem = ListItem(),
+    item: ListItem? = if (isInPreviewMode) ListItem.PREVIEW else null,
     iconSize: Dp = 32.dp,
     context: Context = LocalContext.current,
 ) = Row {
-    if (item.itemPhone.isNotEmpty() || isInPreviewMode) {
+    if (item?.itemPhone?.isNotEmpty() == true || isInPreviewMode) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_DIAL,
-                    Uri.parse("tel:${item.itemPhone}")
+                    Uri.parse("tel:${item?.itemPhone}")
                 ).apply {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -62,7 +62,7 @@ fun ContactButtonsDefault(
             onClick = {
                 val intent = Intent(
                     Intent.ACTION_VIEW,
-                    Uri.parse("sms:${item.itemPhone}")
+                    Uri.parse("sms:${item?.itemPhone}")
                 ).apply {
                     addFlags(FLAG_ACTIVITY_NEW_TASK)
                 }
@@ -85,7 +85,7 @@ fun ContactButtonsDefault(
             }
         ) {
             Image(
-                imageVector = if (item.isBlocked) Icons.Filled.FavoriteBorder
+                imageVector = if (item?.isBlocked == true) Icons.Filled.FavoriteBorder
                 else Icons.Filled.Favorite,
                 contentDescription = "",
                 modifier = Modifier.padding(4.dp),
@@ -95,7 +95,7 @@ fun ContactButtonsDefault(
             )
         }
     }
-    if (item.itemId != 0L) {
+    if (item?.itemId != null) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {
@@ -121,7 +121,7 @@ fun ContactButtonsDefault(
             )
         }
     }
-    if (item.itemId != 0L || item.itemId != 0L) {
+    if (item?.itemId != null) {
         IconButton(
             modifier = Modifier.size(iconSize),
             onClick = {

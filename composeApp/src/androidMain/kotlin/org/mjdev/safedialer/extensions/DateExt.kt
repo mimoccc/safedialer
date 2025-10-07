@@ -12,7 +12,7 @@ object DateExt {
     ): String = runCatching {
         if (this == null) null else {
             val sdf = SimpleDateFormat(format)
-            sdf.format(Date(this))
+            sdf.format(Date(this@formatDate ?: 0L))
         }
     }.getOrNull() ?: errorValue
 }

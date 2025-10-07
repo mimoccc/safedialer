@@ -1,121 +1,81 @@
 package org.mjdev.safedialer.data.list
 
 import android.net.Uri
-import androidx.core.net.toUri
-import org.mjdev.safedialer.helpers.SafeMap
+import org.mjdev.safedialer.data.custom.MailThread
+import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.data.mapper.CallMapper
+import org.mjdev.safedialer.data.mapper.ContactMapper
+import org.mjdev.safedialer.data.mapper.EmailThreadMapper
+import org.mjdev.safedialer.data.mapper.MessageThreadMapper
+import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.calllog.CallType
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
 
 @Suppress("unused")
-data class ListItem(
-    val entity: Entity? = null,
-    val customMapper: (Entity?) -> Map<String, String> = { mapOf() } // todo
-) : SafeMap(entity) {
-    private val id: Long by this
-    private val callId: Long by this
-    private val contactId: Long by this
+interface ListItem {
+    val contact: Contact?
 
-    private val normalizedPhone: String by this
-    private val phoneNumber: String by this
-    private val phone: String by this
-
-    private val displayName: String by this
-    private val name: String by this
-    private val senderName: String by this
-
-    private val email: String by this
-    private val senderEmail: String by this
-
-    private val date: Long by this
-    private val callDate: Long by this
-
-    private val type: CallType? by this
-    private val callType: CallType? by this
-
-    private val photoThumbnailUri: Uri by this
-    private val photoUri: Uri by this
-    private val uriPhoto: Uri by this
-
-    private val duration: Long by this
-
-    val details: String by this
-
-    val isBlocked: Boolean by this
-    val isMissed: Boolean by this
-    val isIncoming: Boolean by this
-    val isOutgoing: Boolean by this
-    val isVoicemail: Boolean by this
-    val isRejected: Boolean by this
-    val isAnswered: Boolean by this
-    val isStored: Boolean by this
-    val isDanger: Boolean by this
-
-    private val contact: Contact? by this
-
-    // todo may be find it if call?
-    val itemId: Long
-        get() = callId.ifZero {
-            contactId
-        }.ifZero {
-            contact?.contactId ?: 0L
-        }.ifZero {
-            callId
-        }
-
-    val itemEmail: String
-        get() = email.ifEmpty { senderEmail }
-
-    val itemPhone: String
-        get() = normalizedPhone.ifEmpty {
-            phoneNumber
-        }.ifEmpty {
-            phone
-        }.ifEmpty {
-            contact?.normalizedPhone ?: ""
-        }.ifEmpty {
-            contact?.phone ?: ""
-        }.ifEmpty {
-            itemEmail
-        }
-
-    val itemPhoto: Uri
-        get() = uriPhoto.ifEmpty {
-            photoThumbnailUri
-        }.ifEmpty {
-            photoUri
-        }.ifEmpty {
-            contact?.uriPhoto?.toUri() ?: Uri.EMPTY
-        }
-
-    val itemName: String
-        get() = name.ifEmpty {
-            displayName
-        }.ifEmpty {
-            contact?.displayName ?: ""
-        }.ifEmpty {
-            senderName
-        }
-
-    val itemDate: Long
-        get() = callDate.ifZero { date }
-
+    val itemId: Long?
+    val itemEmail: String?
+    val itemPhone: String?
+    val itemPhoto: Uri?
+    val itemName: String?
+    val itemDate: Long?
     val itemCallType: CallType?
-        get() = type.ifNull { callType }
+
+    val details: String?
+
+    val isBlocked: Boolean
+    val isMissed: Boolean
+    val isIncoming: Boolean
+    val isOutgoing: Boolean
+    val isVoicemail: Boolean
+    val isRejected: Boolean
+    val isAnswered: Boolean
+    val isStored: Boolean
+    val isDanger: Boolean
 
     companion object {
         val TAG = ListItem::class.simpleName
 
-        fun Uri.ifEmpty(
-            block: () -> Uri
-        ) = if (this == Uri.EMPTY) block() else this
-
-        fun Long.ifZero(
-            block: () -> Long
-        ) = if (this == 0L) block() else this
-
-        fun <T> T?.ifNull(
-            block: () -> T?
-        ) = this ?: block()
+        val PREVIEW = object : ListItem {
+            override val details: String
+                get() = ""
+            override val isBlocked: Boolean
+                get() = false
+            override val isMissed: Boolean
+                get() = false
+            override val isIncoming: Boolean
+                get() = false
+            override val isOutgoing: Boolean
+                get() = false
+            override val isVoicemail: Boolean
+                get() = false
+            override val isRejected: Boolean
+                get() = false
+            override val isAnswered: Boolean
+                get() = false
+            override val isStored: Boolean
+                get() = false
+            override val isDanger: Boolean
+                get() = false
+            override val contact: Contact?
+                get() = null
+            override val itemId: Long
+                get() = 0L
+            override val itemEmail: String
+                get() = "john.doe@test.com"
+            override val itemPhone: String
+                get() = "+420777333444555"
+            override val itemPhoto: Uri
+                get() = Uri.EMPTY
+            override val itemName: String
+                get() = "John Doe"
+            override val itemDate: Long
+                get() = System.currentTimeMillis()
+            override val itemCallType: CallType?
+                get() = null
+        }
     }
 }

@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.sp
 import coil.ImageLoader
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
+import org.mjdev.safedialer.data.mapper.EntityMapper.asListItem
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
@@ -54,7 +55,7 @@ fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
     item: Entity? = null,
-    buttons: @Composable (item: ListItem) -> Unit = { i -> ContactButtonsDefault(i) },
+    buttons: @Composable (item: ListItem?) -> Unit = { i -> ContactButtonsDefault(i) },
     imageLoader: ImageLoader = rememberImageLoader(),
     textStyle: TextStyle = TextStyle(color = MaterialTheme.colorScheme.primary),
     fontFamily: FontFamily = FontFamily.Default,
@@ -80,7 +81,7 @@ fun ContactDetail(
             ?: viewModel.findContactByPhone(caller)
             ?: viewModel.findContactBySender(caller)
     }
-    val listItem = ListItem(contact)
+    val listItem = contact?.asListItem()
     Box(
         modifier = modifier.background(
             color = MaterialTheme.colorScheme.background,
@@ -90,7 +91,7 @@ fun ContactDetail(
         Box(
             modifier = Modifier
                 .background(
-                    color = if (listItem.isBlocked || listItem.isDanger) {
+                    color = if (listItem?.isBlocked == true || listItem?.isDanger == true) {
                         Color.Red.copy(alpha = 0.3f)
                     } else {
                         MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
@@ -115,14 +116,14 @@ fun ContactDetail(
                                 .clip(CircleShape)
                                 .border(
                                     2.dp,
-                                    when (listItem.itemCallType) {
+                                    when (listItem?.itemCallType) {
                                         CallType.BLOCKED -> Color.Red
                                         CallType.MISSED -> Color.Red
                                         CallType.REJECTED -> Color.Red
                                         CallType.VOICEMAIL -> Color.Blue
                                         CallType.OUTGOING -> Color.Green
                                         else -> when {
-                                            listItem.isStored -> Color.Green
+                                            listItem?.isStored == true -> Color.Green
                                             else -> Color.White.copy(alpha = 0.5f)
                                         }
                                     },
@@ -147,9 +148,9 @@ fun ContactDetail(
                                     top = 16.dp,
                                 ),
                         ) {
-                            Text(
+                            if (listItem?.itemName != null) Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = listItem.itemName.ifEmpty { "-" },
+                                text = listItem.itemName!!.ifEmpty { "-" },
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 16.sp,
                                 style = textStyle,
@@ -157,16 +158,16 @@ fun ContactDetail(
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.onSecondaryContainer,
                             )
-                            Text(
+                            if (listItem?.itemPhone != null) Text(
                                 modifier = Modifier.fillMaxWidth(),
-                                text = listItem.itemPhone.ifEmpty { "-" },
+                                text = listItem.itemPhone!!.ifEmpty { "-" },
                                 fontSize = 14.sp,
                                 style = textStyle,
                                 fontFamily = fontFamily,
                                 maxLines = 1,
                                 color = MaterialTheme.colorScheme.outline,
                             )
-                            if (showDate) {
+                            if (showDate && listItem?.itemDate != null) {
                                 Text(
                                     modifier = Modifier.fillMaxWidth(),
                                     text = listItem.itemDate.takeIf { d ->
@@ -186,9 +187,9 @@ fun ContactDetail(
                                     color = MaterialTheme.colorScheme.outline,
                                 )
                             } else {
-                                Text(
+                                if(listItem?.details != null) Text(
                                     modifier = Modifier.fillMaxWidth(),
-                                    text = listItem.details,
+                                    text = listItem.details.toString(),
                                     fontSize = 14.sp,
                                     style = textStyle,
                                     fontFamily = fontFamily,

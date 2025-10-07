@@ -32,20 +32,10 @@ abstract class IDataRepository(
 ) : DIAware {
     override val di: DI by context.closestDI { mainDI(context) }
 
-    abstract val contacts: Flow<List<Contact>>
     abstract val contactsMap: Flow<Map<String, List<Contact>>>
-
-    abstract val calls: Flow<List<Call>>
     abstract val callsMap: Flow<Map<String, List<Call>>>
-
-    abstract val smsThreads: Flow<Map<Long, List<Sms>>>
-    abstract val mmsThreads: Flow<Map<Long, List<Mms>>>
-    abstract val messageThreads: Flow<Map<Long, List<MessageThread>>>
     abstract val messagesMap: Flow<Map<String, List<MessageThread>>>
-
-    abstract val emails: Flow<List<MailItem>>
-    abstract val emailsMap: Flow<Map<String, List<MailItem>>>
-    abstract val emailThreads: Flow<Map<String, List<MailThread>>>
+    abstract val emailsMap: Flow<Map<String, List<MailThread>>>
 
     abstract fun preloadContacts()
 

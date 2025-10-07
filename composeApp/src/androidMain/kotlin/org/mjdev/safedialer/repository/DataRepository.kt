@@ -9,7 +9,6 @@ import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
@@ -45,7 +44,7 @@ class DataRepository(
     private val telephonyProvider: TelephonyProvider by instance()
     private val emailsProvider: EmailsProvider by instance()
 
-    override val contacts: Flow<List<Contact>>
+    private val contacts: Flow<List<Contact>>
         get() = providerObserver(contactsProvider) {
             getContacts()?.filter { pn ->
                 pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
@@ -56,14 +55,7 @@ class DataRepository(
             } ?: emptyList()
         }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
 
-    override val contactsMap: Flow<Map<String, List<Contact>>>
-        get() = contacts.map { cl ->
-            cl.groupBy { c ->
-                c.displayName?.firstOrNull()?.uppercase() ?: ""
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val calls: Flow<List<Call>>
+    private val calls: Flow<List<Call>>
         get() = contacts.combine(
             providerObserver(callsProvider) {
                 getCalls()?.filter { call ->
@@ -72,54 +64,44 @@ class DataRepository(
             }
         ) { lastContacts, callList ->
             callList.map { call ->
-                call.contact = lastContacts.firstOrNull { c ->
-                    c.phone.removeWhites() == call.number.removeWhites()
-                }
-                call
+                call.copy(
+                    contact = lastContacts.firstOrNull { c ->
+                        c.phone.removeWhites() == call.number.removeWhites()
+                    }
+                )
             }.sortedByDescending { call -> call.callDate }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val callsMap: Flow<Map<String, List<Call>>>
-        get() = calls.map { cl ->
-            cl.groupBy { c ->
-                c.callDate.formatDate()
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val smsThreads
+    private val smsThreads
         get() = providerObserver(telephonyProvider) {
             getSms(TelephonyFilter.ALL) ?: emptyList()
         }.map { smsList ->
-            smsList.groupBy { it.threadId }
+            smsList.groupBy { sms -> sms.threadId }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val mmsThreads
+    private val mmsThreads
         get() = providerObserver(telephonyProvider) {
             getMms(TelephonyFilter.ALL) ?: emptyList()
         }.map { mmsList ->
-            mmsList.groupBy { it.threadId }
+            mmsList.groupBy { mms -> mms.threadId }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val messageThreads: Flow<Map<Long, List<MessageThread>>>
+    private val messageThreads: Flow<Map<Long, List<MessageThread>>>
         get() = contacts.combine(
-            smsThreads.combine(mmsThreads) { smsMap, mmsMap ->
-                Pair(smsMap, mmsMap)
-            }
+            smsThreads.combine(mmsThreads) { smsMap, mmsMap -> Pair(smsMap, mmsMap) }
         ) { contactsList, pair ->
             val smsMap = pair.first
             val mmsMap = pair.second
             val result = mutableMapOf<Long, List<MessageThread>>()
             val allThreadIds = (smsMap.keys.map { it } + mmsMap.keys).toSet()
-            for (threadId in allThreadIds) {
+            allThreadIds.forEach { threadId ->
                 val smsList = smsMap[threadId] ?: emptyList()
                 val mmsList = mmsMap[threadId] ?: emptyList()
-                val combined = (
-                        smsList.map {
-                            Message(type = MessageType.SMS, message = it)
-                        } + mmsList.map {
-                            Message(type = MessageType.MMS, message = it)
-                        }
-                        )
+                val combined = (smsList.map {
+                    Message(type = MessageType.SMS, message = it)
+                } + mmsList.map {
+                    Message(type = MessageType.MMS, message = it)
+                })
                 val senderContact = when (val firstMsg = combined.firstOrNull()?.message) {
                     is Sms -> contactsList.firstOrNull { contact ->
                         val phone = contact.phone?.removeWhites() ?: ""
@@ -142,14 +124,7 @@ class DataRepository(
             result
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val messagesMap
-        get() = messageThreads.map { map ->
-            map.values.flatten().groupBy { mt ->
-                mt.date.formatDate()
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val emails
+    private val emails
         get() = contacts.combine(providerObserver(emailsProvider) {
             getEmails() ?: emptyList()
         }) { lastContacts, emailList ->
@@ -164,14 +139,22 @@ class DataRepository(
             }.sortedByDescending { email -> email.createdAtMillis }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val emailsMap
-        get() = emails.map { list ->
-            list.groupBy { em ->
-                em.createdAtMillis.formatDate()
-            }
+    override val contactsMap: Flow<Map<String, List<Contact>>>
+        get() = contacts.map { cl ->
+            cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: "" }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val emailThreads: Flow<Map<String, List<MailThread>>>
+    override val callsMap: Flow<Map<String, List<Call>>>
+        get() = calls.map { cl ->
+            cl.groupBy { c -> c.callDate.formatDate() }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val messagesMap
+        get() = messageThreads.map { map ->
+            map.values.flatten().groupBy { mt -> mt.date.formatDate() }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val emailsMap: Flow<Map<String, List<MailThread>>>
         get() = emails.map { emailList ->
             val participants = mutableSetOf<String>()
             emailList.forEach { mail ->
@@ -192,13 +175,12 @@ class DataRepository(
                                 .any { it.trim().equals(participant, ignoreCase = true) }
                 }.sortedByDescending { it.createdAtMillis }
                 if (participantMessages.isEmpty()) continue
-                val fromParticipant =
-                    participantMessages.firstOrNull { it.senderEmail.equals(participant, true) }
+                val fromParticipant = participantMessages.firstOrNull {
+                    it.senderEmail.equals(participant, true)
+                }
                 val contact = fromParticipant?.contact
-                val displayName = contact?.displayName?.takeIf { it.isNotBlank() }
-                    ?: fromParticipant?.senderName?.takeIf { it.isNotBlank() }
-                    ?: participant
-                result[displayName] = listOf(
+                val receivedDate = fromParticipant?.createdAtMillis?.formatDate() ?: "-"
+                result[receivedDate] = listOf(
                     MailThread(
                         id = 0L,
                         contact = contact,
@@ -230,9 +212,9 @@ class DataRepository(
         email: String?,
         senderName: String?
     ): Contact? = contacts.firstOrNull()?.first { c ->
-        val isEmail = if (email == null) false else {
-            c.email?.contains(email) == true ||
-                    c.emails?.any { e -> e?.contains(email) == true } == true
+        val isEmail = if (email == null) false
+        else {
+            c.email?.contains(email) == true || c.emails?.any { e -> e?.contains(email) == true } == true
         }
         val isName = if (senderName == null) false else {
             c.displayName?.contains(senderName) == true
@@ -241,11 +223,9 @@ class DataRepository(
     }
 
     companion object {
-
         // todo some more intelligent solution
         fun <T, K> Iterable<T>.mergeBy(
             selector: (T) -> K
         ): List<T> = distinctBy(selector)
-
     }
 }

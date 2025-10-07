@@ -17,7 +17,6 @@ open class SafeMap() : HashMap<String, Any?>() {
         key: String
     ): Any? = runCatching { super.get(key) }.getOrNull()
 
-    @Suppress("UNCHECKED_CAST")
     inline operator fun <reified T> getValue(
         thisRef: Any?,
         property: KProperty<*>

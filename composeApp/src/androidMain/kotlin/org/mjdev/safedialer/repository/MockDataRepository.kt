@@ -7,14 +7,12 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
 import org.mjdev.safedialer.data.custom.MailThread
 import org.mjdev.safedialer.data.custom.Message
 import org.mjdev.safedialer.data.custom.MessageThread
@@ -34,23 +32,12 @@ class MockDataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : IDataRepository(context, scope) {
-
-    @Volatile
-    private var contactsPreloaded = false
-
-    override val contacts: Flow<List<Contact>>
+    private val contacts: Flow<List<Contact>>
         get() = flow {
             emit(mockContacts)
         }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
 
-    override val contactsMap: Flow<Map<String, List<Contact>>>
-        get() = contacts.map { cl ->
-            cl.groupBy { c ->
-                c.displayName?.firstOrNull()?.uppercase() ?: ""
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val calls: Flow<List<Call>>
+    private val calls: Flow<List<Call>>
         get() = contacts.combine(
             flow {
                 emit(mockCalls)
@@ -64,28 +51,21 @@ class MockDataRepository(
             }.sortedByDescending { call -> call.callDate }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val callsMap: Flow<Map<String, List<Call>>>
-        get() = calls.map { cl ->
-            cl.groupBy { c ->
-                c.callDate.formatDate()
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val smsThreads: Flow<Map<Long, List<Sms>>>
+    private val smsThreads: Flow<Map<Long, List<Sms>>>
         get() = flow {
             emit(mockSms)
         }.map { smsList ->
             smsList.groupBy { it.threadId }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val mmsThreads
+    private val mmsThreads
         get() = flow {
             emit(mockMms)
         }.map { mmsList ->
             mmsList.groupBy { it.threadId }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val messageThreads: Flow<Map<Long, List<MessageThread>>>
+    private val messageThreads: Flow<Map<Long, List<MessageThread>>>
         get() = contacts.combine(
             smsThreads.combine(mmsThreads) { smsMap, mmsMap ->
                 Pair(smsMap, mmsMap)
@@ -125,14 +105,7 @@ class MockDataRepository(
             result
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val messagesMap: Flow<Map<String, List<MessageThread>>>
-        get() = messageThreads.map { map ->
-            map.values.flatten().groupBy { mt ->
-                mt.date.formatDate()
-            }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val emails: Flow<List<MailItem>>
+    private val emails: Flow<List<MailItem>>
         get() = contacts.combine(flow {
             emit(mockEmails)
         }) { lastContacts, emailList ->
@@ -147,15 +120,28 @@ class MockDataRepository(
             }.sortedByDescending { email -> email.createdAtMillis }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    // todo mail threads
-    override val emailsMap: Flow<Map<String, List<MailItem>>>
-        get() = emails.map { list ->
-            list.groupBy { em ->
-                em.createdAtMillis.formatDate()
+    override val callsMap: Flow<Map<String, List<Call>>>
+        get() = calls.map { cl ->
+            cl.groupBy { c ->
+                c.callDate.formatDate()
             }
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val emailThreads: Flow<Map<String, List<MailThread>>>
+    override val messagesMap: Flow<Map<String, List<MessageThread>>>
+        get() = messageThreads.map { map ->
+            map.values.flatten().groupBy { mt ->
+                mt.date.formatDate()
+            }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val contactsMap: Flow<Map<String, List<Contact>>>
+        get() = contacts.map { cl ->
+            cl.groupBy { c ->
+                c.displayName?.firstOrNull()?.uppercase() ?: ""
+            }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val emailsMap: Flow<Map<String, List<MailThread>>>
         get() = emails.map { emailList ->
             val participants = mutableSetOf<String>()
             emailList.forEach { mail ->
@@ -194,18 +180,11 @@ class MockDataRepository(
         }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     override fun preloadContacts() {
-        CoroutineScope(Dispatchers.IO + Job()).launch {
-            if (!contactsPreloaded) {
-                contacts.first<List<Contact>?>()
-                contactsPreloaded = true
-            }
-        }
     }
 
     override suspend fun findContactByPhone(
         phoneNumber: String?
-    ): Contact? = if (phoneNumber == null) null
-    else contacts.firstOrNull()?.first { c ->
+    ): Contact? = if (phoneNumber == null) null else contacts.firstOrNull()?.first { c ->
         c.phone?.contains(phoneNumber) == true ||
                 c.normalizedPhone?.contains(phoneNumber) == true
     }
@@ -225,8 +204,7 @@ class MockDataRepository(
     }
 
     companion object {
-
-        val mockContacts = (1..32).map { idx ->
+        private val mockContacts = (1..32).map { idx ->
             Contact(
                 phone = "+421 999 000 99$idx",
                 displayName = "John Doe $idx",
@@ -238,7 +216,7 @@ class MockDataRepository(
             )
         }
 
-        val mockCalls = (1..32).map { idx ->
+        private val mockCalls = (1..32).map { idx ->
             Call(
                 id = idx.toLong(),
                 name = "John Doe $idx",
@@ -251,7 +229,7 @@ class MockDataRepository(
             )
         }
 
-        val mockSms = (1..32).map { idx ->
+        private val mockSms = (1..32).map { idx ->
             Sms(
                 id = idx.toLong(),
                 receivedDate = System.currentTimeMillis(),
@@ -263,7 +241,7 @@ class MockDataRepository(
             )
         }
 
-        val mockMms = (1..32).map { idx ->
+        private val mockMms = (1..32).map { idx ->
             Mms(
                 id = idx.toLong(),
                 receivedDate = System.currentTimeMillis(),
@@ -273,7 +251,7 @@ class MockDataRepository(
             )
         }
 
-        val mockEmails = (1..32).map { idx ->
+        private val mockEmails = (1..32).map { idx ->
             MailItem(
                 id = idx.toLong(),
                 senderName = "John Doe $idx",

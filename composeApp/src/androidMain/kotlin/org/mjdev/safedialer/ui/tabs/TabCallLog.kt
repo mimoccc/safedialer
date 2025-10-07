@@ -21,9 +21,8 @@ import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
-import java.util.Date
 
-@Suppress("DEPRECATION", "UNCHECKED_CAST")
+@Suppress( "UNCHECKED_CAST")
 @Previews
 @Composable
 fun TabCallLog(
