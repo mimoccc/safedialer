@@ -31,8 +31,7 @@ fun CallDialog(
             .fillMaxWidth()
             .wrapContentHeight()
             .background(
-                color = if (info.isNullOrEmpty()) MaterialTheme.colorScheme.background
-                else Color.Red,
+                color = if (info.isNullOrEmpty()) MaterialTheme.colorScheme.background else Color.Red,
                 shape = RoundedCornerShape(16.dp),
             ),
     ) {

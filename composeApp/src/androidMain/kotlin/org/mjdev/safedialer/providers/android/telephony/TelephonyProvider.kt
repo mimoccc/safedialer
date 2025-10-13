@@ -3,7 +3,9 @@ package org.mjdev.safedialer.providers.android.telephony
 import android.annotation.TargetApi
 import android.content.Context
 import android.os.Build
+import android.provider.Telephony
 import org.mjdev.safedialer.providers.core.AbstractProvider
+import androidx.core.net.toUri
 
 @Suppress("unused")
 @TargetApi(Build.VERSION_CODES.KITKAT)
@@ -27,7 +29,34 @@ class TelephonyProvider(context: Context) : AbstractProvider(context) {
             TelephonyFilter.SENT -> Mms.uriSent
             TelephonyFilter.DRAFT -> Mms.uriDraft
         }
-        return getContentTableData(uri, Mms::class.java)?.getList()
+        val addressMap = getAllMmsAddresses()
+        // todo better mapping if possible
+        return getContentTableData(uri, Mms::class.java)?.getList()?.map { mms ->
+            mms.copy(
+                address = addressMap[mms.id]
+            )
+        }
+    }
+
+    // todo improve
+    private fun getAllMmsAddresses(): Map<Long, String> {
+        val addressMap = mutableMapOf<Long, String>()
+        context.contentResolver.query(
+            "content://mms/addr".toUri(),
+            arrayOf(Telephony.Mms.Addr.MSG_ID, Telephony.Mms.Addr.ADDRESS, Telephony.Mms.Addr.TYPE),
+            "${Telephony.Mms.Addr.TYPE} = ?",
+            arrayOf("137"), // FROM type
+            null
+        )?.use { cursor ->
+            val msgIdIndex = cursor.getColumnIndexOrThrow(Telephony.Mms.Addr.MSG_ID)
+            val addressIndex = cursor.getColumnIndexOrThrow(Telephony.Mms.Addr.ADDRESS)
+            while (cursor.moveToNext()) {
+                val msgId = cursor.getLong(msgIdIndex)
+                val address = cursor.getString(addressIndex)
+                addressMap[msgId] = address
+            }
+        }
+        return addressMap
     }
 
     fun getConversations(): List<Conversation>? =

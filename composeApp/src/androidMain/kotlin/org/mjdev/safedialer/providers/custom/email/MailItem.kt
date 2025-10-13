@@ -58,20 +58,27 @@ data class MailItem(
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_IS_DELETED,
-        FieldMapping.PhysicalType.String
+        FieldMapping.PhysicalType.Int,
+        FieldMapping.LogicalType.Boolean
     )
     val isDeleted: Boolean = false,
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_IS_FLAGGED,
-        FieldMapping.PhysicalType.String
+        FieldMapping.PhysicalType.Int,
+        FieldMapping.LogicalType.Boolean
     )
     val isFlagged: Boolean = false,
 
     @IgnoreMapping
     val contact : Contact? = null
 ) : Entity() {
+
+    // todo : mail folders
+    val isArchived
+        get() = mailboxName.contentEquals("Archives", true)
+
     companion object : CompanionWithUri {
-        override val uri = Uri.EMPTY
+        override val uri: Uri = Uri.EMPTY
     }
 }

@@ -30,11 +30,10 @@ import org.kodein.di.instance
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
-import org.mjdev.safedialer.helpers.InvalidContextException
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.providers.custom.email.MailClient
 import org.mjdev.safedialer.repository.DataRepository
-import org.mjdev.safedialer.repository.IDataRepository
+import org.mjdev.safedialer.repository.base.IDataRepository
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
@@ -168,9 +167,9 @@ val appModule = DI.Module("AppModule") {
         }
     }
     bindSingleton<OkHttpClient> {
-        val context: Context = instance()
         if (isInPreviewMode) {
-            throw (InvalidContextException(context))
+            // todo mocked
+            OkHttpClient.Builder().build()
         } else {
             OkHttpClient.Builder()
                 .cache(instance())
@@ -184,16 +183,12 @@ val appModule = DI.Module("AppModule") {
             MockDataRepository(
                 context = instance(),
                 scope = instance(),
-            ).apply {
-                preloadContacts()
-            }
+            )
         } else {
             DataRepository(
                 context = instance(),
                 scope = instance(),
-            ).apply {
-                preloadContacts()
-            }
+            )
         }
     }
     bindSingleton<Notification>("notification") {

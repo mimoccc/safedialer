@@ -7,7 +7,7 @@ import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "ArrayInDataClass")
 data class Image(
     @FieldMapping(
         columnName = BaseColumns._ID,
@@ -83,8 +83,8 @@ data class Image(
 
     @FieldMapping(
         columnName = MediaStore.Images.ImageColumns.IS_PRIVATE,
+        physicalType = FieldMapping.PhysicalType.Int,
         logicalType = FieldMapping.LogicalType.Boolean,
-        physicalType = FieldMapping.PhysicalType.Int
     )
     var isPrivate: Boolean = false,
 

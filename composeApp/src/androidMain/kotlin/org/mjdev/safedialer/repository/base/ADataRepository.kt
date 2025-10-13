@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.repository
+package org.mjdev.safedialer.repository.base
 
 import android.content.Context
 import android.database.ContentObserver
@@ -8,39 +8,21 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.data.custom.MailThread
-import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
-import org.mjdev.safedialer.providers.android.calllog.Call
-import org.mjdev.safedialer.providers.android.contacts.Contact
-import org.mjdev.safedialer.providers.android.telephony.Mms
-import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.custom.email.MailItem
 import kotlin.reflect.full.companionObjectInstance
 
-abstract class IDataRepository(
+abstract class ADataRepository(
     val context: Context,
     val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : DIAware {
     override val di: DI by context.closestDI { mainDI(context) }
-
-    abstract val contactsMap: Flow<Map<String, List<Contact>>>
-    abstract val callsMap: Flow<Map<String, List<Call>>>
-    abstract val messagesMap: Flow<Map<String, List<MessageThread>>>
-    abstract val emailsMap: Flow<Map<String, List<MailThread>>>
-
-    abstract fun preloadContacts()
-
-    abstract suspend fun findContactByPhone(phoneNumber: String?): Contact?
-    abstract suspend fun findContactBySender(email: String?, senderName: String?): Contact?
 
     inline fun <reified E : AbstractProvider, reified T : Entity> providerObserver(
         provider: E,
@@ -76,6 +58,6 @@ abstract class IDataRepository(
     }
 
     companion object {
-        val TAG = IDataRepository::class.java.simpleName
+        val TAG = ADataRepository::class.simpleName
     }
 }

@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.BaseColumns
 import android.provider.Telephony.BaseMmsColumns
+import android.provider.Telephony.TextBasedSmsColumns
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.providers.core.FieldMapping
 import org.mjdev.safedialer.providers.core.IgnoreMapping
@@ -17,6 +18,10 @@ data class Mms(
         physicalType = FieldMapping.PhysicalType.Long
     )
     var id: Long = 0L,
+
+    // todo better mapping
+    @IgnoreMapping
+    var address: String? = null,
 
     @FieldMapping(
         columnName = BaseMmsColumns.CONTENT_CLASS,

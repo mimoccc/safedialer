@@ -6,12 +6,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class MailFolders(
     val boxName: String,
-    val serverName: String,
+    val serverBoxName: String,
     val icon: ImageVector,
 ) {
-    object INBOX : MailFolders(
+    data object INBOX : MailFolders(
         boxName = "Inbox",
-        serverName = "INBOX",
+        serverBoxName = "INBOX",
         icon = Icons.Default.Inbox,
     )
 }

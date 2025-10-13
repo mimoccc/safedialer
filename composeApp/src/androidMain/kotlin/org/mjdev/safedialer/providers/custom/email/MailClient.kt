@@ -10,18 +10,21 @@ import jakarta.mail.Session
 import jakarta.mail.Transport
 import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flow
 import java.util.Properties
 import android.content.Context
 import jakarta.mail.Multipart
 import jakarta.mail.Part
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.sync.contacts.ContactAutoEnricher
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
+@Suppress("RedundantSuspendModifier", "unused", "MemberVisibilityCanBePrivate",
+    "ConvertTryFinallyToUseCall"
+)
 class MailClient(
     val hostImap: String = BuildConfig.SERVER,
     val hostSmtp: String = BuildConfig.SERVER,
@@ -38,17 +41,15 @@ class MailClient(
     private val isPGPEnabled: Boolean
         get() = pgpCertData.isNotEmpty() && pgpPassword.isNotEmpty()
 
-    val mailFolders = flow {
-        runCatching {
-            listMailFolders().onSuccess { data ->
-                emit(data)
-            }.onFailure { e ->
-                emit(emptyList())
-            }
-        }.getOrNull() ?: emit(emptyList())
+    val mailFolders: Flow<List<Folder>> = flow {
+        listMailFolders().onSuccess { data ->
+            emit(data)
+        }.onFailure { e ->
+            e.printStackTrace()
+            emit(emptyList())
+        }
     }
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val allMails = mailFolders.map { folders ->
         folders.flatMap { folder ->
             getMailItemsInFolder(folder.fullName).getOrNull() ?: emptyList()
@@ -73,10 +74,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -132,10 +135,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -191,10 +196,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -253,10 +260,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -340,14 +349,17 @@ class MailClient(
                     setProperty("mail.smtp.ssl.enable", "true")
                     setProperty("mail.smtp.starttls.enable", "false")
                 }
+
                 587 -> {
                     setProperty("mail.smtp.ssl.enable", "false")
                     setProperty("mail.smtp.starttls.enable", "true")
                 }
+
                 25 -> {
                     setProperty("mail.smtp.ssl.enable", "false")
                     setProperty("mail.smtp.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.smtp.ssl.enable", "true")
                     setProperty("mail.smtp.starttls.enable", "true")
@@ -408,10 +420,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -454,10 +468,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -514,10 +530,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -567,10 +585,12 @@ class MailClient(
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "false")
                 }
+
                 143 -> {
                     setProperty("mail.imap.ssl.enable", "false")
                     setProperty("mail.imap.starttls.enable", "true")
                 }
+
                 else -> {
                     setProperty("mail.imap.ssl.enable", "true")
                     setProperty("mail.imap.starttls.enable", "true")
@@ -662,11 +682,13 @@ class MailClient(
             contentPart.isMimeType("text/plain") -> {
                 (contentPart.content as? String) ?: ""
             }
+
             contentPart.isMimeType("text/html") -> {
                 (contentPart.content as? String)
                     ?.replace("<[^>]+>".toRegex(), " ")
                     ?: ""
             }
+
             contentPart.isMimeType("multipart/*") -> {
                 val mp = contentPart.content as? Multipart
                 if (mp != null) {
@@ -682,6 +704,7 @@ class MailClient(
                     }
                 } else ""
             }
+
             else -> {
                 contentPart.content as? String ?: ""
             }

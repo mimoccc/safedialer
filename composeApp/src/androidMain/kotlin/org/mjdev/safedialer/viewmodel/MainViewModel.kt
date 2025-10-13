@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import org.mjdev.safedialer.providers.android.contacts.Contact
-import org.mjdev.safedialer.repository.IDataRepository
+import org.mjdev.safedialer.repository.base.IDataRepository
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 

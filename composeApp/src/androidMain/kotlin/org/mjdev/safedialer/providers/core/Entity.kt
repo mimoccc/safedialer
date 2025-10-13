@@ -212,6 +212,8 @@ abstract class Entity {
             }
             return entity
         }
+
+        fun Boolean.toInt(): Int  = if(this) 1 else 0
     }
 
     override fun toString(): String {

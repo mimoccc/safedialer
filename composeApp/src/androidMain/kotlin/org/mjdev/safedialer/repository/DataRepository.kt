@@ -3,17 +3,18 @@ package org.mjdev.safedialer.repository
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.shareIn
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 import org.kodein.di.instance
 import org.mjdev.safedialer.data.custom.MailThread
 import org.mjdev.safedialer.data.custom.Message
@@ -31,190 +32,170 @@ import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.android.telephony.TelephonyFilter
 import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
 import org.mjdev.safedialer.providers.custom.email.EmailsProvider
+import org.mjdev.safedialer.repository.base.ADataRepository
+import org.mjdev.safedialer.repository.base.IDataRepository
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class DataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
-) : IDataRepository(context, scope) {
-    @Volatile
-    private var contactsPreloaded = false
+) : ADataRepository(context, scope), IDataRepository {
 
     private val contactsProvider: ContactsProvider by instance()
     private val callsProvider: CallsProvider by instance()
     private val telephonyProvider: TelephonyProvider by instance()
     private val emailsProvider: EmailsProvider by instance()
 
-    private val contacts: Flow<List<Contact>>
-        get() = providerObserver(contactsProvider) {
-            getContacts()?.filter { pn ->
-                pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
-            }?.mergeBy { contact ->
-                contact.contactId
-            }?.sortedBy { contact ->
-                contact.displayName
-            } ?: emptyList()
-        }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
+    private val contacts: Flow<List<Contact>> = providerObserver(contactsProvider) {
+        getContacts()?.filter { pn ->
+            pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
+        }?.mergeBy { contact ->
+            contact.contactId
+        }?.sortedBy { contact ->
+            contact.displayName
+        } ?: emptyList()
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    private val calls: Flow<List<Call>>
-        get() = contacts.combine(
-            providerObserver(callsProvider) {
-                getCalls()?.filter { call ->
-                    call.name.isNotNBlank() && call.number.isNotNBlank()
-                } ?: emptyList()
-            }
-        ) { lastContacts, callList ->
-            callList.map { call ->
-                call.copy(
-                    contact = lastContacts.firstOrNull { c ->
-                        c.phone.removeWhites() == call.number.removeWhites()
-                    }
-                )
-            }.sortedByDescending { call -> call.callDate }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    private val callsNoContacts: Flow<List<Call>> = providerObserver(callsProvider) {
+        getCalls()?.sortedByDescending { call -> call.callDate } ?: emptyList()
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    private val smsThreads
-        get() = providerObserver(telephonyProvider) {
-            getSms(TelephonyFilter.ALL) ?: emptyList()
-        }.map { smsList ->
-            smsList.groupBy { sms -> sms.threadId }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    private val mmsThreads
-        get() = providerObserver(telephonyProvider) {
-            getMms(TelephonyFilter.ALL) ?: emptyList()
-        }.map { mmsList ->
-            mmsList.groupBy { mms -> mms.threadId }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    private val messageThreads: Flow<Map<Long, List<MessageThread>>>
-        get() = contacts.combine(
-            smsThreads.combine(mmsThreads) { smsMap, mmsMap -> Pair(smsMap, mmsMap) }
-        ) { contactsList, pair ->
-            val smsMap = pair.first
-            val mmsMap = pair.second
-            val result = mutableMapOf<Long, List<MessageThread>>()
-            val allThreadIds = (smsMap.keys.map { it } + mmsMap.keys).toSet()
-            allThreadIds.forEach { threadId ->
-                val smsList = smsMap[threadId] ?: emptyList()
-                val mmsList = mmsMap[threadId] ?: emptyList()
-                val combined = (smsList.map {
-                    Message(type = MessageType.SMS, message = it)
-                } + mmsList.map {
-                    Message(type = MessageType.MMS, message = it)
-                })
-                val senderContact = when (val firstMsg = combined.firstOrNull()?.message) {
-                    is Sms -> contactsList.firstOrNull { contact ->
-                        val phone = contact.phone?.removeWhites() ?: ""
-                        val normalized = contact.normalizedPhone?.removeWhites() ?: ""
-                        val msgAddress = firstMsg.address?.removeWhites() ?: ""
-                        phone == msgAddress || normalized == msgAddress
-                    }
-
-                    is Mms -> null
-                    else -> null
+    // todo missing some numbers
+    private val calls: Flow<List<Call>> = callsNoContacts.combine(contacts) { calls, contacts ->
+        calls.map { call ->
+            call.copy(
+                contact = contacts.firstOrNull { contact ->
+                    contact.phone.contentEquals(call.number) ||
+                            contact.normalizedPhone.contentEquals(call.number)
                 }
-                result[threadId] = listOf(
-                    MessageThread(
-                        id = threadId,
-                        contact = senderContact,
-                        messages = combined,
-                    )
-                )
-            }
-            result
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+            )
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    private val emails
-        get() = contacts.combine(providerObserver(emailsProvider) {
-            getEmails() ?: emptyList()
-        }) { lastContacts, emailList ->
-            emailList.map { email ->
-                email.copy(
-                    contact = lastContacts.firstOrNull { c ->
-                        c.emails?.any { e ->
-                            e.removeWhites() == email.senderEmail.removeWhites()
-                        } ?: false
-                    }
-                )
-            }.sortedByDescending { email -> email.createdAtMillis }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    private val smsThreads: Flow<Map<Long, List<Message>>> = providerObserver(telephonyProvider) {
+        getSms(TelephonyFilter.ALL) ?: emptyList()
+    }.map { smsList ->
+        smsList.map { sms -> Message(sms) }.groupBy { sms -> sms.threadId }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val contactsMap: Flow<Map<String, List<Contact>>>
-        get() = contacts.map { cl ->
-            cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: "" }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    private val mmsThreads: Flow<Map<Long, List<Message>>> = providerObserver(telephonyProvider) {
+        getMms(TelephonyFilter.ALL) ?: emptyList()
+    }.map { mmsList ->
+        mmsList.map { mms -> Message(mms) }.groupBy { mms -> mms.threadId }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
-    override val callsMap: Flow<Map<String, List<Call>>>
-        get() = calls.map { cl ->
-            cl.groupBy { c -> c.callDate.formatDate() }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val messagesMap
-        get() = messageThreads.map { map ->
-            map.values.flatten().groupBy { mt -> mt.date.formatDate() }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override val emailsMap: Flow<Map<String, List<MailThread>>>
-        get() = emails.map { emailList ->
-            val participants = mutableSetOf<String>()
-            emailList.forEach { mail ->
-                val sender = mail.senderEmail.trim()
-                if (sender.isNotEmpty()) participants += sender.lowercase()
-                val recipients = mail.recipientsCsv
-                    .split(',', ';')
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                participants += recipients.map { it.lowercase() }
-            }
-            val result = mutableMapOf<String, List<MailThread>>()
-            for (participant in participants) {
-                val participantMessages = emailList.filter { mail ->
-                    mail.senderEmail.equals(participant, ignoreCase = true) ||
-                            mail.recipientsCsv
-                                .split(',', ';')
-                                .any { it.trim().equals(participant, ignoreCase = true) }
-                }.sortedByDescending { it.createdAtMillis }
-                if (participantMessages.isEmpty()) continue
-                val fromParticipant = participantMessages.firstOrNull {
-                    it.senderEmail.equals(participant, true)
-                }
-                val contact = fromParticipant?.contact
-                val receivedDate = fromParticipant?.createdAtMillis?.formatDate() ?: "-"
-                result[receivedDate] = listOf(
-                    MailThread(
-                        id = 0L,
-                        contact = contact,
-                        messages = participantMessages,
-                    )
-                )
-            }
-            result
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
-
-    override fun preloadContacts() {
-        CoroutineScope(Dispatchers.IO + Job()).launch {
-            if (!contactsPreloaded) {
-                contacts.first<List<Contact>?>()
-                contactsPreloaded = true
+    private val allThreads: Flow<Map<Long, List<Message>>> = smsThreads.combine(
+        mmsThreads
+    ) { smsMap, mmsMap ->
+        (smsMap.keys + mmsMap.keys).associateWith { threadId ->
+            (smsMap[threadId].orEmpty() + mmsMap[threadId].orEmpty()).sortedByDescending {
+                it.date
             }
         }
     }
 
+    // todo some sms or mms are without data, and contact
+    private val messageThreads: Flow<List<MessageThread>> =
+        allThreads.combine(contacts) { threads, contacts ->
+            threads.map { (threadId, msgs) ->
+                MessageThread(
+                    threadId = threadId,
+                    messages = msgs,
+                    contact = msgs.firstOrNull { it.address != null }?.address?.let { a ->
+                        contacts.firstOrNull { contact ->
+                            contact.phone?.contentEquals(a) == true ||
+                                    contact.normalizedPhone.contentEquals(a)
+                        }
+                    }
+                )
+            }
+        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    private val emails = providerObserver(emailsProvider) {
+        getEmails() ?: emptyList()
+    }.combine(contacts) { emailList, contacts ->
+        emailList.filter { m ->
+            !m.isDeleted && !m.isArchived // todo
+        }.sortedByDescending { email ->
+            email.createdAtMillis
+        }.map { email ->
+            val senderEmail = email.senderEmail.removeWhites()
+            val senderName = email.senderName.removeWhites()
+            email.copy(
+                contact = contacts.firstOrNull { c ->
+                    c.email.contentEquals(senderEmail, true) ||
+                            c.emails?.any { e -> e.contentEquals(senderEmail, true) } == true ||
+                            c.displayName.contentEquals(senderName, true)
+                }
+            )
+        }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
+        cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: "" }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
+        cl.groupBy { c -> c.callDate.formatDate() }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val messagesMap = messageThreads.map { threads ->
+        threads.groupBy { mt -> mt.date.formatDate() }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    // todo simplify
+    override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.map { emailList ->
+        val participants = mutableSetOf<String>()
+        emailList.forEach { mail ->
+            val sender = mail.senderEmail.trim() // todo sender from sent
+            if (sender.isNotEmpty()) participants += sender.lowercase()
+            val recipients = mail.recipientsCsv
+                .split(',', ';')
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
+            participants += recipients.map { r -> r.lowercase() }
+        }
+        val result = mutableMapOf<String, List<MailThread>>()
+        for (participant in participants) {
+            val participantMessages = emailList.filter { mail ->
+                mail.senderEmail.equals(participant, ignoreCase = true) ||
+                        mail.recipientsCsv
+                            .split(',', ';')
+                            .any { it.trim().equals(participant, ignoreCase = true) }
+            }.sortedByDescending { it.createdAtMillis }
+            if (participantMessages.isEmpty()) continue
+            val fromParticipant = participantMessages.firstOrNull {
+                it.senderEmail.equals(participant, true)
+            }
+            val contact = fromParticipant?.contact
+            val receivedDate = fromParticipant?.createdAtMillis?.formatDate() ?: "-"
+            result[receivedDate] = listOf(
+                MailThread(
+                    id = 0L,
+                    contact = contact,
+                    messages = participantMessages,
+                )
+            )
+        }
+        result.toList().sortedByDescending { pair ->
+            pair.first
+        }.toMap()
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
     override suspend fun findContactByPhone(
         phoneNumber: String?
-    ): Contact? = if (phoneNumber == null) null
-    else contacts.firstOrNull()?.first { c ->
-        c.phone?.contains(phoneNumber) == true ||
-                c.normalizedPhone?.contains(phoneNumber) == true
+    ): Contact? = if (phoneNumber == null) null else contacts.last().firstOrNull { c ->
+        c.phone?.contains(phoneNumber) == true || c.normalizedPhone?.contains(phoneNumber) == true
     }
 
     override suspend fun findContactBySender(
         email: String?,
         senderName: String?
-    ): Contact? = contacts.firstOrNull()?.first { c ->
-        val isEmail = if (email == null) false
-        else {
-            c.email?.contains(email) == true || c.emails?.any { e -> e?.contains(email) == true } == true
+    ): Contact? = contacts.last().firstOrNull { c ->
+        val isEmail = if (email == null) false else {
+            c.email?.contains(email) == true || c.emails?.any { e ->
+                e?.contains(email) == true
+            } == true
         }
         val isName = if (senderName == null) false else {
             c.displayName?.contains(senderName) == true

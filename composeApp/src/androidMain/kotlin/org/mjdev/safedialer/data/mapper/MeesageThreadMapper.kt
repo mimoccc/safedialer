@@ -16,7 +16,7 @@ class MessageThreadMapper (
         get() = message?.contact
 
     override val itemId: Long?
-        get() = message?.contact?.contactId ?: message?.contact?.id ?: message?.id
+        get() = message?.contact?.contactId ?: message?.contact?.id ?: message?.threadId
     override val itemEmail: String?
         get() = message?.contact?.email
     override val itemPhone: String?

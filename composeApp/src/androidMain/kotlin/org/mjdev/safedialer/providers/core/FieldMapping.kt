@@ -1,5 +1,6 @@
 package org.mjdev.safedialer.providers.core
 
+@Suppress("unused")
 @Target(AnnotationTarget.FIELD)
 @Retention(AnnotationRetention.RUNTIME)
 annotation class FieldMapping(
