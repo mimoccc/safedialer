@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
 import android.os.Handler
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -75,8 +76,10 @@ class MainActivity : ComponentActivity(), DIAware {
         }
     }
 
-    private fun initializeLLM() {
+    private fun initializeLLM() = runCatching {
 //        CactusContextInitializer.initialize(this)
+    }.onFailure { e ->
+        Log.e(TAG, e.message, e)
     }
 
     private fun checkPermissions() = Permissions.check(
@@ -99,6 +102,8 @@ class MainActivity : ComponentActivity(), DIAware {
     )
 
     companion object {
+        private val TAG = MainActivity::class.simpleName
+
         const val PERMISSIONS_GRANTED = "permissions_granted"
     }
 }

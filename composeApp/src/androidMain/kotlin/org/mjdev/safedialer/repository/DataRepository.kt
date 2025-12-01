@@ -5,12 +5,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.last
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.flow.map
 import org.kodein.di.instance
 import org.mjdev.safedialer.data.custom.MailThread
@@ -48,11 +46,11 @@ class DataRepository(
         }?.sortedBy { contact ->
             contact.displayName
         } ?: emptyList()
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val callsNoContacts: Flow<List<Call>> = providerObserver(callsProvider) {
         getCalls()?.sortedByDescending { call -> call.callDate } ?: emptyList()
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     // todo missing some numbers
     private val calls: Flow<List<Call>> = callsNoContacts.combine(contacts) { calls, contacts ->
@@ -64,27 +62,25 @@ class DataRepository(
                 }
             )
         }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val smsThreads: Flow<Map<Long, List<Message>>> = providerObserver(telephonyProvider) {
         getSms(TelephonyFilter.ALL) ?: emptyList()
     }.map { smsList ->
         smsList.map { sms -> Message(sms) }.groupBy { sms -> sms.threadId }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val mmsThreads: Flow<Map<Long, List<Message>>> = providerObserver(telephonyProvider) {
         getMms(TelephonyFilter.ALL) ?: emptyList()
     }.map { mmsList ->
         mmsList.map { mms -> Message(mms) }.groupBy { mms -> mms.threadId }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val allThreads: Flow<Map<Long, List<Message>>> = smsThreads.combine(
         mmsThreads
     ) { smsMap, mmsMap ->
         (smsMap.keys + mmsMap.keys).associateWith { threadId ->
-            (smsMap[threadId].orEmpty() + mmsMap[threadId].orEmpty()).sortedByDescending {
-                it.date
-            }
+            (smsMap[threadId].orEmpty() + mmsMap[threadId].orEmpty()).sortedByDescending { it.date }
         }
     }
 
@@ -103,7 +99,7 @@ class DataRepository(
                     }
                 )
             }
-        }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+        }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val emails = providerObserver(emailsProvider) {
         getEmails() ?: emptyList()
@@ -124,23 +120,23 @@ class DataRepository(
                 contact = contact
             )
         }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     private val aiThreads: Flow<List<AIItem>> = flow {
         emit(emptyList<AIItem>()) // todo
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     override val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
         cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: "" }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     override val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
         cl.groupBy { c -> c.callDate.formatDate() }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     override val messagesMap = messageThreads.map { threads ->
         threads.groupBy { mt -> mt.date.formatDate() }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     // todo simplify
     override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.map { emailList ->
@@ -179,11 +175,11 @@ class DataRepository(
         result.toList().sortedByDescending { pair ->
             pair.first
         }.toMap()
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     override val aiMap = aiThreads.map { threads ->
         threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
 
     override suspend fun findContactByPhone(
         phoneNumber: String?

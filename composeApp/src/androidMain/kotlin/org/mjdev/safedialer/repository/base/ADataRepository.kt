@@ -53,7 +53,9 @@ abstract class ADataRepository(
         }
         observer.onChange(false)
         awaitClose {
-            context.contentResolver.unregisterContentObserver(observer)
+            runCatching {
+                context.contentResolver.unregisterContentObserver(observer)
+            }
         }
     }
 

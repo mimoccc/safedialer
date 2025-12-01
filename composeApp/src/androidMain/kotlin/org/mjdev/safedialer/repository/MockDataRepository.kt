@@ -37,7 +37,7 @@ class MockDataRepository(
 ) : ADataRepository(context, scope), IDataRepository {
     private val contacts: Flow<List<Contact>> = flow {
         emit(mockContacts)
-    }.flowOn(Dispatchers.IO).stateIn(scope, Eagerly, emptyList())
+    }.flowOn(Dispatchers.Default)
 
     private val calls: Flow<List<Call>> = contacts.combine(
         flow {
@@ -50,19 +50,19 @@ class MockDataRepository(
             }
             call
         }.sortedByDescending { call -> call.callDate }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     private val smsThreads: Flow<Map<Long, List<Sms>>> = flow {
         emit(mockSms)
     }.map { smsList ->
         smsList.groupBy { it.threadId }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     private val mmsThreads = flow {
         emit(mockMms)
     }.map { mmsList ->
         mmsList.groupBy { it.threadId }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     private val messageThreads: Flow<Map<Long, List<MessageThread>>> = contacts.combine(
         smsThreads.combine(mmsThreads) { smsMap, mmsMap ->
@@ -97,7 +97,7 @@ class MockDataRepository(
             )
         }
         result
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     private val emails: Flow<List<MailItem>> = contacts.combine(flow {
         emit(mockEmails)
@@ -111,29 +111,29 @@ class MockDataRepository(
                 }
             )
         }.sortedByDescending { email -> email.createdAtMillis }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     private val aiThreads: Flow<List<AIItem>> = flow {
         emit(emptyList<AIItem>()) // todo
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
         cl.groupBy { c ->
             c.callDate.formatDate()
         }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override val messagesMap: Flow<Map<String, List<MessageThread>>> = messageThreads.map { map ->
         map.values.flatten().groupBy { mt ->
             mt.date.formatDate()
         }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
         cl.groupBy { c ->
             c.displayName?.firstOrNull()?.uppercase() ?: ""
         }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.map { emailList ->
         val participants = mutableSetOf<String>()
@@ -170,11 +170,11 @@ class MockDataRepository(
             )
         }
         result
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override val aiMap = aiThreads.map { threads ->
         threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
-    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default)
 
     override suspend fun findContactByPhone(
         phoneNumber: String?
