@@ -7,9 +7,11 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.Call
 import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Mail
+import androidx.compose.material.icons.filled.VoiceChat
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.ui.graphics.vector.ImageVector
+import org.mjdev.safedialer.ui.tabs.TabAI
 import org.mjdev.safedialer.ui.tabs.TabCallLog
 import org.mjdev.safedialer.ui.tabs.TabContactList
 import org.mjdev.safedialer.ui.tabs.TabEmails
@@ -46,6 +48,13 @@ enum class Tabs(
         icon = Icons.Default.Mail,
         content = { ss, ft ->
             TabEmails(ss, ft)
+        }
+    ),
+    AIChat(
+        title = "AI",
+        icon = Icons.Default.VoiceChat,
+        content = { ss, ft ->
+            TabAI(ss, ft)
         }
     );
 

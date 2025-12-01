@@ -1,0 +1,46 @@
+package org.mjdev.safedialer.sync.ai
+
+import android.content.ContentProvider
+import android.content.ContentValues
+import android.database.Cursor
+import android.database.MatrixCursor
+import android.net.Uri
+
+class ProviderAI : ContentProvider() {
+    override fun onCreate(): Boolean  = true
+
+    override fun query(
+        uri: Uri,
+        projection: Array<out String?>?,
+        selection: String?,
+        selectionArgs: Array<out String?>?,
+        sortOrder: String?
+    ): Cursor = MatrixCursor(arrayOf())
+
+    override fun getType(
+        uri: Uri
+    ): String? = null
+
+    override fun insert(
+        uri: Uri,
+        values: ContentValues?
+    ): Uri? = null
+
+    override fun delete(
+        uri: Uri,
+        selection: String?,
+        selectionArgs: Array<out String?>?
+    ): Int = 0
+
+    override fun update(
+        uri: Uri,
+        values: ContentValues?,
+        selection: String?,
+        selectionArgs: Array<out String?>?
+    ): Int = 0
+
+    companion object {
+        const val ITEM_ID = "id"
+        const val ITEM_CREATED_AT = "createdAt"
+    }
+}

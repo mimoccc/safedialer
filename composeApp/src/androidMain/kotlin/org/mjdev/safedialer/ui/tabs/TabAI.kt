@@ -15,32 +15,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.mjdev.safedialer.data.custom.MessageThread
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.extensions.DateExt.formatDate
 import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.custom.ai.AIItem
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
 import org.mjdev.safedialer.viewmodel.MainViewModel
 
-@Suppress( "UNCHECKED_CAST")
+@Suppress("UNCHECKED_CAST")
 @Preview
 @Composable
-fun TabMessages(
+fun TabAI(
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
 ) {
     val viewModel by rememberViewModelSafe { context ->
         MainViewModel(MockDataRepository(context))
     }
-    val messagesMap by viewModel.messagesMap.collectAsState(LinkedHashMap())
-    val filter: MapFilter<MessageThread> = remember {
+    val aiMessagesMap by viewModel.aiMessages.collectAsState(LinkedHashMap())
+    val filter: MapFilter<AIItem> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
                 i.toString().contains(s, true)
             }.groupBy { c ->
-                c.date.formatDate()
+                c.createdAtMillis.formatDate()
             }
         }
     }
@@ -51,8 +51,10 @@ fun TabMessages(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         MappedList(
-            modifier = Modifier.fillMaxSize(),
-            mapData = messagesMap,
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f),
+            mapData = aiMessagesMap,
             showDate = true,
             scrollState = scrollState,
             filterText = filterText,

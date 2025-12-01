@@ -37,7 +37,7 @@ fun TabContactList(
     val filter: MapFilter<Contact> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
-                i.displayName?.contains(s, true) ?: false
+                i.toString().contains(s, true)
             }.groupBy { c ->
                 c.displayName?.firstOrNull()?.uppercase() ?: ""
             }

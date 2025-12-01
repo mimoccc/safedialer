@@ -35,8 +35,8 @@ fun TabCallLog(
     val callsMap by viewModel.callsMap.collectAsState(LinkedHashMap())
     val filter: MapFilter<Call> = remember {
         { m, s ->
-            m.values.flatten().filter { item ->
-                item.name?.contains(s, true) ?: false
+            m.values.flatten().filter { i ->
+                i.toString().contains(s, true)
             }.groupBy { c ->
                 c.callDate.formatDate()
             }

@@ -12,8 +12,8 @@ import org.mjdev.safedialer.service.IncomingCallService
 class MainApp : Application(), DIAware {
     override val di: LazyDI by mainDI(this@MainApp)
 
-    val callsManager by instance<CallsManager>()
-    val capabilities by instance<Int>("callCapabilities")
+    private val callsManager by instance<CallsManager>()
+    private val capabilities by instance<Int>("callCapabilities")
 
     override fun onCreate() {
         callsManager.registerAppWithTelecom(capabilities)

@@ -39,7 +39,7 @@ fun TabEmails(
     val filter: MapFilter<MailItem> = remember {
         { m, s ->
             m.values.flatten().filter { i ->
-                i.senderName.contains(s, true)
+                i.toString().contains(s, true)
             }.groupBy { c ->
                c.createdAtMillis.formatDate()
             }

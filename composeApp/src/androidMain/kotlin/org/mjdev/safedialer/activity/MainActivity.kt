@@ -9,6 +9,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.cactus.CactusContextInitializer
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DIAware
@@ -43,6 +44,7 @@ class MainActivity : ComponentActivity(), DIAware {
         installSplashScreen()
         enableEdgeToEdge()
         addLockScreenFlags()
+        initializeLLM()
         super.onCreate(savedInstanceState)
         setContent {
             withDI(di) {
@@ -73,7 +75,10 @@ class MainActivity : ComponentActivity(), DIAware {
         }
     }
 
-    @Suppress("DEPRECATION")
+    private fun initializeLLM() {
+//        CactusContextInitializer.initialize(this)
+    }
+
     private fun checkPermissions() = Permissions.check(
         applicationContext,
         permissions,

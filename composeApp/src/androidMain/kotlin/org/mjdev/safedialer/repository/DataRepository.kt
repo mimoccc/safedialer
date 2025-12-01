@@ -3,13 +3,10 @@ package org.mjdev.safedialer.repository
 import android.content.Context
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.SharingStarted.Companion.Eagerly
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.last
@@ -19,7 +16,6 @@ import org.kodein.di.instance
 import org.mjdev.safedialer.data.custom.MailThread
 import org.mjdev.safedialer.data.custom.Message
 import org.mjdev.safedialer.data.custom.MessageThread
-import org.mjdev.safedialer.data.custom.MessageType
 import org.mjdev.safedialer.extensions.DateExt.formatDate
 import org.mjdev.safedialer.extensions.StringExt.isNotNBlank
 import org.mjdev.safedialer.extensions.StringExt.removeWhites
@@ -27,15 +23,13 @@ import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.calllog.CallsProvider
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.contacts.ContactsProvider
-import org.mjdev.safedialer.providers.android.telephony.Mms
-import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.android.telephony.TelephonyFilter
 import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
+import org.mjdev.safedialer.providers.custom.ai.AIItem
 import org.mjdev.safedialer.providers.custom.email.EmailsProvider
 import org.mjdev.safedialer.repository.base.ADataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class DataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
@@ -121,14 +115,19 @@ class DataRepository(
         }.map { email ->
             val senderEmail = email.senderEmail.removeWhites()
             val senderName = email.senderName.removeWhites()
+            val contact = contacts.firstOrNull { c ->
+                c.email.contentEquals(senderEmail, true) ||
+                        c.emails?.any { e -> e.contentEquals(senderEmail, true) } == true ||
+                        c.displayName.contentEquals(senderName, true)
+            }
             email.copy(
-                contact = contacts.firstOrNull { c ->
-                    c.email.contentEquals(senderEmail, true) ||
-                            c.emails?.any { e -> e.contentEquals(senderEmail, true) } == true ||
-                            c.displayName.contentEquals(senderName, true)
-                }
+                contact = contact
             )
         }
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    private val aiThreads: Flow<List<AIItem>> = flow {
+        emit(emptyList<AIItem>()) // todo
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     override val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
@@ -180,6 +179,10 @@ class DataRepository(
         result.toList().sortedByDescending { pair ->
             pair.first
         }.toMap()
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val aiMap = aiThreads.map { threads ->
+        threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     override suspend fun findContactByPhone(

@@ -10,5 +10,6 @@ enum class SyncAccountTypes(
     CONTACTS(R.string.authority_contacts),
     EMAILS(R.string.authority_emails),
     GALLERY(R.string.authority_gallery),
-    TASKS(R.string.authority_tasks)
+    TASKS(R.string.authority_tasks),
+    AI(R.string.authority_ai)
 }

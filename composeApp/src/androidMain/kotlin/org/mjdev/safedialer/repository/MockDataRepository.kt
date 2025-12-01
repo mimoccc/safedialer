@@ -26,6 +26,7 @@ import org.mjdev.safedialer.providers.android.telephony.Mms
 import org.mjdev.safedialer.providers.android.telephony.MmsMessageType
 import org.mjdev.safedialer.providers.android.telephony.Sms
 import org.mjdev.safedialer.providers.android.telephony.SmsMessageType
+import org.mjdev.safedialer.providers.custom.ai.AIItem
 import org.mjdev.safedialer.providers.custom.email.MailItem
 import org.mjdev.safedialer.repository.base.ADataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
@@ -112,6 +113,10 @@ class MockDataRepository(
         }.sortedByDescending { email -> email.createdAtMillis }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
+    private val aiThreads: Flow<List<AIItem>> = flow {
+        emit(emptyList<AIItem>()) // todo
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
     override val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
         cl.groupBy { c ->
             c.callDate.formatDate()
@@ -165,6 +170,10 @@ class MockDataRepository(
             )
         }
         result
+    }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
+
+    override val aiMap = aiThreads.map { threads ->
+        threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
     }.flowOn(Dispatchers.IO).shareIn(scope, Eagerly, 1)
 
     override suspend fun findContactByPhone(

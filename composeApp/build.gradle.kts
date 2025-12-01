@@ -119,8 +119,9 @@ kotlin {
             implementation(libs.logback.classic)
             implementation(libs.kodein.di)
             implementation(libs.kodein.di.framework.compose)
-//            implementation(libs.kodein.db)
-//            implementation(libs.kodein.db.serializer.kotlinx)
+            implementation(libs.kodein.db)
+            implementation(libs.kodein.db.serializer.kotlinx)
+            implementation("com.cactuscompute:cactus:1.2.0-beta")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -146,6 +147,7 @@ android {
         authResValue("emails")
         authResValue("gallery")
         authResValue("tasks")
+        authResValue("ai")
         resValue(
             "string",
             "app_name",
@@ -157,6 +159,7 @@ android {
         resValue("string", "sync_label_emails", "Emails")
         resValue("string", "sync_label_gallery", "Gallery")
         resValue("string", "sync_label_tasks", "Tasks")
+        resValue("string", "sync_label_ai", "AI")
     }
     packaging {
         resources {

@@ -42,6 +42,7 @@
     <uses-permission
             android:name="android.permission.SEND_SMS"
             tools:ignore="SmsAndCallLogPolicy" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <permission
             android:name="org.mjdev.safedialer.SECURE_DATA_ACCESS"
@@ -227,6 +228,26 @@
             <meta-data
                     android:name="android.content.SyncAdapter"
                     android:resource="@xml/sync_adapter_tasks" />
+        </service>
+
+        <provider
+                android:name=".sync.ai.ProviderAI"
+                android:authorities="@string/authority_ai"
+                android:exported="true"
+                android:label="@string/sync_label_ai"
+                android:grantUriPermissions="true" />
+
+        <service
+                android:name=".sync.ai.SyncServiceAI"
+                android:exported="true"
+                android:permission="android.permission.BIND_SYNC_ADAPTER"
+                android:label="@string/sync_label_ai">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/sync_adapter_ai" />
         </service>
 
     </application>
