@@ -15,7 +15,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.extensions.DateExt.formatDate
 import org.mjdev.safedialer.providers.core.Entity

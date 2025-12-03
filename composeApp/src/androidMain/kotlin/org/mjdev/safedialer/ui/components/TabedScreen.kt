@@ -26,7 +26,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.navigation.Tabs
+import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 
@@ -34,7 +34,7 @@ import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 @Composable
 fun TabbedScreen(
     modifier: Modifier = Modifier,
-    startTab: Tabs = Tabs.CallLog, // todo last item
+    startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo last item
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
     tabState: TabsState = rememberTabsState(startTab = startTab),
@@ -65,7 +65,7 @@ fun TabbedScreen(
                         if (useBlur) m.haze(hazeState) else m
                     },
             ) {
-                (tabState.currentTab as? Tabs)
+                (tabState.currentTab as? SyncAccountTypes)
                     ?.content
                     ?.invoke(scrollState, filterText)
                 DialPad(

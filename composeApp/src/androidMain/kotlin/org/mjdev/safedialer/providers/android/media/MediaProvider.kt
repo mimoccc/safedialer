@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.providers.android.media
 
 import android.content.Context
+import android.net.Uri
 import android.provider.MediaStore
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Data
@@ -88,4 +89,31 @@ class MediaProvider(
         INTERNAL,
         EXTERNAL
     }
+
+    override fun getUris(): List<Uri> = listOf(
+        Album.uri,
+        Album.uriExternal,
+        Album.uriInternal,
+        Artist.uri,
+        Artist.uriExternal,
+        Artist.uriInternal,
+        Audio.uri,
+        Audio.uriExternal,
+        Audio.uriInternal,
+        File.uri,
+        File.uriInternal,
+        File.uriExternal,
+        Genre.uri,
+        Genre.uriExternal,
+        Genre.uriInternal,
+        Image.uri,
+        Image.uriExternal,
+        Image.uriInternal,
+        Playlist.uri,
+        Playlist.uriExternal,
+        Playlist.uriInternal,
+        Video.uri,
+        Video.uriExternal,
+        Video.uriInternal
+    ).distinct().filter { it != Uri.EMPTY }
 }

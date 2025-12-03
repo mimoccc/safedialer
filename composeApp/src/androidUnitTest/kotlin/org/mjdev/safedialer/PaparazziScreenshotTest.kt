@@ -3,6 +3,7 @@ package org.mjdev.safedialer
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_6_PRO
 import app.cash.paparazzi.Paparazzi
+import com.android.internal.R.id.tabs
 import com.android.resources.NightMode
 import com.android.resources.ScreenOrientation
 import com.google.gson.GsonBuilder
@@ -10,7 +11,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.kodein.di.compose.withDI
 import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.navigation.Tabs
+import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.theme.AppTheme
 import java.io.File
@@ -29,11 +30,12 @@ class PaparazziScreenshotTest {
         val screenshotsDir = File(rootDirPath, "screenshots")
         val outputJson = screenshotsDir.resolve("screenshots.json")
         val screenshots = mutableListOf<Map<String, String>>()
-        val tabs: List<Enum<*>> = Tabs.entries.toMutableList().apply {
+        val tabs: List<Enum<*>> = SyncAccountTypes.entries.toList().filter { tab ->
             val isServer = BuildConfig.SERVER.isNotEmpty()
             val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
             val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
-            if (!(isServer && isUser && isPass)) remove(Tabs.Emails)
+            val isLoggedIn = isServer && isUser && isPass
+            if (tab.needLogon) isLoggedIn else true
         }
         DeviceConfigs.entries.forEach { entry ->
             tabs.forEach { tab ->
@@ -44,7 +46,7 @@ class PaparazziScreenshotTest {
                 }.snapshot(snapShotName) {
                     withDI(di) {
                         AppTheme {
-                            MainScreen(startTab = tab as Tabs)
+                            MainScreen(startTab = tab as SyncAccountTypes)
                         }
                     }
                 }

@@ -18,7 +18,7 @@ import jakarta.mail.Part
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import org.mjdev.safedialer.BuildConfig
-import org.mjdev.safedialer.sync.contacts.ContactAutoEnricher
+import org.mjdev.safedialer.helpers.ContactAutoEnricher
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 

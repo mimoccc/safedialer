@@ -2,7 +2,7 @@ package org.mjdev.safedialer.data.mapper
 
 import android.net.Uri
 import androidx.core.net.toUri
-import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.calllog.CallType

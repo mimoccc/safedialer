@@ -27,4 +27,8 @@ class EmailsProvider(
         val emails: Data<MailItem>? = getContentTableData(uri, MailItem::class.java)
         return emails?.getList()
     }
+
+    override fun getUris(): List<Uri> = listOf(
+        safeUri { Uri.parse("content://" + context.getString(R.string.authority_emails)) }
+    ).distinct().filter { it != Uri.EMPTY }
 }

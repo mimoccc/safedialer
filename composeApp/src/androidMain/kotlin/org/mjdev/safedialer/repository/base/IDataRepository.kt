@@ -1,8 +1,8 @@
 package org.mjdev.safedialer.repository.base
 
 import kotlinx.coroutines.flow.Flow
-import org.mjdev.safedialer.data.custom.MailThread
-import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.providers.custom.email.MailThread
+import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.custom.ai.AIItem

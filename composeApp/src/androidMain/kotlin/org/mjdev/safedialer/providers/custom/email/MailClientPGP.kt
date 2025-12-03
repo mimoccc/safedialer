@@ -17,7 +17,7 @@ import jakarta.mail.Multipart
 import jakarta.mail.Part
 import jakarta.mail.internet.MimeBodyPart
 import jakarta.mail.internet.MimeMultipart
-import org.mjdev.safedialer.sync.contacts.ContactAutoEnricher
+import org.mjdev.safedialer.helpers.ContactAutoEnricher
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File

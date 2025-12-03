@@ -1,15 +1,18 @@
-package org.mjdev.safedialer.sync.contacts
+package org.mjdev.safedialer.helpers
 
 import android.content.ContentProviderOperation
 import android.content.ContentResolver
 import android.content.Context
+import android.os.Build
 import android.provider.ContactsContract
+import androidx.annotation.RequiresApi
 import org.mjdev.safedialer.sync.SyncManager
 import kotlin.collections.plusAssign
 
 object ContactAutoEnricher {
     private val phoneRegex = Regex("(?:\\+?\\d[\\s-()]*){7,}")
 
+    @RequiresApi(Build.VERSION_CODES.ECLAIR)
     fun enrichFromEmail(
         context: Context,
         displayName: String?,

@@ -1,9 +1,8 @@
-package org.mjdev.safedialer.data.custom
+package org.mjdev.safedialer.providers.custom.email
 
 import android.net.Uri
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.custom.email.MailItem
 
 data class MailThread(
     var id: Long = 0,

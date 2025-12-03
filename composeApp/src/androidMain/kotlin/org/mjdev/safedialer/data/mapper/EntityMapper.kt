@@ -1,7 +1,7 @@
 package org.mjdev.safedialer.data.mapper
 
-import org.mjdev.safedialer.data.custom.MailThread
-import org.mjdev.safedialer.data.custom.MessageThread
+import org.mjdev.safedialer.providers.custom.email.MailThread
+import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.contacts.Contact

@@ -3,6 +3,7 @@ package org.mjdev.safedialer.providers.android.calendar
 import android.annotation.TargetApi
 import android.content.ContentUris
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.CalendarContract.Attendees
 import android.provider.CalendarContract.Calendars
@@ -68,23 +69,21 @@ class CalendarProvider(
         return getContentTableData(Reminder.uri, selection, selectionArgs, null, Reminder::class.java)
     }
 
-    fun update(calendar: Calendar): Int {
-        return updateTableRow(Calendar.uri, calendar)
-    }
+    fun update(calendar: Calendar): Int = updateTableRow(Calendar.uri, calendar)
 
-    fun update(event: Event): Int {
-        return updateTableRow(Event.uri, event)
-    }
+    fun update(event: Event): Int = updateTableRow(Event.uri, event)
 
-    fun update(instance: Instance): Int {
-        return updateTableRow(Instance.uri, instance)
-    }
+    fun update(instance: Instance): Int = updateTableRow(Instance.uri, instance)
 
-    fun update(reminder: Reminder): Int {
-        return updateTableRow(Reminder.uri, reminder)
-    }
+    fun update(reminder: Reminder): Int = updateTableRow(Reminder.uri, reminder)
 
-    fun update(attendee: Attendee): Int {
-        return updateTableRow(Attendee.uri, attendee)
-    }
+    fun update(attendee: Attendee): Int = updateTableRow(Attendee.uri, attendee)
+
+    override fun getUris(): List<Uri> = listOf(
+        Attendee.uri,
+        Reminder.uri,
+        Instance.uri,
+        Event.uri,
+        Calendar.uri
+    ).distinct().filter { it != Uri.EMPTY }
 }

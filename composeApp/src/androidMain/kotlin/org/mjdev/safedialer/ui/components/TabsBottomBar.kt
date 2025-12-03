@@ -30,11 +30,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.navigation.Tabs
+import org.mjdev.safedialer.sync.SyncAccountTypes
+import org.mjdev.safedialer.sync.SyncAccountTypes.Companion.titleResId
 import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 
 @Previews
@@ -102,7 +104,7 @@ fun TabsBottomBar(
                             .size(iconSize)
                             .padding(8.dp),
                         // todo generalize
-                        imageVector = (tab as? Tabs)?.icon ?: Icons.Default.Apps,
+                        imageVector = (tab as? SyncAccountTypes)?.icon ?: Icons.Default.Apps,
                         contentDescription = "",
                         colorFilter = ColorFilter.tint(
                             color = MaterialTheme.colorScheme.primary,
@@ -111,7 +113,7 @@ fun TabsBottomBar(
                     if (selected) {
                         Text(
                             modifier = Modifier,
-                            text = tab.toString(),
+                            text = stringResource(tab.titleResId),
                             maxLines = 1,
                             color = MaterialTheme.colorScheme.primary,
                         )
@@ -127,8 +129,8 @@ class TabsState(
     startTab: Enum<*>?,
     isVisible: Boolean = true,
 ) {
-    val currentTabState = mutableStateOf(startTab ?: tabs.firstOrNull())
-    val visibleState = mutableStateOf(isVisible)
+    private val currentTabState = mutableStateOf(startTab ?: tabs.firstOrNull())
+    private val visibleState = mutableStateOf(isVisible)
     var currentTab
         get() = currentTabState.value
         set(value) {
@@ -143,11 +145,12 @@ class TabsState(
     companion object {
         @Composable
         fun rememberTabsState(
-            tabs: List<Enum<*>> = Tabs.entries.toMutableList().apply {
+            tabs: List<Enum<*>> = SyncAccountTypes.entries.toList().filter { tab ->
                 val isServer = BuildConfig.SERVER.isNotEmpty()
                 val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
                 val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
-                if (!(isServer && isUser && isPass)) remove(Tabs.Emails)
+                val isLoggedIn = isServer && isUser && isPass
+                if (tab.needLogon) isLoggedIn else true
             },
             startTab: Enum<*>? = tabs.firstOrNull(),
         ) = remember(tabs, startTab) {

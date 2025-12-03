@@ -55,6 +55,7 @@ class PhoneLookup(
         e.printStackTrace()
     }.getOrNull()
 
+    // todo : timeout
     suspend fun getInfo(
         phoneNumber: String?,
         parser: (String) -> String? = HtmlParser,

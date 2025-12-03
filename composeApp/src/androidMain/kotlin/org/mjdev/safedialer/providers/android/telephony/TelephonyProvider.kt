@@ -2,6 +2,7 @@ package org.mjdev.safedialer.providers.android.telephony
 
 import android.annotation.TargetApi
 import android.content.Context
+import android.net.Uri
 import android.os.Build
 import android.provider.Telephony
 import org.mjdev.safedialer.providers.core.AbstractProvider
@@ -67,4 +68,20 @@ class TelephonyProvider(context: Context) : AbstractProvider(context) {
 
     fun getCarriers(): List<Carrier>? =
         getContentTableData(Carrier.uri, Carrier::class.java)?.getList()
+
+    override fun getUris(): List<Uri> = listOf(
+        Carrier.uri,
+        Conversation.uri,
+        Thread.uri,
+        Sms.uri,
+        Sms.uriSent,
+        Sms.uriOutbox,
+        Sms.uriDraft,
+        Sms.uriInbox,
+        Mms.uri,
+        Mms.uriSent,
+        Mms.uriOutbox,
+        Mms.uriDraft,
+        Mms.uriInbox
+    ).distinct().filter { it != Uri.EMPTY }
 }

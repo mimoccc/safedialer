@@ -21,4 +21,8 @@ class AIProvider(
         val emails: Data<AIItem>? = getContentTableData(uri, AIItem::class.java)
         return emails?.getList()
     }
+
+    override fun getUris(): List<Uri> = listOf(
+        safeUri { Uri.parse("content://" + context.getString(R.string.authority_ai)) }
+    ).distinct().filter { it != Uri.EMPTY }
 }

@@ -119,9 +119,10 @@ kotlin {
             implementation(libs.logback.classic)
             implementation(libs.kodein.di)
             implementation(libs.kodein.di.framework.compose)
-            implementation(libs.kodein.db)
-            implementation(libs.kodein.db.serializer.kotlinx)
-            implementation("com.cactuscompute:cactus:1.2.0-beta")
+//            implementation(libs.kodein.db)
+//            implementation(libs.kodein.db.serializer.kotlinx)
+//            implementation("com.cactuscompute:cactus:1.2.0-beta")
+//            implementation("javax.sip:jain-sip-ri:1.3.0-91")
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
@@ -140,7 +141,9 @@ android {
         versionCode = libs.versions.android.versionCode.intValue
         versionName = libs.versions.android.versionName.stringValue
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        //
         syncAccountTypeResValue()
+        //
         authResValue("calendar")
         authResValue("call_log")
         authResValue("contacts")
@@ -148,18 +151,24 @@ android {
         authResValue("gallery")
         authResValue("tasks")
         authResValue("ai")
+        authResValue("messages")
+        authResValue("invoices")
+        //
         resValue(
             "string",
             "app_name",
             mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
         )
+        //
         resValue("string", "sync_label_calendar", "Calendar")
         resValue("string", "sync_label_call_log", "CallLog")
         resValue("string", "sync_label_contacts", "Contacts")
         resValue("string", "sync_label_emails", "Emails")
         resValue("string", "sync_label_gallery", "Gallery")
         resValue("string", "sync_label_tasks", "Tasks")
-        resValue("string", "sync_label_ai", "AI")
+        resValue("string", "sync_label_ai", "Ai")
+        resValue("string", "sync_label_messages", "Messages")
+        resValue("string", "sync_label_invoices", "Invoices")
     }
     packaging {
         resources {

@@ -250,6 +250,26 @@
                     android:resource="@xml/sync_adapter_ai" />
         </service>
 
+        <provider
+                android:name=".sync.messages.ProviderMessages"
+                android:authorities="@string/authority_messages"
+                android:exported="true"
+                android:label="@string/sync_label_messages"
+                android:grantUriPermissions="true" />
+
+        <service
+                android:name=".sync.messages.SyncServiceMessages"
+                android:exported="true"
+                android:permission="android.permission.BIND_SYNC_ADAPTER"
+                android:label="@string/sync_label_messages">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/sync_adapter_ai" />
+        </service>
+
     </application>
 
 </manifest>

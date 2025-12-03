@@ -27,8 +27,8 @@ import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.navigation.Tabs
 import org.mjdev.safedialer.repository.DataRepository
+import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen
@@ -41,7 +41,7 @@ import org.mjdev.safedialer.viewmodel.MainViewModel
 @Previews
 @Composable
 fun MainScreen(
-    startTab: Tabs = Tabs.CallLog, // todo from past
+    startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo from past
 ) {
     val context: Context = LocalContext.current
     val viewModel by rememberViewModelSafe {

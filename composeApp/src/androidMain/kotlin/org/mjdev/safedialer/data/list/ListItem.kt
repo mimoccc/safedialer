@@ -1,16 +1,8 @@
 package org.mjdev.safedialer.data.list
 
 import android.net.Uri
-import org.mjdev.safedialer.data.custom.MailThread
-import org.mjdev.safedialer.data.custom.MessageThread
-import org.mjdev.safedialer.data.mapper.CallMapper
-import org.mjdev.safedialer.data.mapper.ContactMapper
-import org.mjdev.safedialer.data.mapper.EmailThreadMapper
-import org.mjdev.safedialer.data.mapper.MessageThreadMapper
-import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.calllog.CallType
 import org.mjdev.safedialer.providers.android.contacts.Contact
-import org.mjdev.safedialer.providers.core.Entity
 
 @Suppress("unused")
 interface ListItem {

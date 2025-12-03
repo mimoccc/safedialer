@@ -6,17 +6,21 @@ import android.content.Context
 import android.database.ContentObserver
 import android.net.Uri
 
-@Suppress("SENSELESS_COMPARISON", "SENSELESS_COMPARISON")
+@Suppress("SameParameterValue")
 abstract class AbstractProvider(
-    val context: Context
+    val context: Context,
+    private val contentResolver: ContentResolver = context.contentResolver
 ) {
-    val contentResolver: ContentResolver = context.contentResolver
-
     fun registerContentObserver(
         uri: Uri,
-        observer: ContentObserver
+        observer: ContentObserver,
+        notifyForDescendants: Boolean = false,
     ) {
-        contentResolver.registerContentObserver(uri, false, observer)
+        contentResolver.registerContentObserver(uri, notifyForDescendants, observer)
+    }
+
+    fun unregisterContentObserver(observer: ContentObserver) {
+        contentResolver.unregisterContentObserver(observer)
     }
 
     protected fun <T : Entity> getContentTableData(
@@ -93,4 +97,6 @@ abstract class AbstractProvider(
             return 0
         }
     }
+
+    abstract fun getUris() : List<Uri>
 }

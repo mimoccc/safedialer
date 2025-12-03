@@ -7,7 +7,7 @@ import android.util.Log
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-@Suppress("UNCHECKED_CAST", "DEPRECATION")
+@Suppress("DEPRECATION")
 abstract class Entity {
     interface CompanionWithUri {
         val uri: Uri
