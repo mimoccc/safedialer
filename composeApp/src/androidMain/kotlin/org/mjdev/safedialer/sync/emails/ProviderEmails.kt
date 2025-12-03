@@ -71,6 +71,7 @@ class ProviderEmails : ContentProvider(), DIAware {
                     localEmails.apply {
                         clear()
                         addAll(emails)
+                        onChange()
                     }
 //                    val changes = emails.filter { newItem ->
 //                        localEmails.none { mi ->
@@ -87,8 +88,7 @@ class ProviderEmails : ContentProvider(), DIAware {
             }
         }
     }.onFailure { exception ->
-        exception.printStackTrace()
-    }.onSuccess {
+        Log.e(TAG, exception.message, exception)
         onChange()
     }
 

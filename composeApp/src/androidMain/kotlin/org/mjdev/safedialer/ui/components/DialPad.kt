@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.Previews
 
 @Previews
@@ -29,7 +30,7 @@ import org.mjdev.safedialer.helpers.Previews
 fun DialPad(
     modifier: Modifier = Modifier,
     phoneNumber: MutableState<String> = remember { mutableStateOf("") },
-    visible: Boolean = false, //  isInPreviewMode,
+    visible: Boolean = isInPreviewMode,
     context: Context = LocalContext.current,
     onNumberPressed: (String) -> Unit = { digit ->
         phoneNumber.value += digit

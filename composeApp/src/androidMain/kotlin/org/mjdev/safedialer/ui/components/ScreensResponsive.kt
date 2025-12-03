@@ -16,8 +16,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,9 +25,13 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.components.DisplayInfo.Companion.applyIf
+import org.mjdev.safedialer.ui.components.DisplayInfo.Companion.rememberDisplayInfo
 
 @Previews
 @Composable
@@ -38,75 +40,105 @@ fun ResponsiveContainer(
     ratio: Float = 0.3f,
     enter: EnterTransition = fadeIn(),
     exit: ExitTransition = fadeOut(),
+    portraitLeftMenu: (@Composable (DisplayInfo) -> Unit)? = {
+        Box(
+            modifier = Modifier
+                .width(64.dp)
+                .fillMaxHeight()
+                .background(Color.Red)
+        ) {}
+    },
+    landscapeBottomMenu: (@Composable (DisplayInfo) -> Unit)? = {
+        Box(
+            modifier = Modifier
+                .height(64.dp)
+                .fillMaxWidth()
+                .background(Color.Red)
+        ) {}
+    },
     content: @Composable (DisplayInfo) -> Unit = {},
     preview: @Composable (DisplayInfo) -> Unit = {},
 ) = BoxWithConstraints(
     modifier.fillMaxSize()
 ) {
-    val density = LocalDensity.current
-    val configuration = LocalConfiguration.current
-    val isLandscape by remember(configuration) {
-        derivedStateOf { configuration.orientation == Configuration.ORIENTATION_LANDSCAPE }
-    }
-    val displayInfo by remember(constraints, density, isLandscape) {
-        derivedStateOf {
-            DisplayInfo(
-                constraints = constraints,
-                density = density,
-                ratio = ratio,
-                isLandscapeFixed = isLandscape,
-            )
-        }
-    }
-    val animatedContentWidth by animateDpAsState(targetValue = displayInfo.contentWidth, label = "contentWidth")
-    val animatedPreviewWidth by animateDpAsState(targetValue = displayInfo.previewWidth, label = "previewWidth")
-    Row(
+    val displayInfo = rememberDisplayInfo(constraints)
+    Column(
         modifier = modifier,
     ) {
-        Box(
+        Row(
             modifier = Modifier
-                .width(animatedContentWidth)
-                .fillMaxHeight()
-                .apply {
-                    if (isInPreviewMode) background(Color.LightGray)
-                },
-            content = {
-                content(displayInfo)
-            },
-        )
-        AnimatedVisibility(visible = displayInfo.isLandscape, enter = enter, exit = exit) {
+                .fillMaxSize()
+                .weight(1f),
+        ) {
+            AnimatedVisibility(
+                visible = displayInfo.isPortrait,
+                enter = enter,
+                exit = exit
+            ) {
+                portraitLeftMenu?.invoke(displayInfo)
+            }
             Box(
                 modifier = Modifier
+                    .width(displayInfo.contentWidth)
                     .fillMaxHeight()
-                    .width(animatedPreviewWidth)
-                    .apply {
-                        if (isInPreviewMode) background(Color.DarkGray)
+                    .applyIf(isInPreviewMode) {
+                        background(Color.LightGray)
                     },
                 content = {
-                    preview(displayInfo)
+                    content(displayInfo)
                 },
             )
+            AnimatedVisibility(
+                visible = displayInfo.isLandscape,
+                enter = enter,
+                exit = exit
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .width(displayInfo.previewWidth)
+                        .applyIf(isInPreviewMode) {
+                            background(Color.DarkGray)
+                        },
+                    content = {
+                        preview(displayInfo)
+                    },
+                )
+            }
+        }
+        AnimatedVisibility(
+            visible = displayInfo.isLandscape,
+            enter = enter,
+            exit = exit
+        ) {
+            landscapeBottomMenu?.invoke(displayInfo)
         }
     }
 }
 
+@Suppress("MemberVisibilityCanBePrivate")
 data class DisplayInfo(
     val constraints: Constraints,
     val density: Density,
+    val configuration: Configuration,
     val ratio: Float = 0.4f,
     private val isLandscapeFixed: Boolean? = null,
 ) {
     val width: Dp
-        get() = with(density) { constraints.maxWidth.toDp() }
-    val height: Dp
-        get() = with(density) { constraints.maxHeight.toDp() }
+        get() = with(density) {
+            constraints.maxWidth.toDp()
+        }
 
-    // Use provided orientation when available (Android LocalConfiguration),
-    // fallback to size-based orientation otherwise.
+    val height: Dp
+        get() = with(density) {
+            constraints.maxHeight.toDp()
+        }
+
     val isLandscape: Boolean
-        get() = isLandscapeFixed ?: (width > height)
+        get() = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     val isPortrait: Boolean
-        get() = !isLandscape
+        get() = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
 
     val contentWidth: Dp
         get() = if (isLandscape) {
@@ -114,6 +146,26 @@ data class DisplayInfo(
         } else {
             width
         }
+
     val previewWidth: Dp
         get() = if (isLandscape) width - contentWidth else 0.dp
+
+    companion object {
+        @Composable
+        fun rememberDisplayInfo(
+            constraints: Constraints,
+            density: Density = LocalDensity.current,
+            configuration: Configuration = LocalConfiguration.current,
+        ) = remember(
+            constraints,
+            density,
+            configuration,
+            configuration.orientation
+        ) { DisplayInfo(constraints, density, configuration) }
+
+        fun Modifier.applyIf(
+            condition: Boolean,
+            other: Modifier.() -> Modifier
+        ): Modifier = if (condition) this.then(other()) else this
+    }
 }

@@ -11,10 +11,12 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,7 +43,7 @@ import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 
 @Previews
 @Composable
-fun TabsBottomBar(
+fun TabsLeftBar(
     modifier: Modifier = Modifier,
     iconSize: Dp = 40.dp,
     shape: Shape = RoundedCornerShape(50),
@@ -52,20 +54,20 @@ fun TabsBottomBar(
     exit = fadeOut() + slideOutVertically(targetOffsetY = { it }),
     visible = tabState.isVisible,
 ) {
-    Row(
+    Column(
         modifier = modifier
             .border(
                 width = 2.dp,
                 color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),
                 shape = shape,
             )
-            .fillMaxWidth()
+            .fillMaxHeight()
             .padding(2.dp),
-        verticalAlignment = Alignment.Bottom,
+        horizontalAlignment = Alignment.Start,
     ) {
         tabState.tabs.forEachIndexed { index, tab ->
             val selected = tabState.currentTab?.ordinal == index
-            Column(
+            Row(
                 modifier = if (selected) {
                     Modifier
                         .padding(4.dp)
@@ -73,7 +75,7 @@ fun TabsBottomBar(
                         .background(
                             MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
                         )
-                        .height(iconSize)
+                        .width(iconSize)
                         .weight(1f)
                 } else {
                     Modifier
@@ -83,11 +85,11 @@ fun TabsBottomBar(
                         .size(iconSize)
                 },
             ) {
-                Row(
+                Column(
                     modifier = Modifier.apply {
                         if (selected) padding(start = 4.dp)
                     },
-                    verticalAlignment = Alignment.CenterVertically
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Image(
                         modifier = Modifier
@@ -111,50 +113,15 @@ fun TabsBottomBar(
                         )
                     )
                     if (selected) {
-                        Text(
-                            modifier = Modifier,
-                            text = stringResource(tab.titleResId),
-                            maxLines = 1,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
+//                        Text(
+//                            modifier = Modifier,
+//                            text = stringResource(tab.titleResId),
+//                            maxLines = 1,
+//                            color = MaterialTheme.colorScheme.primary,
+//                        )
                     }
                 }
             }
-        }
-    }
-}
-
-class TabsState(
-    val tabs: List<Enum<*>>,
-    startTab: Enum<*>?,
-    isVisible: Boolean = true,
-) {
-    private val currentTabState = mutableStateOf(startTab ?: tabs.firstOrNull())
-    private val visibleState = mutableStateOf(isVisible)
-    var currentTab
-        get() = currentTabState.value
-        set(value) {
-            currentTabState.value = value
-        }
-    var isVisible
-        get() = visibleState.value
-        set(value) {
-            visibleState.value = value
-        }
-
-    companion object {
-        @Composable
-        fun rememberTabsState(
-            tabs: List<Enum<*>> = SyncAccountTypes.entries.toList().filter { tab ->
-                val isServer = BuildConfig.SERVER.isNotEmpty()
-                val isUser = BuildConfig.SERVER_UNAME.isNotEmpty()
-                val isPass = BuildConfig.SERVER_UPASS.isNotEmpty()
-                val isLoggedIn = isServer && isUser && isPass
-                if (tab.needLogon) isLoggedIn else true
-            },
-            startTab: Enum<*>? = tabs.firstOrNull(),
-        ) = remember(tabs, startTab) {
-            TabsState(tabs, startTab)
         }
     }
 }

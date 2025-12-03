@@ -1,8 +1,8 @@
 package org.mjdev.safedialer.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,7 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -51,9 +50,7 @@ fun TabbedScreen(
 ) {
     val phoneNumber: MutableState<String> = remember { mutableStateOf("") }
     // todo dialPad
-    val dialPadVisible = remember(fabState.isVisible) {
-        fabState.isVisible
-    }
+    val dialPadVisible = remember(fabState.isVisible) { fabState.isVisible }
     ResponsiveContainer(
         modifier = Modifier.background(backgroundColor),
         ratio = 0.4f,
@@ -68,14 +65,6 @@ fun TabbedScreen(
                 (tabState.currentTab as? SyncAccountTypes)
                     ?.content
                     ?.invoke(scrollState, filterText)
-                DialPad(
-                    modifier = Modifier
-                        .padding(bottom = 80.dp, end = 4.dp, start = 4.dp)
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter),
-                    phoneNumber = phoneNumber,
-//                    visible = !dialPadVisible,
-                )
             }
         },
         preview = {
@@ -84,28 +73,61 @@ fun TabbedScreen(
                 text = "Todo preview here",
             )
         },
+        landscapeBottomMenu = {
+            TabsBottomBar(
+                tabState = tabState,
+                shape = shape,
+                modifier = Modifier
+                    .padding(2.dp)
+                    .fillMaxWidth()
+                    .clip(shape)
+                    .let { m ->
+                        if (useBlur) m.hazeChild(
+                            state = hazeState,
+                            shape = shape,
+                            style = HazeStyle(
+                                tint = backgroundColor,
+                                blurRadius = 4.dp,
+                                noiseFactor = 0f,
+                            ),
+                        ) else m.background(
+                            backgroundColor,
+                            shape
+                        )
+                    }
+            )
+        },
+        portraitLeftMenu = {
+            TabsLeftBar(
+                tabState = tabState,
+                shape = shape,
+                modifier = Modifier
+                    .padding(2.dp)
+                    .fillMaxHeight()
+                    .clip(shape)
+                    .let { m ->
+                        if (useBlur) m.hazeChild(
+                            state = hazeState,
+                            shape = shape,
+                            style = HazeStyle(
+                                tint = backgroundColor,
+                                blurRadius = 4.dp,
+                                noiseFactor = 0f,
+                            ),
+                        ) else m.background(
+                            backgroundColor,
+                            shape
+                        )
+                    }
+            )
+        }
     )
-    TabsBottomBar(
-        tabState = tabState,
-        shape = shape,
-        modifier = Modifier
-            .padding(2.dp)
-            .fillMaxWidth()
-            .clip(shape)
-            .let { m ->
-                if (useBlur) m.hazeChild(
-                    state = hazeState,
-                    shape = shape,
-                    style =
-                        HazeStyle(
-                            tint = backgroundColor,
-                            blurRadius = 4.dp,
-                            noiseFactor = 0f,
-                        ),
-                ) else m.background(
-                    backgroundColor,
-                    shape
-                )
-            }
-    )
+//    DialPad(
+//        modifier = Modifier
+//            .padding(bottom = 80.dp, end = 4.dp, start = 4.dp)
+//            .fillMaxWidth()
+//            .align(Alignment.BottomCenter),
+//        phoneNumber = phoneNumber,
+//        visible = !dialPadVisible,
+//    )
 }

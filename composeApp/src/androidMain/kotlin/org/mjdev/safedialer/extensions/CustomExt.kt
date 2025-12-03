@@ -4,17 +4,28 @@ import android.content.AbstractThreadedSyncAdapter
 import android.content.Context
 import android.content.ContextWrapper
 import android.net.Uri
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalInspectionMode
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.DIPropertyDelegateProvider
 import kotlin.reflect.KProperty
 
+@Suppress("MemberVisibilityCanBePrivate")
 object CustomExt {
 
+    val isPreview
+        @Composable
+        get()= LocalInspectionMode.current
+
     val isInPreviewMode: Boolean
-        get() = //isDebug ||
-                System.getProperty("java.runtime.name")
-                    ?.contains("LayoutLib", ignoreCase = true) == true
+        get() = isLayoutLib()
+
+    fun isLayoutLib(): Boolean {
+        val device = android.os.Build.DEVICE
+        val product = android.os.Build.PRODUCT
+        return device == "layoutlib" || product == "layoutlib"
+    }
 
     fun <T : Context> T.closestDI(
         mockBuilder: (Context) -> DI? = { null }
