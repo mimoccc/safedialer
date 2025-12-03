@@ -7,9 +7,9 @@ import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.calllog.CallType
 
-class CallMapper (
+class CallMapper(
     val call: Call? = null
-) :ListItem {
+) : ListItem {
     override val contact: Contact?
         get() = call?.contact
     override val itemId: Long?
@@ -21,7 +21,7 @@ class CallMapper (
     override val itemPhoto: Uri?
         get() = call?.contact?.uriPhoto?.toUri()
     override val itemName: String?
-        get() =  call?.contact?.displayName ?: contact?.phone
+        get() = call?.name ?: call?.contact?.displayName ?: contact?.phone ?: call?.number
     override val itemDate: Long?
         get() = call?.callDate
     override val itemCallType: CallType?

@@ -7,8 +7,10 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -22,9 +24,11 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -55,6 +59,7 @@ fun ContactDetail(
     modifier: Modifier = Modifier,
     caller: String? = null,
     item: Entity? = null,
+    details: String? = null,
     buttons: @Composable (item: ListItem?) -> Unit = { i -> ContactButtonsDefault(i) },
     imageLoader: ImageLoader = rememberImageLoader(),
     textStyle: TextStyle = TextStyle(color = MaterialTheme.colorScheme.primary),
@@ -64,14 +69,26 @@ fun ContactDetail(
     isLast: Boolean = true,
     showDate: Boolean = false,
     showDivider: Boolean = true,
+    context: Context = LocalContext.current
 ) {
-    val context: Context = LocalContext.current
     val viewModel by rememberViewModelSafe {
         MainViewModel(DataRepository(context))
     }
     val background = RoundedCornerShape(
         topStart = if (isFirst) 16.dp else 0.dp,
         topEnd = if (isFirst) 16.dp else 0.dp,
+        bottomEnd = if (isLast) 16.dp else 0.dp,
+        bottomStart = if (isLast) 16.dp else 0.dp,
+    )
+    val contentBackground = RoundedCornerShape(
+        topStart = if (isFirst) 16.dp else 0.dp,
+        topEnd = if (isFirst) 16.dp else 0.dp,
+        bottomEnd = 0.dp,
+        bottomStart = 0.dp,
+    )
+    val backgroundDetails = RoundedCornerShape(
+        topStart = 0.dp,
+        topEnd = 0.dp,
         bottomEnd = if (isLast) 16.dp else 0.dp,
         bottomStart = if (isLast) 16.dp else 0.dp,
     )
@@ -89,23 +106,27 @@ fun ContactDetail(
         ),
     ) {
         Box(
-            modifier = Modifier
-                .background(
-                    color = if (listItem?.isBlocked == true || listItem?.isDanger == true) {
-                        Color.Red.copy(alpha = 0.3f)
-                    } else {
-                        MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f)
-                    },
-                    shape = background,
-                )
-                .padding(start = 0.dp, end = 8.dp),
+            modifier = Modifier.background(
+                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                shape = background,
+            ),
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
                     .wrapContentHeight(),
             ) {
-                Box {
+                Box(
+                    modifier = Modifier
+                        .background(
+                            color = if (listItem?.isBlocked == true || listItem?.isDanger == true) {
+                                Color.Red.copy(alpha = 0.3f)
+                            } else {
+                                Color.Transparent
+                            },
+                            shape = contentBackground,
+                        )
+                ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
@@ -186,16 +207,6 @@ fun ContactDetail(
                                     maxLines = 1,
                                     color = MaterialTheme.colorScheme.outline,
                                 )
-                            } else {
-                                if(listItem?.details != null) Text(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    text = listItem.details.toString(),
-                                    fontSize = 14.sp,
-                                    style = textStyle,
-                                    fontFamily = fontFamily,
-                                    maxLines = 1,
-                                    color = MaterialTheme.colorScheme.outline,
-                                )
                             }
                         }
                     }
@@ -254,13 +265,57 @@ fun ContactDetail(
                                 )
                             }
                         }
+                    }
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            brush = Brush.horizontalGradient(
+                                listOf(
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Transparent,
+                                    Color.Black.copy(alpha = 0.5f),
+                                    Color.Black.copy(alpha = 0.8f),
+                                    Color.Black,
+                                    Color.Black,
+                                    Color.Black.copy(alpha = 0.8f),
+                                )
+                            ),
+                            shape = backgroundDetails
+                        ),
+                ) {
+                    if (details != null || listItem?.details != null) {
+                        Text(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(
+                                    color = Color.Black.copy(alpha = 0.8f)
+                                )
+                                .padding(8.dp),
+                            text = details ?: listItem?.details ?: "",
+                            fontSize = 13.sp,
+                            style = textStyle,
+                            fontFamily = fontFamily,
+                        )
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(2.dp)
+                        )
+                    }
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.CenterEnd
+                    ) {
                         buttons(listItem)
                     }
                 }
                 if (!isLast && showDivider) {
                     HorizontalDivider(
                         modifier = Modifier
-                            .padding(start = 80.dp, bottom = 2.dp)
+                            .padding(start = 16.dp)
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
                                 shape = DottedShape(5.dp),

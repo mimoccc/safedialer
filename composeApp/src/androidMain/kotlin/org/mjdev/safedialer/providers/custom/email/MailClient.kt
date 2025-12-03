@@ -22,7 +22,8 @@ import org.mjdev.safedialer.helpers.ContactAutoEnricher
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 
-@Suppress("RedundantSuspendModifier", "unused", "MemberVisibilityCanBePrivate",
+@Suppress(
+    "RedundantSuspendModifier", "unused", "MemberVisibilityCanBePrivate",
     "ConvertTryFinallyToUseCall"
 )
 class MailClient(
@@ -623,9 +624,13 @@ class MailClient(
                     val recipients = message.getRecipients(Message.RecipientType.TO)?.mapNotNull {
                         (it as? InternetAddress)?.address
                     }?.joinToString(", ") ?: ""
-                    val deleted = message.isSet(Flags.Flag.DELETED)
-                    val flagged = message.isSet(Flags.Flag.FLAGGED)
-                    items.add(
+                    val deleted = runCatching {
+                        message.isSet(Flags.Flag.DELETED)
+                    }.getOrElse { false }
+                    val flagged = runCatching {
+                        message.isSet(Flags.Flag.FLAGGED)
+                    }.getOrElse { false }
+                    runCatching {
                         MailItem(
                             id = message.messageNumber.toLong(),
                             senderName = senderName,
@@ -638,7 +643,11 @@ class MailClient(
                             isDeleted = deleted,
                             isFlagged = flagged
                         )
-                    )
+                    }.onSuccess { m ->
+                        items.add(m)
+                    }.onFailure { e ->
+                        Log.e(TAG, e.message, e)
+                    }
                 }
                 items
             } finally {

@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.ContactsContract
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,11 +37,15 @@ import org.mjdev.safedialer.helpers.Previews
 @Composable
 fun ContactButtonsDefault(
     item: ListItem? = if (isInPreviewMode) ListItem.PREVIEW else null,
-    state: MutableState<Boolean> = mutableStateOf(false),
+    state: MutableState<Boolean> = mutableStateOf(true),
     iconSize: Dp = 32.dp,
     context: Context = LocalContext.current,
-) = AnimatedVisibility(visible = state.value) {
-    Row {
+) = AnimatedVisibility(
+    visible = state.value
+) {
+    Row(
+        horizontalArrangement = Arrangement.End
+    ) {
         if (item?.itemPhone?.isNotEmpty() == true || isInPreviewMode) {
             IconButton(
                 modifier = Modifier.size(iconSize),

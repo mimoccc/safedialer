@@ -33,4 +33,11 @@ data class Message(
             is Mms -> message.receivedDate
             else -> -1
         }
+
+    val body : String?
+        get() = when (message) {
+            is Sms -> message.body
+            is Mms -> message.retrieveText
+            else -> null
+        }
 }

@@ -7,9 +7,9 @@ import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.android.calllog.CallType
 
-class EmailThreadMapper (
+class EmailThreadMapper(
     val email: MailThread? = null
-) :ListItem {
+) : ListItem {
     override val contact: Contact?
         get() = email?.contact
 
@@ -22,14 +22,17 @@ class EmailThreadMapper (
     override val itemPhoto: Uri?
         get() = contact?.uriPhoto?.toUri()
     override val itemName: String?
-        get() =  contact?.displayName ?: contact?.email ?: email?.lastMessage?.senderName ?: email?.lastMessage?.senderEmail ?: contact?.phone
+        get() = contact?.displayName ?: contact?.email ?: email?.lastMessage?.senderName
+        ?: email?.lastMessage?.senderEmail ?: contact?.phone
     override val itemDate: Long?
         get() = email?.date ?: email?.lastMessage?.createdAtMillis
     override val itemCallType: CallType?
         get() = null
 
     override val details: String
-        get() = ""
+        get() = email?.lastMessage?.body
+            ?: email?.lastMessage?.subject
+            ?: email?.lastMessage?.toString() ?: "---"
 
     override val isBlocked: Boolean
         get() = false // todo
