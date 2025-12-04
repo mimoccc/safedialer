@@ -14,9 +14,7 @@ class SyncWorkerContacts(
 //    private val contactsSyncDir = WebDavClient.DIR_CONTACTS,
 //    private val vcardFileName = WebDavClient.USER_FILE_VCARD
 //
-//    private val webDav by lazy {
-//        WebDavClient()
-//    }
+//    private val webDav by instance()
 //
 //    private val userVCards by lazy {
 //        webDav

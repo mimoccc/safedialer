@@ -1,5 +1,6 @@
 package org.mjdev.safedialer.ui.components
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,8 +24,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.collectLatest
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.webdav.WebDavClient
 
@@ -41,6 +44,7 @@ fun TitleBar(
     focusRequester: FocusRequester = remember { FocusRequester() },
     canExpand: Boolean = true,
     visible: Boolean = true,
+    context: Context = LocalContext.current,
     onNavigationIconClick: () -> Unit = {},
     onServeClick: () -> Unit = {}
 ) {
@@ -100,8 +104,8 @@ fun TitleBar(
     // todo move to view model
     LaunchedEffect(visible) {
         runCatching {
-            val webDav = WebDavClient()
-            webDav.userPicture.collect { pic ->
+            // todo remove and use di
+            WebDavClient(context).userPicture.collectLatest { pic ->
                 userPic = pic
             }
         }.onFailure { e ->

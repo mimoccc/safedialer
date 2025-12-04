@@ -7,7 +7,6 @@ import android.database.MatrixCursor
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
-//import kotbase.CouchbaseLite
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -18,35 +17,37 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.instance
 import org.mjdev.safedialer.R
+import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.providers.core.Entity.Companion.toInt
-import org.mjdev.safedialer.providers.custom.email.MailClient
 import org.mjdev.safedialer.providers.custom.email.MailItem
+import org.mjdev.safedialer.extensions.MailItemExt.parseMail
+import org.mjdev.safedialer.webdav.WebDavClient
 import kotlin.getValue
 
 class ProviderEmails : ContentProvider(), DIAware {
-    private var lastUpdate: Long = 0L
-    private var updateJob: Job? = null
-    private var periodicJob: Job? = null
-
     override val di by lazy {
         (context as DIAware).di
     }
 
-    private val mailClient: MailClient by instance()
-
-    //    private val dao: DAO by instance()
+    private var lastUpdate: Long = 0L
+    private var updateJob: Job? = null
+    private var periodicJob: Job? = null
+    private val webDav: WebDavClient by instance()
+//    private val dao: DAO by instance()
     private var localEmails = mutableListOf<MailItem>()
 
+    private val auth
+        get() = context!!.getString(R.string.authority_emails)
+
     override fun onCreate(): Boolean {
-        context?.applicationContext?.let { application ->
-//            CouchbaseLite.init(application)
-        }
+        Log.d(TAG, "Provider created")
 //        localEmails = dao.emails.asList()
         startPeriodicUpdates()
         return true
     }
 
     private fun startPeriodicUpdates() = runCatching {
+        Log.d(TAG, "Start periodic update called")
         periodicJob = CoroutineScope(Dispatchers.IO + Job()).launch {
             while (true) {
                 updateMailsSafely()
@@ -60,36 +61,59 @@ class ProviderEmails : ContentProvider(), DIAware {
     }
 
     private suspend fun updateMailsSafely() = runCatching {
+        Log.d(TAG, "Start update called")
         val now = System.currentTimeMillis()
         if (((now - lastUpdate) >= FIVE_MINUTES_IN_MILLIS) || localEmails.isEmpty()) {
+            Log.d(TAG, "Starting update")
             lastUpdate = now
             updateJob = CoroutineScope(Dispatchers.IO + Job()).launch {
 //                localEmails = dao.emails.asList<MailItem>()
-                mailClient.allMails.collectLatest { emails ->
-//                    dao.emails.clear()
-//                    dao.emails.addAll(emails)
-                    localEmails.apply {
-                        clear()
-                        addAll(emails)
-                        onChange()
+                webDav.allEmails.collectLatest { mapPathData ->
+                    Log.d(TAG, "Got (${mapPathData.size} emails.)")
+                    localEmails.clear()
+                    mapPathData.forEach { entry ->
+                        parseEmail(
+                            entry.key,
+                            entry.value
+                        ).also { mailItem ->
+                            localEmails.add(mailItem)
+                        }
+////                    val changes = emails.filter { newItem ->
+////                        localEmails.none { mi ->
+////                            mi.id == newItem.id && mi == newItem
+////                        } == true
+////                    }
+////                    localEmails = emails
+////                    if (changes.isNotEmpty()) {
+////                        changes.forEach { email ->
+////                            onChange(email.id)
+////                        }
+////                    }
                     }
-//                    val changes = emails.filter { newItem ->
-//                        localEmails.none { mi ->
-//                            mi.id == newItem.id && mi == newItem
-//                        } == true
-//                    }
-//                    localEmails = emails
-//                    if (changes.isNotEmpty()) {
-//                        changes.forEach { email ->
-//                            onChange(email.id)
-//                        }
-//                    }
+                    Log.d(TAG, "Sending on change event.")
+                    onChange()
                 }
             }
         }
     }.onFailure { exception ->
         Log.e(TAG, exception.message, exception)
         onChange()
+    }
+
+    private fun parseEmail(
+        path: String,
+        data: ByteArray
+    ): MailItem = path.split("/").let { parsedPath ->
+        parsedPath[parsedPath.size - 2]
+    }.let { folder ->
+        Log.d(TAG, "Parsing email at : $path.")
+        Log.d(TAG, "Folder: $folder")
+        Log.d(TAG, "Data size: ${data.size}")
+        parseMail(data).copy(
+            mailboxName = folder
+        ).apply {
+            Log.d(TAG, "Parsed email: $this")
+        }
     }
 
     @Suppress("TYPE_INTERSECTION_AS_REIFIED_WARNING")
@@ -100,9 +124,17 @@ class ProviderEmails : ContentProvider(), DIAware {
         selectionArgs: Array<out String?>?,
         sortOrder: String?
     ): Cursor {
+        Log.d(TAG, "Query called with uri: $uri")
+        Log.d(TAG, "Is emails: ${localEmails.isNotEmpty()}")
+        if (localEmails.isEmpty()) {
+            Log.d(TAG, "Starting periodic updates, due local emails are empty.")
+            startPeriodicUpdates()
+        }
+        Log.d(TAG, "Providing emails.")
+        Log.d(TAG, "Local emails: ${localEmails.size}")
         val cols = projection?.filterNotNull()?.toTypedArray() ?: PROJECTION
         val cursor = MatrixCursor(cols)
-        localEmails?.forEach { mailItem ->
+        localEmails.forEach { mailItem ->
             val row = cols.map { col ->
                 when (col) {
                     MAIL_ITEM_ID -> mailItem.id
@@ -147,7 +179,6 @@ class ProviderEmails : ContentProvider(), DIAware {
 
     private suspend fun onChange() {
         context?.let { ctx ->
-            val auth = ctx.getString(R.string.authority_emails)
             val uriPath = "content://$auth"
             val uri = uriPath.toUri()
             withContext(Dispatchers.Main) {
@@ -160,7 +191,6 @@ class ProviderEmails : ContentProvider(), DIAware {
         id: Long? = null
     ) {
         context?.let { ctx ->
-            val auth = ctx.getString(R.string.authority_emails)
             val uriPath = if (id != null) "content://$auth/$id" else "content://$auth"
             val uri = uriPath.toUri()
             withContext(Dispatchers.Main) {
@@ -202,6 +232,3 @@ class ProviderEmails : ContentProvider(), DIAware {
         )
     }
 }
-
-
-

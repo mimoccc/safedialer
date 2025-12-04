@@ -22,6 +22,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import okhttp3.OkHttpClient
+import okhttp3.Cache
+import okhttp3.logging.HttpLoggingInterceptor
 import org.kodein.di.DI
 import org.kodein.di.bindConstant
 import org.kodein.di.bindProvider
@@ -31,7 +33,6 @@ import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.PreferencesManager
-import org.mjdev.safedialer.providers.custom.email.MailClient
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
 import org.mjdev.safedialer.repository.MockDataRepository
@@ -39,8 +40,8 @@ import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
+import org.mjdev.safedialer.webdav.WebDavClient
 import java.io.File
-import java.util.Properties
 import java.util.concurrent.TimeUnit
 
 @Suppress("DEPRECATION")
@@ -101,35 +102,19 @@ val appModule = DI.Module("AppModule") {
     bindSingleton<PhoneLookup> {
         PhoneLookup(instance())
     }
-    bindSingleton<okhttp3.Cache> {
-        val context: Context = instance()
-        val systemCachePath = System.getProperty("java.io.tmpdir")
-        val systemCacheDir = File(systemCachePath, "http_cache")
-        val cacheDir = runCatching {
-            context.cacheDir?.let {
-                File(it, "http_cache")
-            }
-        }.onFailure { e ->
-            e.printStackTrace()
-        }.getOrNull() ?: systemCacheDir
-        okhttp3.Cache(
-            directory = cacheDir,
-            maxSize = 1024L * 1024L * 1024L // 1GB
-        )
-    }
-    bindSingleton<MailClient> {
-        MailClient(
-            hostImap = BuildConfig.SERVER,
-            hostSmtp = BuildConfig.SERVER,
-            portImap = BuildConfig.SERVER_PORT_IMAP.toInt(),
-            portSmtp = BuildConfig.SERVER_PORT_SMTP.toInt(),
-            userImap = BuildConfig.SERVER_UNAME,
-            passwordImap = BuildConfig.SERVER_UPASS,
-            userSmtp = BuildConfig.SERVER_UNAME,
-            passwordSmtp = BuildConfig.SERVER_UPASS,
-            props = Properties(),
-        )
-    }
+//    bindSingleton<MailClient> {
+//        MailClient(
+//            hostImap = BuildConfig.SERVER,
+//            hostSmtp = BuildConfig.SERVER,
+//            portImap = BuildConfig.SERVER_PORT_IMAP.toInt(),
+//            portSmtp = BuildConfig.SERVER_PORT_SMTP.toInt(),
+//            userImap = BuildConfig.SERVER_UNAME,
+//            passwordImap = BuildConfig.SERVER_UPASS,
+//            userSmtp = BuildConfig.SERVER_UNAME,
+//            passwordSmtp = BuildConfig.SERVER_UPASS,
+//            props = Properties(),
+//        )
+//    }
     bindSingleton<ImageLoader> {
         val context: Context = instance()
         val systemCachePath = System.getProperty("java.io.tmpdir")
@@ -163,18 +148,6 @@ val appModule = DI.Module("AppModule") {
                         .maxSizePercent(0.5)
                         .build()
                 }
-                .build()
-        }
-    }
-    bindSingleton<OkHttpClient> {
-        if (isInPreviewMode) {
-            // todo mocked
-            OkHttpClient.Builder().build()
-        } else {
-            OkHttpClient.Builder()
-                .cache(instance())
-                .connectTimeout(60000, TimeUnit.MILLISECONDS)
-                .callTimeout(60000, TimeUnit.MILLISECONDS)
                 .build()
         }
     }
@@ -212,5 +185,50 @@ val appModule = DI.Module("AppModule") {
     }
     bindSingleton<PhoneNumberUtil> {
         PhoneNumberUtil.getInstance()
+    }
+
+    bindProvider<Cache> {
+        val context: Context = instance()
+        val systemCachePath = System.getProperty("java.io.tmpdir")
+        val systemCacheDir = File(systemCachePath, "http_cache")
+        val cacheDir = runCatching {
+            context.cacheDir?.let {
+                File(it, "http_cache")
+            }
+        }.onFailure { e ->
+            e.printStackTrace()
+        }.getOrNull() ?: systemCacheDir
+        Cache(
+            directory = cacheDir,
+            maxSize = 1024L * 1024L * 1024L // 1GB
+        )
+    }
+    bindProvider<HttpLoggingInterceptor> {
+        HttpLoggingInterceptor().apply {
+            setLevel(
+                if (BuildConfig.IS_DEBUG) HttpLoggingInterceptor.Level.BODY
+                else HttpLoggingInterceptor.Level.NONE
+            )
+        }
+    }
+    bindProvider<WebDavClient> {
+        WebDavClient(instance())
+    }
+    bindProvider<OkHttpClient> {
+        val logging: HttpLoggingInterceptor = instance()
+        if (isInPreviewMode) {
+            OkHttpClient.Builder()
+                .followRedirects(true)
+                .addInterceptor(logging)
+                .build()
+        } else {
+            OkHttpClient.Builder()
+                .cache(instance())
+                .connectTimeout(60000, TimeUnit.MILLISECONDS)
+                .callTimeout(60000, TimeUnit.MILLISECONDS)
+                .followRedirects(true)
+                .addInterceptor(logging)
+                .build()
+        }
     }
 }

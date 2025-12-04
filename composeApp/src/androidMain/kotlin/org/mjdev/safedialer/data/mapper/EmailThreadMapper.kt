@@ -30,9 +30,8 @@ class EmailThreadMapper(
         get() = null
 
     override val details: String
-        get() = email?.lastMessage?.body
-            ?: email?.lastMessage?.subject
-            ?: email?.lastMessage?.toString() ?: "---"
+        get() = (email?.lastMessage?.body ?: email?.lastMessage?.subject ?: "---")
+            .take(MAX_MAIL_DETAILS_LENGTH)
 
     override val isBlocked: Boolean
         get() = false // todo
@@ -55,5 +54,7 @@ class EmailThreadMapper(
 
     companion object {
         fun MailThread.asListItem() = EmailThreadMapper(this)
+
+        const val MAX_MAIL_DETAILS_LENGTH = 320
     }
 }

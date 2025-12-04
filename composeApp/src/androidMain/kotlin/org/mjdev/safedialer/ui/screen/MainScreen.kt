@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.ui.screen
 
-import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -22,14 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
 import org.mjdev.safedialer.extensions.ComposeExt1.isLandscape
-import org.mjdev.safedialer.extensions.ComposeExt1.isPortrait
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.repository.DataRepository
+import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
@@ -45,9 +42,8 @@ import org.mjdev.safedialer.viewmodel.MainViewModel
 fun MainScreen(
     startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo from past
 ) {
-    val context: Context = LocalContext.current
-    val viewModel by rememberViewModelSafe {
-        MainViewModel(DataRepository(context))
+    val viewModel by rememberViewModelSafe { context ->
+        MainViewModel(MockDataRepository(context))
     }
     val isTabsVisible by viewModel.isTabsVisible.collectAsState()
     val filterText by viewModel.filterText.collectAsState()

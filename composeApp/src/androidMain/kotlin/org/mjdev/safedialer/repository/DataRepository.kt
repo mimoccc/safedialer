@@ -142,11 +142,15 @@ class DataRepository(
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     // todo simplify
-    override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.map { emailList ->
+    override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.combine(contacts) { emailList, contacts ->
         emailList.map { mail ->
             MailThread(
                 mail.id,
-                mail.contact ?: findContactBySender(mail.senderEmail, mail.senderName),
+                mail.contact ?: contacts.firstOrNull { c ->
+                    c.email.contentEquals(mail.senderEmail, true) ||
+                    c.displayName.contentEquals(mail.senderName, true)
+                    c.emails?.any { e -> e.contentEquals(mail.senderEmail, true) } == true
+                },
                 listOf(mail)
             )
         }.associate { mt ->

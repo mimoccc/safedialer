@@ -3,11 +3,11 @@ package org.mjdev.safedialer
 import app.cash.paparazzi.DeviceConfig
 import app.cash.paparazzi.DeviceConfig.Companion.PIXEL_6_PRO
 import app.cash.paparazzi.Paparazzi
-import com.android.internal.R.id.tabs
 import com.android.resources.NightMode
 import com.android.resources.ScreenOrientation
 import com.google.gson.GsonBuilder
 import org.junit.Rule
+//import org.junit.Ignore
 import org.junit.Test
 import org.kodein.di.compose.withDI
 import org.mjdev.safedialer.di.mainDI
@@ -16,6 +16,7 @@ import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.theme.AppTheme
 import java.io.File
 
+//@Ignore("Temporarily disabled due to Paparazzi renderer environment issue (Renderer.kt:215). Re-enable after upgrading Paparazzi/AGP or when running with a dedicated task/property.")
 class PaparazziScreenshotTest {
     @get:Rule
     val paparazzi = Paparazzi(

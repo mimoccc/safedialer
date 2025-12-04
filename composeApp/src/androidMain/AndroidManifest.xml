@@ -301,6 +301,46 @@
                     android:resource="@xml/sync_adapter_invoices" />
         </service>
 
+        <provider
+                android:name=".sync.authenticator.ProviderAuthenticator"
+                android:authorities="@string/authority_authenticator"
+                android:exported="true"
+                android:label="@string/sync_label_authenticator"
+                android:grantUriPermissions="true" />
+
+        <service
+                android:name=".sync.authenticator.SyncServiceAuthenticator"
+                android:exported="true"
+                android:permission="android.permission.BIND_SYNC_ADAPTER"
+                android:label="@string/sync_label_authenticator">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/sync_adapter_authenticator" />
+        </service>
+
+        <provider
+                android:name=".sync.notes.ProviderNotes"
+                android:authorities="@string/authority_notes"
+                android:exported="true"
+                android:label="@string/sync_label_notes"
+                android:grantUriPermissions="true" />
+
+        <service
+                android:name=".sync.notes.SyncServiceNotes"
+                android:exported="true"
+                android:permission="android.permission.BIND_SYNC_ADAPTER"
+                android:label="@string/sync_label_notes">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/sync_adapter_notes" />
+        </service>
+
     </application>
 
 </manifest>

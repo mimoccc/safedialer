@@ -10,6 +10,8 @@ import androidx.compose.material.icons.filled.ContactPhone
 import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Mail
 import androidx.compose.material.icons.filled.Newspaper
+import androidx.compose.material.icons.filled.NoteAlt
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.filled.VoiceChat
 import androidx.compose.runtime.Composable
@@ -137,7 +139,32 @@ enum class SyncAccountTypes(
         content = { ss, ft ->
             // todo
         }
-    );
+    ),
+    NOTES(
+        priority = 9,
+        authority = R.string.authority_notes,
+        titleResId = R.string.sync_label_notes,
+        icon = Icons.Default.NoteAlt,
+        searchable = true,
+        needLogon = true,
+        needDetail = true,
+        content = { ss, ft ->
+            // todo
+        }
+    ),
+    AUTHENTICATOR(
+        priority = 9,
+        authority = R.string.authority_authenticator,
+        titleResId = R.string.sync_label_authenticator,
+        icon = Icons.Default.Person,
+        searchable = true,
+        needLogon = true,
+        needDetail = true,
+        content = { ss, ft ->
+            // todo
+        }
+    ),
+    ;
 
     companion object {
         val Enum<*>.titleResId

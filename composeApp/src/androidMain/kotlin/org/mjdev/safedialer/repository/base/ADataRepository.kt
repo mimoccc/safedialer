@@ -113,7 +113,7 @@ abstract class ADataRepository(
             Log.w(TAG, "No uri for changes for: ${provider::class.simpleName}")
         }
         val observer = entityContentObserver(provider) { uri ->
-            Log.d(TAG, "Got changes of: $uri")
+            Log.d(TAG, "Got changes for: ${provider::class.simpleName}, uri: $uri")
             runAsync {
                 val entities = runCatching {
                     block(provider)
@@ -121,8 +121,12 @@ abstract class ADataRepository(
                     Log.e(TAG, exception.message, exception)
                     emptyList()
                 }
-                Log.d(TAG, "Emitting changes (${entities.size}) for : $uri")
-                send(entities)
+                if(entities.isNotEmpty()) {
+                    Log.d(TAG, "Emitting changes (${entities.size}) ${provider::class.simpleName}, uri: $uri")
+                    send(entities)
+                } else {
+                    Log.d(TAG, "No entities ${provider::class.simpleName}, uri: $uri")
+                }
             }
         }
         observer.register()

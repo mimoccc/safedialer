@@ -11,6 +11,7 @@ import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
 import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.STRING
+import com.codingfeline.buildkonfig.compiler.FieldSpec.Type.BOOLEAN
 import org.gradle.kotlin.dsl.kotlin
 
 plugins {
@@ -74,6 +75,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation(libs.okhttp)
+            implementation(libs.okhttp.logging)
             implementation(libs.telecom.core)
             implementation(libs.libphonenumber)
             implementation(libs.androidx.annotation)
@@ -157,6 +159,8 @@ android {
         authResValue("ai")
         authResValue("messages")
         authResValue("invoices")
+        authResValue("notes")
+        authResValue("authenticator")
         //
         resValue(
             "string",
@@ -173,6 +177,8 @@ android {
         resValue("string", "sync_label_ai", "Ai")
         resValue("string", "sync_label_messages", "Messages")
         resValue("string", "sync_label_invoices", "Invoices")
+        resValue("string", "sync_label_notes", "Notes")
+        resValue("string", "sync_label_authenticator", "Authenticator")
     }
     packaging {
         resources {
@@ -238,12 +244,14 @@ dependencies {
 tasks.withType<Test> {
     jvmArgs(
         "-XX:+EnableDynamicAgentLoading",
-//        "-Xconsistent-data-class-copy-visibility",
     )
     systemProperty("project.rootDir", rootDir.absolutePath)
 }
 
 buildkonfig {
+    val isDebug = gradle.startParameter.taskNames.any { t ->
+        t.toLowerCase().contains("debug")
+    }
     packageName = libs.versions.android.appnamespace.stringValue
     objectName = "BuildConfig"
     defaultConfigs {
@@ -253,6 +261,7 @@ buildkonfig {
             "APP_NAME",
             mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
         )
+        buildConfigField(BOOLEAN, "IS_DEBUG", isDebug.toString())
         buildConfigField(STRING, "SERVER", mjdevServer)
         buildConfigField(STRING, "SERVER_UNAME", mjdevServerUser)
         buildConfigField(STRING, "SERVER_UPASS", mjdevServerPass)
@@ -260,7 +269,8 @@ buildkonfig {
         buildConfigField(STRING, "SERVER_PORT_SMTP", libs.versions.port.smtp.stringValue)
         buildConfigField(
             STRING,
-            "ACCOUNT_TYPE", "${libs.versions.android.appnamespace.stringValue}.sync_account"
+            "ACCOUNT_TYPE",
+            "${libs.versions.android.appnamespace.stringValue}.sync_account"
         )
     }
 }

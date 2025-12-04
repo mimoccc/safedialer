@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.ui.components
 
-import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -43,12 +42,12 @@ import coil.ImageLoader
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.mapper.EntityMapper.asListItem
-import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.providers.android.calllog.CallType
 import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.service.IncomingCallService
 import org.mjdev.safedialer.ui.shapes.DottedShape
 import org.mjdev.safedialer.viewmodel.MainViewModel
@@ -72,14 +71,14 @@ fun ContactDetail(
     showDate: Boolean = false,
     showDivider: Boolean = true,
     showBckImage: Boolean = true,
-    context: Context = LocalContext.current,
 //    hazeState: HazeState = remember { HazeState() },
 //    useBlur: Boolean = true,
     backgroundAlpha: Float = 0.7f,
 ) {
-    val viewModel by rememberViewModelSafe {
-        MainViewModel(DataRepository(context))
+    val viewModel by rememberViewModelSafe { context ->
+        MainViewModel(MockDataRepository(context))
     }
+    val context = LocalContext.current
     val mainBckColor = MaterialTheme.colorScheme.background
     val secondaryColor = MaterialTheme.colorScheme.secondaryContainer
     val sBckColor = MaterialTheme.colorScheme.secondaryContainer

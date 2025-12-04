@@ -1,6 +1,5 @@
 package org.mjdev.safedialer.ui.screen
 
-import android.content.Context
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.slideInHorizontally
@@ -32,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -40,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.repository.DataRepository
+import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.server.ManagementServer
 import org.mjdev.safedialer.server.ManagementServer.Companion.rememberCallServer
 import org.mjdev.safedialer.ui.components.TitleBar
@@ -58,9 +56,8 @@ fun ServerScreen(
     visibleState: State<Boolean> = remember { mutableStateOf(true) },
 ) {
     val server: ManagementServer = rememberCallServer()
-    val context: Context = LocalContext.current
-    val viewModel by rememberViewModelSafe {
-        MainViewModel(DataRepository(context))
+    val viewModel by rememberViewModelSafe { context ->
+        MainViewModel(MockDataRepository(context))
     }
     var httpAddress by remember { mutableStateOf("") }
     AppTheme {
@@ -127,7 +124,7 @@ fun ServerScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "Je nastarovano sdileni na PC.",
+                                text = "Je nastartovano sdileni na PC.",
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
                                 style = textStyle,
