@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,12 +16,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -34,62 +36,20 @@ import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.CustomExt.isPreview
 
-//@Composable
-//fun ContactBackground(
-//    modifier: Modifier = Modifier,
-//    context: Context = LocalContext.current,
-//    imageLoader: ImageLoader = rememberImageLoader(context),
-//    shape: Shape = RoundedCornerShape(50),
-//    alpha: Float = 0.6f,
-//    colorFilter: ColorFilter? = ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }),
-//    contact: ListItem? = null,
-//) = Box(
-//    modifier = modifier.alpha(alpha)
-//) {
-//    if (isPreview) {
-//        Image(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .clip(shape),
-//            imageVector = Icons.Default.AccountCircle,
-//            contentDescription = "",
-//            contentScale = ContentScale.Crop,
-//            colorFilter = ColorFilter.tint(
-//                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
-//            )
-//        )
-//    }
-//    if (contact?.itemPhoto != null) Image(
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .clip(shape),
-//        painter = rememberAsyncImagePainter(
-//            model = ImageRequest.Builder(context).data(
-//                contact.itemPhoto
-//            ).build(),
-//            imageLoader = imageLoader
-//        ),
-//        colorFilter = colorFilter,
-//        contentDescription = "",
-//        contentScale = ContentScale.Crop,
-//    )
-//}
-
-@Suppress("IMPLICIT_CAST_TO_ANY")
 @Composable
 fun ContactBackground(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(context),
     shape: Shape = RoundedCornerShape(50),
-    alpha: Float = 0.6f,
+    shadingAlpha: Float = 0.6f,
     contact: ListItem? = null,
     colorExtracted: (Color?) -> Unit = {}
 ) = Box(
-    modifier = modifier.alpha(alpha)
+    modifier = modifier
 ) {
     var dominantColor by remember { mutableStateOf<Color?>(null) }
-    val photo = if (isPreview) Icons.Default.AccountCircle else contact?.itemPhoto
+    val photo: Any? = if (isPreview) Icons.Default.AccountCircle else contact?.itemPhoto
     val painter = if (photo is ImageVector) rememberVectorPainter(photo)
     else rememberAsyncImagePainter(
         model = ImageRequest.Builder(context)
@@ -126,4 +86,28 @@ fun ContactBackground(
         contentDescription = "",
         contentScale = ContentScale.Crop,
     )
+    GradientBox(
+        modifier = Modifier.fillMaxSize(),
+        startColor = dominantColor?.copy(alpha = shadingAlpha) ?: Color.Transparent,
+        endColor = dominantColor?.copy(alpha = shadingAlpha) ?: Color.Transparent,
+        shape = shape
+    )
 }
+
+@Composable
+fun GradientBox(
+    modifier: Modifier = Modifier,
+    startColor: Color = Color.Transparent,
+    endColor: Color = Color.Black,
+    shape: Shape = RectangleShape
+) = Box(
+    modifier = modifier.background(
+        brush = Brush.verticalGradient(
+            listOf(
+                startColor,
+                endColor
+            )
+        ),
+        shape = shape
+    )
+)

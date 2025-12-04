@@ -74,6 +74,17 @@
                 android:name="com.nabinbhandari.android.permissions.PermissionsActivity"
                 android:theme="@style/Permissions.TransparentTheme" />
 
+        <receiver android:name=".widget.AppWidget"
+                android:exported="true"
+                tools:ignore="Instantiatable">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/app_widget_info" />
+        </receiver>
+
         <service
                 android:name="org.mjdev.safedialer.service.IncomingCallService"
                 android:exported="false"

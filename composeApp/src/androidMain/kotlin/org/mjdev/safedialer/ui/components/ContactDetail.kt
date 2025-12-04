@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.LocalContext
@@ -41,14 +40,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
-import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.haze
-import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.mapper.EntityMapper.asListItem
-import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
@@ -81,7 +75,7 @@ fun ContactDetail(
     context: Context = LocalContext.current,
 //    hazeState: HazeState = remember { HazeState() },
 //    useBlur: Boolean = true,
-    backgroundAlpha: Float = 0.5f,
+    backgroundAlpha: Float = 0.7f,
 ) {
     val viewModel by rememberViewModelSafe {
         MainViewModel(DataRepository(context))

@@ -103,6 +103,9 @@ kotlin {
             implementation("org.bouncycastle:bcmail-jdk18on:1.78")
             implementation("org.bouncycastle:bcpkix-jdk18on:1.78")
             implementation("androidx.palette:palette-ktx:1.0.0")
+            implementation("androidx.glance:glance-appwidget:1.1.1")
+            implementation("androidx.glance:glance-material3:1.1.1")
+            implementation("androidx.glance:glance-material:1.1.1")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
