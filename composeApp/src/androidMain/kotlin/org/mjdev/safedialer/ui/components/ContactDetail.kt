@@ -137,7 +137,7 @@ fun ContactDetail(
                     imageLoader = imageLoader,
                     contact = listItem,
                     shape = background,
-                    alpha = backgroundAlpha,
+                    shadingAlpha = backgroundAlpha,
                     colorExtracted = { color ->
                         secondaryBckColor = color ?: sBckColor
                     }
@@ -169,17 +169,7 @@ fun ContactDetail(
                                 .clip(CircleShape)
                                 .border(
                                     2.dp,
-                                    when (listItem?.itemCallType) {
-                                        CallType.BLOCKED -> Color.Red
-                                        CallType.MISSED -> Color.Red
-                                        CallType.REJECTED -> Color.Red
-                                        CallType.VOICEMAIL -> Color.Blue
-                                        CallType.OUTGOING -> Color.Green
-                                        else -> when {
-                                            listItem?.isStored == true -> Color.Green
-                                            else -> Color.White.copy(alpha = 0.5f)
-                                        }
-                                    },
+                                    listItem?.itemCallType?.color ?: CallType.UNKNOW.color,
                                     CircleShape,
                                 ),
                         ) {
@@ -352,7 +342,7 @@ fun ContactDetail(
                     }
                     Box(
                         modifier = Modifier.fillMaxWidth(),
-                        contentAlignment = Alignment.CenterEnd
+                        contentAlignment = Alignment.CenterEnd,
                     ) {
                         buttons(listItem)
                     }

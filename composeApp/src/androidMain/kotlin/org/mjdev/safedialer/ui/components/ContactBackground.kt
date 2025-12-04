@@ -7,7 +7,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.compose.rememberAsyncImagePainter
@@ -36,19 +36,20 @@ import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.CustomExt.isPreview
 
+@Preview
 @Composable
 fun ContactBackground(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(context),
-    shape: Shape = RoundedCornerShape(50),
+    shape: Shape = RectangleShape,
     shadingAlpha: Float = 0.6f,
     contact: ListItem? = null,
     colorExtracted: (Color?) -> Unit = {}
 ) = Box(
     modifier = modifier
 ) {
-    var dominantColor by remember { mutableStateOf<Color?>(null) }
+    var dominantColor by remember { mutableStateOf<Color?>(Color.Black) }
     val photo: Any? = if (isPreview) Icons.Default.AccountCircle else contact?.itemPhoto
     val painter = if (photo is ImageVector) rememberVectorPainter(photo)
     else rememberAsyncImagePainter(
@@ -99,15 +100,42 @@ fun GradientBox(
     modifier: Modifier = Modifier,
     startColor: Color = Color.Transparent,
     endColor: Color = Color.Black,
-    shape: Shape = RectangleShape
-) = Box(
-    modifier = modifier.background(
-        brush = Brush.verticalGradient(
-            listOf(
-                startColor,
-                endColor
+    shape: Shape = RectangleShape,
+//    radialAlpha: Float = 0.1f,
+    verticalAlpha: Float = 0.2f,
+) {
+    Box(
+        modifier = modifier
+            .background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        startColor.copy(alpha = verticalAlpha),
+                        Color.Transparent,
+                        Color.Transparent,
+                        endColor.copy(alpha = verticalAlpha),
+                        endColor.copy(alpha = verticalAlpha),
+                    )
+                ),
+                shape = shape
             )
-        ),
-        shape = shape
     )
-)
+//    Box(
+//        modifier = modifier
+//            .background(
+//                Brush.radialGradient(
+//                    colors = listOf(
+//                        Color.Transparent,
+//                        Color.Transparent,
+//                        Color.Transparent,
+//                        Color.Transparent,
+//                        Color.Transparent,
+//                        Color.Transparent,
+//                        endColor.copy(alpha = 0.1f),
+//                        endColor.copy(alpha = 0.3f),
+//                        endColor.copy(alpha = 0.5f),
+//                    ),
+//                ),
+//                shape = shape
+//            ).alpha(radialAlpha)
+//    )
+}
