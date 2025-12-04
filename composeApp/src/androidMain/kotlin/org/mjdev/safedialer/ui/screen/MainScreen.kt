@@ -25,6 +25,8 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
+import org.mjdev.safedialer.extensions.ComposeExt1.isLandscape
+import org.mjdev.safedialer.extensions.ComposeExt1.isPortrait
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.DataRepository
@@ -32,9 +34,9 @@ import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
 import org.mjdev.safedialer.ui.components.FloatButton
 import org.mjdev.safedialer.ui.components.TabbedScreen
-import org.mjdev.safedialer.ui.components.TabsState
-import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.components.TitleBar
+import org.mjdev.safedialer.ui.state.TabsState
+import org.mjdev.safedialer.ui.state.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,7 +65,9 @@ fun MainScreen(
         )
     val floatingActionIcon: @Composable () -> Unit = {
         FloatButton(
-            modifier = Modifier.padding(bottom = 48.dp),
+            modifier = Modifier.padding(
+                bottom = if (isLandscape) 48.dp else 0.dp
+            ),
             fabState = fabState,
             onClick = {
                 fabState.isVisible = !fabState.isVisible
@@ -96,9 +100,7 @@ fun MainScreen(
                 )
             },
             bottomBar = { },
-            floatingActionButton = {
-                floatingActionIcon()
-            },
+            floatingActionButton = floatingActionIcon,
         ) { padding ->
             TabbedScreen(
                 modifier = Modifier

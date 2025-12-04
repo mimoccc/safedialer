@@ -8,6 +8,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -58,12 +59,14 @@ fun DialPad(
             enter = slideInVertically(animationSpec = tween(300)) { fullHeight -> fullHeight },
             exit = slideOutVertically(animationSpec = tween(300)) { fullHeight -> fullHeight }
         ) {
+            val shape =RoundedCornerShape(32.dp)
             Box(
                 modifier
                     .fillMaxWidth()
                     .height(400.dp)
-                    .clip(RoundedCornerShape(32.dp))
-                    .background(MaterialTheme.colorScheme.background)
+                    .clip(shape)
+                    .background(MaterialTheme.colorScheme.background, shape)
+                    .border(2.dp, MaterialTheme.colorScheme.primary, shape)
                     .padding(12.dp)
                     .align(Alignment.BottomCenter)
             ) {
@@ -72,12 +75,12 @@ fun DialPad(
                     verticalArrangement = Arrangement.SpaceEvenly,
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-//                Text(
-//                    text = phoneNumber.value,
-//                    style = MaterialTheme.typography.headlineMedium,
-//                    color = Color.White,
-//                    modifier = Modifier.padding(bottom = 8.dp)
-//                )
+                    Text(
+                        text = phoneNumber.value,
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
                     keys.forEach { row ->
                         Row(
                             modifier = Modifier.fillMaxWidth(),

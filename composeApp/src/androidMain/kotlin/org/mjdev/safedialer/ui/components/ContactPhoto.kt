@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import coil.ImageLoader
@@ -28,18 +29,17 @@ fun ContactPhoto(
     modifier: Modifier = Modifier,
     context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(context),
+    shape: Shape = CircleShape,
     contact: ListItem? = null,
     onClick: () -> Unit = {}
 ) {
     Box(
-        modifier = modifier.clickable {
-            onClick()
-        }
+        modifier = modifier.clickable { onClick() }
     ) {
         Image(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(CircleShape),
+                .clip(shape),
             imageVector = Icons.Default.AccountCircle,
             contentDescription = "",
             contentScale = ContentScale.Crop,
@@ -50,7 +50,7 @@ fun ContactPhoto(
         if (contact?.itemPhoto != null) Image(
             modifier = Modifier
                 .fillMaxSize()
-                .clip(CircleShape),
+                .clip(shape),
             painter = rememberAsyncImagePainter(
                 model = ImageRequest.Builder(context).data(
                     contact.itemPhoto

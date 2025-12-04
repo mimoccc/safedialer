@@ -24,7 +24,10 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -38,9 +41,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.mapper.EntityMapper.asListItem
+import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
@@ -69,11 +77,22 @@ fun ContactDetail(
     isLast: Boolean = true,
     showDate: Boolean = false,
     showDivider: Boolean = true,
-    context: Context = LocalContext.current
+    showBckImage: Boolean = true,
+    context: Context = LocalContext.current,
+//    hazeState: HazeState = remember { HazeState() },
+//    useBlur: Boolean = true,
+    backgroundAlpha: Float = 0.5f,
 ) {
     val viewModel by rememberViewModelSafe {
         MainViewModel(DataRepository(context))
     }
+    val mainBckColor = MaterialTheme.colorScheme.background
+    val secondaryColor = MaterialTheme.colorScheme.secondaryContainer
+    val sBckColor = MaterialTheme.colorScheme.secondaryContainer
+    var secondaryBckColor by remember { mutableStateOf(sBckColor) }
+    val primaryColor = MaterialTheme.colorScheme.primary
+//    val outlineColor = MaterialTheme.colorScheme.outline
+    val textColor = MaterialTheme.colorScheme.primary
     val background = RoundedCornerShape(
         topStart = if (isFirst) 16.dp else 0.dp,
         topEnd = if (isFirst) 16.dp else 0.dp,
@@ -100,17 +119,36 @@ fun ContactDetail(
     }
     val listItem = contact?.asListItem()
     Box(
-        modifier = modifier.background(
-            color = MaterialTheme.colorScheme.background,
-            shape = background,
-        ),
+        modifier = modifier
+            .wrapContentHeight()
+            .background(
+                color = mainBckColor,
+                shape = background,
+            ),
     ) {
         Box(
             modifier = Modifier.background(
-                color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                color = secondaryColor.copy(alpha = 0.3f),
                 shape = background,
             ),
         ) {
+            // todo custom image
+            if (showBckImage) {
+                ContactBackground(
+                    modifier = Modifier
+                        .matchParentSize(),
+//                        .applyIf(useBlur) {
+//                            haze(hazeState)
+//                        },
+                    imageLoader = imageLoader,
+                    contact = listItem,
+                    shape = background,
+                    alpha = backgroundAlpha,
+                    colorExtracted = { color ->
+                        secondaryBckColor = color ?: sBckColor
+                    }
+                )
+            }
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -177,7 +215,7 @@ fun ContactDetail(
                                 style = textStyle,
                                 fontFamily = fontFamily,
                                 maxLines = 1,
-                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                color = textColor,
                             )
                             if (listItem?.itemPhone != null) Text(
                                 modifier = Modifier.fillMaxWidth(),
@@ -186,7 +224,7 @@ fun ContactDetail(
                                 style = textStyle,
                                 fontFamily = fontFamily,
                                 maxLines = 1,
-                                color = MaterialTheme.colorScheme.outline,
+                                color = textColor,
                             )
                             if (showDate && listItem?.itemDate != null) {
                                 Text(
@@ -205,7 +243,7 @@ fun ContactDetail(
                                     style = textStyle,
                                     fontFamily = fontFamily,
                                     maxLines = 1,
-                                    color = MaterialTheme.colorScheme.outline,
+                                    color = textColor,
                                 )
                             }
                         }
@@ -217,6 +255,7 @@ fun ContactDetail(
                         if (showCloseButton.not()) {
                             IconButton(
                                 modifier = Modifier
+                                    .padding(8.dp)
                                     .align(Alignment.TopEnd)
                                     .size(32.dp)
                                     .padding(top = 4.dp),
@@ -227,7 +266,7 @@ fun ContactDetail(
                                 Image(
                                     modifier = Modifier
                                         .background(
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            color = primaryColor.copy(alpha = 0.2f),
                                             shape = CircleShape,
                                         )
                                         .padding(4.dp),
@@ -235,7 +274,7 @@ fun ContactDetail(
                                     contentDescription = "",
                                     colorFilter =
                                         ColorFilter.tint(
-                                            color = MaterialTheme.colorScheme.primary,
+                                            color = primaryColor,
                                         ),
                                 )
                             }
@@ -253,14 +292,14 @@ fun ContactDetail(
                                 Image(
                                     modifier = Modifier
                                         .background(
-                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                                            color = primaryColor.copy(alpha = 0.2f),
                                             shape = CircleShape,
                                         )
                                         .padding(4.dp),
                                     imageVector = Icons.Rounded.Close,
                                     contentDescription = "",
                                     colorFilter = ColorFilter.tint(
-                                        color = MaterialTheme.colorScheme.primary,
+                                        color = primaryColor,
                                     ),
                                 )
                             }
@@ -268,30 +307,42 @@ fun ContactDetail(
                     }
                 }
                 Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                listOf(
-                                    Color.Transparent,
-                                    Color.Transparent,
-                                    Color.Transparent,
-                                    Color.Black.copy(alpha = 0.5f),
-                                    Color.Black.copy(alpha = 0.8f),
-                                    Color.Black,
-                                    Color.Black,
-                                    Color.Black.copy(alpha = 0.8f),
-                                )
-                            ),
-                            shape = backgroundDetails
-                        ),
+                    modifier = Modifier.fillMaxWidth()
+//                        .applyIf(useBlur) {
+//                            hazeChild(
+//                                state = hazeState,
+//                                shape = backgroundDetails,
+////                                style = HazeStyle(
+//////                                    tint = secondaryBckColor.copy(alpha = backgroundAlpha),
+////                                    blurRadius = 4.dp,
+////                                    noiseFactor = 0f,
+////                                ),
+//                            )
+//                        }
+//                        .applyIf(!useBlur) {
+//                            background(
+//                                brush = Brush.horizontalGradient(
+//                                    listOf(
+//                                        Color.Transparent,
+//                                        Color.Transparent,
+//                                        Color.Transparent,
+//                                        secondaryBckColor.copy(alpha = 0.5f),
+//                                        secondaryBckColor.copy(alpha = 0.8f),
+//                                        secondaryBckColor,
+//                                        secondaryBckColor,
+//                                        secondaryBckColor.copy(alpha = 0.8f),
+//                                    )
+//                                ),
+//                                shape = backgroundDetails
+//                            )
+//                        },
                 ) {
                     if (details != null || listItem?.details != null) {
                         Text(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    color = Color.Black.copy(alpha = 0.8f)
+                                    color = sBckColor.copy(alpha = 0.8f)
                                 )
                                 .padding(8.dp),
                             text = details ?: listItem?.details ?: "",
@@ -315,10 +366,10 @@ fun ContactDetail(
                 if (!isLast && showDivider) {
                     HorizontalDivider(
                         modifier = Modifier
-                            .padding(start = 16.dp)
+                            .padding(start = 80.dp)
                             .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = DottedShape(5.dp),
+                                color = primaryColor.copy(alpha = 0.6f),
+                                shape = DottedShape(8.dp),
                             ),
                         color = Color.Transparent,
                         thickness = 1.dp,

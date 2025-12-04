@@ -102,6 +102,7 @@ kotlin {
             implementation("org.bouncycastle:bcpg-jdk18on:1.78")
             implementation("org.bouncycastle:bcmail-jdk18on:1.78")
             implementation("org.bouncycastle:bcpkix-jdk18on:1.78")
+            implementation("androidx.palette:palette-ktx:1.0.0")
         }
         commonMain.dependencies {
             implementation(compose.runtime)

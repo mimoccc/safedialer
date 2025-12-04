@@ -2,6 +2,7 @@ package org.mjdev.safedialer.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -24,10 +25,12 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
+import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
-import org.mjdev.safedialer.ui.components.TabsState.Companion.rememberTabsState
+import org.mjdev.safedialer.ui.state.TabsState
+import org.mjdev.safedialer.ui.state.TabsState.Companion.rememberTabsState
 
 @Previews
 @Composable
@@ -42,6 +45,12 @@ fun TabbedScreen(
     backgroundColor: Color = MaterialTheme.colorScheme.background,
     shape: RoundedCornerShape = RoundedCornerShape(50),
     useBlur: Boolean = false,
+    createPreview: @Composable BoxScope.(item: Any?) -> Unit = {
+        Text(
+            modifier = Modifier.align(Alignment.Center),
+            text = "Todo preview here",
+        )
+    }
 ) = Box(
     modifier = modifier
         .padding(2.dp)
@@ -50,7 +59,7 @@ fun TabbedScreen(
 ) {
     val phoneNumber: MutableState<String> = remember { mutableStateOf("") }
     // todo dialPad
-    val dialPadVisible = remember(fabState.isVisible) { fabState.isVisible }
+//    val dialPadVisible = remember(fabState.isVisible) { fabState.isVisible }
     ResponsiveContainer(
         modifier = Modifier.background(backgroundColor),
         ratio = 0.4f,
@@ -58,8 +67,8 @@ fun TabbedScreen(
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .let { m ->
-                        if (useBlur) m.haze(hazeState) else m
+                    .applyIf(useBlur) {
+                        haze(hazeState)
                     },
             ) {
                 (tabState.currentTab as? SyncAccountTypes)
@@ -67,12 +76,7 @@ fun TabbedScreen(
                     ?.invoke(scrollState, filterText)
             }
         },
-        preview = {
-            Text(
-                modifier = Modifier.align(Alignment.Center),
-                text = "Todo preview here",
-            )
-        },
+        preview = createPreview,
         landscapeBottomMenu = {
             TabsBottomBar(
                 tabState = tabState,
@@ -81,8 +85,8 @@ fun TabbedScreen(
                     .padding(2.dp)
                     .fillMaxWidth()
                     .clip(shape)
-                    .let { m ->
-                        if (useBlur) m.hazeChild(
+                    .applyIf(useBlur) {
+                        hazeChild(
                             state = hazeState,
                             shape = shape,
                             style = HazeStyle(
@@ -90,7 +94,10 @@ fun TabbedScreen(
                                 blurRadius = 4.dp,
                                 noiseFactor = 0f,
                             ),
-                        ) else m.background(
+                        )
+                    }
+                    .applyIf(!useBlur) {
+                        background(
                             backgroundColor,
                             shape
                         )
@@ -122,12 +129,12 @@ fun TabbedScreen(
             )
         }
     )
-//    DialPad(
-//        modifier = Modifier
-//            .padding(bottom = 80.dp, end = 4.dp, start = 4.dp)
-//            .fillMaxWidth()
-//            .align(Alignment.BottomCenter),
-//        phoneNumber = phoneNumber,
+    DialPad(
+        modifier = Modifier
+            .padding(end = 4.dp, start = 4.dp)
+            .fillMaxWidth()
+            .align(Alignment.BottomCenter),
+        phoneNumber = phoneNumber,
 //        visible = !dialPadVisible,
-//    )
+    )
 }

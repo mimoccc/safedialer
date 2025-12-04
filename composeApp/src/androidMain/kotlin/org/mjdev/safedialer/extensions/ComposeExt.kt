@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.extensions
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.BlurMaskFilter
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.shape.CircleShape
@@ -17,6 +18,7 @@ import androidx.compose.ui.graphics.PaintingStyle
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -33,6 +35,19 @@ import org.mjdev.safedialer.di.mainDI
 
 object ComposeExt1 {
 
+    val isLandscape: Boolean
+        @Composable
+        get() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+
+    val isPortrait: Boolean
+        @Composable
+        get() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT
+
+    fun Modifier.applyIf(
+        condition: Boolean,
+        other: Modifier.() -> Modifier
+    ): Modifier = if (condition) this.then(other()) else this
+
     val ScrollableState.canScroll
         get() = canScrollForward || canScrollBackward
 
@@ -40,6 +55,7 @@ object ComposeExt1 {
         override fun isInitialized(): Boolean = true
     }
 
+    @JvmOverloads
     @Composable
     inline fun <reified VM : ViewModel> rememberViewModelSafe(
         tag: Any? = null,

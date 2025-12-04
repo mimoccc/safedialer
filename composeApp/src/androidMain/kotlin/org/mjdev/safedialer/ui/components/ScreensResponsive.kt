@@ -2,7 +2,7 @@
 
 package org.mjdev.safedialer.ui.components
 
-import android.content.res.Configuration
+
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
@@ -10,28 +10,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.unit.Constraints
-import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import org.mjdev.safedialer.data.custom.DisplayInfo
+import org.mjdev.safedialer.data.custom.DisplayInfo.Companion.rememberDisplayInfo
+import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.ui.components.DisplayInfo.Companion.applyIf
-import org.mjdev.safedialer.ui.components.DisplayInfo.Companion.rememberDisplayInfo
 
 @Previews
 @Composable
@@ -45,7 +41,7 @@ fun ResponsiveContainer(
             modifier = Modifier
                 .width(64.dp)
                 .fillMaxHeight()
-                .background(Color.Red)
+                .background(Color.DarkGray)
         ) {}
     },
     landscapeBottomMenu: (@Composable (DisplayInfo) -> Unit)? = {
@@ -53,11 +49,11 @@ fun ResponsiveContainer(
             modifier = Modifier
                 .height(64.dp)
                 .fillMaxWidth()
-                .background(Color.Red)
+                .background(Color.DarkGray)
         ) {}
     },
     content: @Composable (DisplayInfo) -> Unit = {},
-    preview: @Composable (DisplayInfo) -> Unit = {},
+    preview : @Composable BoxScope.(item:Any?) -> Unit = {},
 ) = BoxWithConstraints(
     modifier.fillMaxSize()
 ) {
@@ -98,7 +94,7 @@ fun ResponsiveContainer(
                         .fillMaxHeight()
                         .width(displayInfo.previewWidth)
                         .applyIf(isInPreviewMode) {
-                            background(Color.DarkGray)
+                            background(Color.Gray)
                         },
                     content = {
                         preview(displayInfo)
@@ -113,59 +109,5 @@ fun ResponsiveContainer(
         ) {
             landscapeBottomMenu?.invoke(displayInfo)
         }
-    }
-}
-
-@Suppress("MemberVisibilityCanBePrivate")
-data class DisplayInfo(
-    val constraints: Constraints,
-    val density: Density,
-    val configuration: Configuration,
-    val ratio: Float = 0.4f,
-    private val isLandscapeFixed: Boolean? = null,
-) {
-    val width: Dp
-        get() = with(density) {
-            constraints.maxWidth.toDp()
-        }
-
-    val height: Dp
-        get() = with(density) {
-            constraints.maxHeight.toDp()
-        }
-
-    val isLandscape: Boolean
-        get() = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
-
-    val isPortrait: Boolean
-        get() = configuration.orientation == Configuration.ORIENTATION_PORTRAIT
-
-    val contentWidth: Dp
-        get() = if (isLandscape) {
-            (width.value * ratio).dp
-        } else {
-            width
-        }
-
-    val previewWidth: Dp
-        get() = if (isLandscape) width - contentWidth else 0.dp
-
-    companion object {
-        @Composable
-        fun rememberDisplayInfo(
-            constraints: Constraints,
-            density: Density = LocalDensity.current,
-            configuration: Configuration = LocalConfiguration.current,
-        ) = remember(
-            constraints,
-            density,
-            configuration,
-            configuration.orientation
-        ) { DisplayInfo(constraints, density, configuration) }
-
-        fun Modifier.applyIf(
-            condition: Boolean,
-            other: Modifier.() -> Modifier
-        ): Modifier = if (condition) this.then(other()) else this
     }
 }
