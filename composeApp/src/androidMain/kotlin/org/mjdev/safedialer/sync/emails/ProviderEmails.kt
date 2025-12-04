@@ -184,6 +184,7 @@ class ProviderEmails : ContentProvider(), DIAware {
         const val MAIL_ITEM_RECIPIENTS_CSV = "recipientsCsv"
         const val MAIL_ITEM_IS_DELETED = "isDeleted"
         const val MAIL_ITEM_IS_FLAGGED = "isFlagged"
+        const val MAIL_ITEM_IS_ENCRYPTED = "isEncrypted"
 
         const val MAIL_FOLDER_NAME = "mailFolderName"
 

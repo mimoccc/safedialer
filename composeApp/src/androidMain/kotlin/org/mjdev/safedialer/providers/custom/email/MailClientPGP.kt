@@ -231,7 +231,8 @@ class MailClientPGP(
                             mailboxName = folder,
                             recipientsCsv = recipients,
                             isDeleted = deleted,
-                            isFlagged = flagged
+                            isFlagged = flagged,
+                            content = content
                         )
                     )
                 }

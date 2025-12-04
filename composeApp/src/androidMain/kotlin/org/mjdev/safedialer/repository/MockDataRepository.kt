@@ -245,11 +245,12 @@ class MockDataRepository(
             MailItem(
                 id = idx.toLong(),
                 senderName = "John Doe $idx",
-                subject = "Hello John Doe $idx",
                 senderEmail = "john.doe$idx@example.com",
+                subject = "Hello John Doe $idx",
                 body = "Hello John Doe $idx",
                 createdAtMillis = System.currentTimeMillis(),
-                mailboxName = "Inbox"
+                mailboxName = "Inbox",
+                content = content
             )
         }
     }

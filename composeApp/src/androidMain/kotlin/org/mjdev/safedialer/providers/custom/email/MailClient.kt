@@ -618,8 +618,9 @@ class MailClient(
                     val senderName = sender?.personal ?: sender?.address ?: ""
                     val senderEmail = sender?.address ?: ""
                     val subjectText = message.subject ?: ""
+                    val content = message.content
                     val bodyText = extractTextFromPartSafe(message)
-                    val createdAt = (message.sentDate ?: message.receivedDate)?.time
+                    val createdAt = (message.receivedDate ?: message.sentDate)?.time
                         ?: System.currentTimeMillis()
                     val recipients = message.getRecipients(Message.RecipientType.TO)?.mapNotNull {
                         (it as? InternetAddress)?.address
@@ -630,18 +631,23 @@ class MailClient(
                     val flagged = runCatching {
                         message.isSet(Flags.Flag.FLAGGED)
                     }.getOrElse { false }
+                    val encrypted = runCatching {
+                        // todo
+                        false
+                    }.getOrElse { false }
                     runCatching {
                         MailItem(
                             id = message.messageNumber.toLong(),
                             senderName = senderName,
                             senderEmail = senderEmail,
                             subject = subjectText,
-                            body = bodyText,
+                            body = bodyText ?: content.toString(),
                             createdAtMillis = createdAt,
                             mailboxName = folder,
                             recipientsCsv = recipients,
                             isDeleted = deleted,
-                            isFlagged = flagged
+                            isFlagged = flagged,
+                            isEncrypted = encrypted
                         )
                     }.onSuccess { m ->
                         items.add(m)
@@ -663,7 +669,7 @@ class MailClient(
 
     private fun extractTextFromPartSafe(
         part: Part
-    ): String = runCatching {
+    ): String? = runCatching {
         val text = extractTextFromPart(part)
         if (isPGPEnabled && text.contains("-----BEGIN PGP MESSAGE-----")) {
             try {
@@ -675,7 +681,7 @@ class MailClient(
         } else text
     }.getOrElse {
         Log.e(TAG, "Failed to extract text from part: ${it.message}")
-        ""
+        null
     }
 
     private fun extractTextFromPart(

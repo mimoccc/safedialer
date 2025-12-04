@@ -267,7 +267,27 @@
             </intent-filter>
             <meta-data
                     android:name="android.content.SyncAdapter"
-                    android:resource="@xml/sync_adapter_ai" />
+                    android:resource="@xml/sync_adapter_messages" />
+        </service>
+
+        <provider
+                android:name=".sync.invoices.ProviderInvoices"
+                android:authorities="@string/authority_invoices"
+                android:exported="true"
+                android:label="@string/sync_label_invoices"
+                android:grantUriPermissions="true" />
+
+        <service
+                android:name=".sync.invoices.SyncServiceInvoices"
+                android:exported="true"
+                android:permission="android.permission.BIND_SYNC_ADAPTER"
+                android:label="@string/sync_label_invoices">
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                    android:name="android.content.SyncAdapter"
+                    android:resource="@xml/sync_adapter_invoices" />
         </service>
 
     </application>

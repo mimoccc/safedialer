@@ -70,8 +70,15 @@ data class MailItem(
     )
     val isFlagged: Boolean = false,
 
+    @FieldMapping(
+        ProviderEmails.MAIL_ITEM_IS_ENCRYPTED,
+        FieldMapping.PhysicalType.Int,
+        FieldMapping.LogicalType.Boolean
+    )
+    val isEncrypted: Boolean = false,
+
     @IgnoreMapping
-    val contact : Contact? = null
+    val contact: Contact? = null,
 ) : Entity() {
 
     // todo : mail folders
