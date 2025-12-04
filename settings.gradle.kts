@@ -25,7 +25,7 @@ pluginManagement {
         maven("https://central.sonatype.com/repository/maven-snapshots")
         maven("https://storage.googleapis.com/r8-releases/raw")
         maven("https://mvn.dailymotion.com/repository/releases/")
-        maven("https://mobile.maven.couchbase.com/maven2/dev/")
+//        maven("https://mobile.maven.couchbase.com/maven2/dev/")
         google()
     }
 }
@@ -50,7 +50,7 @@ dependencyResolutionManagement {
         maven("https://central.sonatype.com/repository/maven-snapshots")
         maven("https://storage.googleapis.com/r8-releases/raw")
         maven("https://mvn.dailymotion.com/repository/releases/")
-        maven("https://mobile.maven.couchbase.com/maven2/dev/")
+//        maven("https://mobile.maven.couchbase.com/maven2/dev/")
         google()
     }
 }

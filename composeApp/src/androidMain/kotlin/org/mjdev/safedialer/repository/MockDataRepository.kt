@@ -136,7 +136,7 @@ class MockDataRepository(
         emailList.forEach { mail ->
             val sender = mail.senderEmail.trim()
             if (sender.isNotEmpty()) participants += sender.lowercase()
-            val recipients = mail.recipientsCsv
+            val recipients = mail.recipients
                 .split(',', ';')
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
@@ -146,7 +146,7 @@ class MockDataRepository(
         for (participant in participants) {
             val participantMessages = emailList.filter { mail ->
                 mail.senderEmail.equals(participant, ignoreCase = true) ||
-                        mail.recipientsCsv
+                        mail.recipients
                             .split(',', ';')
                             .any { it.trim().equals(participant, ignoreCase = true) }
             }.sortedByDescending { it.createdAtMillis }
@@ -250,7 +250,6 @@ class MockDataRepository(
                 body = "Hello John Doe $idx",
                 createdAtMillis = System.currentTimeMillis(),
                 mailboxName = "Inbox",
-                content = content
             )
         }
     }

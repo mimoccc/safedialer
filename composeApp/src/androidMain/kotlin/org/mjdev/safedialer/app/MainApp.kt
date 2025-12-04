@@ -2,7 +2,7 @@ package org.mjdev.safedialer.app
 
 import android.app.Application
 import androidx.core.telecom.CallsManager
-import kotbase.CouchbaseLite
+//import kotbase.CouchbaseLite
 import org.kodein.di.DIAware
 import org.kodein.di.LazyDI
 import org.kodein.di.instance
@@ -18,7 +18,7 @@ class MainApp : Application(), DIAware {
     override fun onCreate() {
         callsManager.registerAppWithTelecom(capabilities)
         super.onCreate()
-        CouchbaseLite.init(this)
+//        CouchbaseLite.init(this)
         // todo check if from boot & permissions granted & permission activity
         IncomingCallService.start(this)
     }

@@ -116,7 +116,7 @@ kotlin {
             implementation(libs.androidx.lifecycle.runtimeCompose)
             implementation(libs.androidx.lifecycle.viewmodel.compose)
             implementation(libs.qrose)
-            implementation(libs.couchbase.lite)
+//            implementation(libs.couchbase.lite)
             implementation(libs.logback.classic)
             implementation(libs.kodein.di)
             implementation(libs.kodein.di.framework.compose)

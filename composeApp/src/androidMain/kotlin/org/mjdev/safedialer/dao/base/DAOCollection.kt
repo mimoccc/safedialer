@@ -15,7 +15,7 @@ import org.mjdev.safedialer.helpers.JsonHelper.toJson
 import kotbase.Collection as DBCollection
 
 class DAOCollection<T : Any>(
-    val collection: DBCollection
+    private val collection: DBCollection
 ) {
     fun add(
         obj: T,

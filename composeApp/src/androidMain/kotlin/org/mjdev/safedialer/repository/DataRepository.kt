@@ -27,6 +27,7 @@ import org.mjdev.safedialer.providers.android.telephony.TelephonyFilter
 import org.mjdev.safedialer.providers.android.telephony.TelephonyProvider
 import org.mjdev.safedialer.providers.custom.ai.AIItem
 import org.mjdev.safedialer.providers.custom.email.EmailsProvider
+import org.mjdev.safedialer.providers.custom.email.MailItem
 import org.mjdev.safedialer.repository.base.ADataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
 
@@ -103,7 +104,7 @@ class DataRepository(
             }
         }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
-    private val emails = providerFlow(emailsProvider) {
+    private val emails : Flow<List<MailItem>> = providerFlow(emailsProvider) {
         getEmails() ?: emptyList()
     }.combine(contacts) { emailList, contacts ->
         emailList.filter { m ->
@@ -142,46 +143,57 @@ class DataRepository(
 
     // todo simplify
     override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.map { emailList ->
-        val participants = mutableSetOf<String>()
-        emailList.forEach { mail ->
-            val sender = mail.senderEmail.trim() // todo sender from sent
-            if (sender.isNotEmpty()) participants += sender.lowercase()
-            val recipients = mail.recipientsCsv
-                .split(',', ';')
-                .map { it.trim() }
-                .filter { it.isNotEmpty() }
-            participants += recipients.map { r -> r.lowercase() }
-        }
-        val result = mutableMapOf<String, List<MailThread>>()
-        for (participant in participants) {
-            val participantMessages = emailList.filter { mail ->
-                mail.senderEmail.equals(participant, ignoreCase = true) ||
-                        mail.recipientsCsv
-                            .split(',', ';')
-                            .any { it.trim().equals(participant, ignoreCase = true) }
-            }.sortedByDescending { it.createdAtMillis }
-            if (participantMessages.isEmpty()) continue
-            val fromParticipant = participantMessages.firstOrNull {
-                it.senderEmail.equals(participant, true)
-            }
-            val contact = fromParticipant?.contact
-            val receivedDate = fromParticipant?.createdAtMillis?.formatDate() ?: "-"
-            result[receivedDate] = listOf(
-                MailThread(
-                    id = 0L,
-                    contact = contact,
-                    messages = participantMessages,
-                )
+        emailList.map { mail ->
+            MailThread(
+                mail.id,
+                mail.contact ?: findContactBySender(mail.senderEmail, mail.senderName),
+                listOf(mail)
             )
+        }.associate { mt ->
+            val created = mt.messages.firstOrNull()?.createdAtMillis ?: 0L
+            created.formatDate() to listOf(mt)
         }
-        result.toList().sortedByDescending { pair ->
-            pair.first
-        }.toMap()
+
+//        val participants = mutableSetOf<String>().apply {
+//            emailList.forEach { mail ->
+//                val sender = mail.senderEmail.trim() // todo sender from sent ?
+//                if (sender.isNotEmpty()) this += sender.lowercase()
+//                val recipients = mail.recipients
+//                    .split(',', ';')
+//                    .map { it.trim() }
+//                    .filter { it.isNotEmpty() }
+//                this += recipients.map { r -> r.lowercase() }
+//            }
+//        }
+//        val result = mutableMapOf<Long, List<MailThread>>().apply {
+//            for (participant in participants) {
+//                val participantMessages = emailList.filter { mail ->
+//                    mail.senderEmail.equals(participant, ignoreCase = true) ||
+//                            mail.recipients
+//                                .split(',', ';')
+//                                .any { it.trim().equals(participant, ignoreCase = true) }
+//                }.sortedByDescending { it.createdAtMillis }
+//                if (participantMessages.isEmpty()) continue
+//                val fromParticipant = participantMessages.firstOrNull {
+//                    it.senderEmail.equals(participant, true)
+//                }
+//                val contact = fromParticipant?.contact
+//                val receivedDate = fromParticipant?.createdAtMillis ?: System.currentTimeMillis()
+//                this[receivedDate] = listOf(
+//                    MailThread(
+//                        id = 0L,
+//                        contact = contact,
+//                        messages = participantMessages,
+//                    )
+//                )
+//            }
+//        }
+//        result.map { entry -> entry.key.formatDate() to entry.value }.toMap()
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     override val aiMap = aiThreads.map { threads ->
         threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
-    }.flowOn(Dispatchers.Default)//.shareIn(scope, Eagerly, 1)
+    }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     override suspend fun findContactByPhone(
         phoneNumber: String?

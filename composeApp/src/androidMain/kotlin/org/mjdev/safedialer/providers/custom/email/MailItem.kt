@@ -54,7 +54,7 @@ data class MailItem(
         ProviderEmails.MAIL_ITEM_RECIPIENTS_CSV,
         FieldMapping.PhysicalType.String
     )
-    val recipientsCsv: String = "",
+    val recipients: String = "",
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_IS_DELETED,

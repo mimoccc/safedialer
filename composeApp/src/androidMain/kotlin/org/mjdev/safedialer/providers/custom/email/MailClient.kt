@@ -618,7 +618,7 @@ class MailClient(
                     val senderName = sender?.personal ?: sender?.address ?: ""
                     val senderEmail = sender?.address ?: ""
                     val subjectText = message.subject ?: ""
-                    val content = message.content
+                    val content = runCatching { message.content }.getOrNull()
                     val bodyText = extractTextFromPartSafe(message)
                     val createdAt = (message.receivedDate ?: message.sentDate)?.time
                         ?: System.currentTimeMillis()
@@ -644,7 +644,7 @@ class MailClient(
                             body = bodyText ?: content.toString(),
                             createdAtMillis = createdAt,
                             mailboxName = folder,
-                            recipientsCsv = recipients,
+                            recipients = recipients,
                             isDeleted = deleted,
                             isFlagged = flagged,
                             isEncrypted = encrypted

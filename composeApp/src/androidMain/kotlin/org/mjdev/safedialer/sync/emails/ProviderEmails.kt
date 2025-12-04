@@ -7,7 +7,7 @@ import android.database.MatrixCursor
 import android.net.Uri
 import android.util.Log
 import androidx.core.net.toUri
-import kotbase.CouchbaseLite
+//import kotbase.CouchbaseLite
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,7 +39,7 @@ class ProviderEmails : ContentProvider(), DIAware {
 
     override fun onCreate(): Boolean {
         context?.applicationContext?.let { application ->
-            CouchbaseLite.init(application)
+//            CouchbaseLite.init(application)
         }
 //        localEmails = dao.emails.asList()
         startPeriodicUpdates()
@@ -112,7 +112,7 @@ class ProviderEmails : ContentProvider(), DIAware {
                     MAIL_ITEM_BODY -> mailItem.body
                     MAIL_ITEM_CREATED_AT_MILLIS -> mailItem.createdAtMillis
                     MAIL_ITEM_MAILBOX_NAME -> mailItem.mailboxName
-                    MAIL_ITEM_RECIPIENTS_CSV -> mailItem.recipientsCsv
+                    MAIL_ITEM_RECIPIENTS_CSV -> mailItem.recipients
                     MAIL_ITEM_IS_DELETED -> mailItem.isDeleted.toInt()
                     MAIL_ITEM_IS_FLAGGED -> mailItem.isFlagged.toInt()
                     else -> null
