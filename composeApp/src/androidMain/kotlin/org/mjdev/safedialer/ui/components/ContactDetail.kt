@@ -39,9 +39,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.ImageLoader
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 import kotlinx.coroutines.runBlocking
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.data.mapper.EntityMapper.asListItem
+import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
 import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
@@ -71,9 +76,9 @@ fun ContactDetail(
     showDate: Boolean = false,
     showDivider: Boolean = true,
     showBckImage: Boolean = true,
-//    hazeState: HazeState = remember { HazeState() },
-//    useBlur: Boolean = true,
-    backgroundAlpha: Float = 0.7f,
+    hazeState: HazeState = remember { HazeState() },
+    useBlur: Boolean = true,
+    backgroundAlpha: Float = 0.8f,
 ) {
     val viewModel by rememberViewModelSafe { context ->
         MainViewModel(MockDataRepository(context))
@@ -129,10 +134,10 @@ fun ContactDetail(
             if (showBckImage) {
                 ContactBackground(
                     modifier = Modifier
-                        .matchParentSize(),
-//                        .applyIf(useBlur) {
-//                            haze(hazeState)
-//                        },
+                        .matchParentSize()
+                        .applyIf(useBlur) {
+                            haze(hazeState)
+                        },
                     imageLoader = imageLoader,
                     contact = listItem,
                     shape = background,
@@ -290,35 +295,19 @@ fun ContactDetail(
                     }
                 }
                 Column(
-                    modifier = Modifier.fillMaxWidth()
-//                        .applyIf(useBlur) {
-//                            hazeChild(
-//                                state = hazeState,
-//                                shape = backgroundDetails,
-////                                style = HazeStyle(
-//////                                    tint = secondaryBckColor.copy(alpha = backgroundAlpha),
-////                                    blurRadius = 4.dp,
-////                                    noiseFactor = 0f,
-////                                ),
-//                            )
-//                        }
-//                        .applyIf(!useBlur) {
-//                            background(
-//                                brush = Brush.horizontalGradient(
-//                                    listOf(
-//                                        Color.Transparent,
-//                                        Color.Transparent,
-//                                        Color.Transparent,
-//                                        secondaryBckColor.copy(alpha = 0.5f),
-//                                        secondaryBckColor.copy(alpha = 0.8f),
-//                                        secondaryBckColor,
-//                                        secondaryBckColor,
-//                                        secondaryBckColor.copy(alpha = 0.8f),
-//                                    )
-//                                ),
-//                                shape = backgroundDetails
-//                            )
-//                        },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .applyIf(useBlur) {
+                            hazeChild(
+                                state = hazeState,
+                                shape = backgroundDetails,
+                                style = HazeStyle(
+//                                    tint = secondaryBckColor.copy(alpha = backgroundAlpha),
+                                    blurRadius = 4.dp,
+                                    noiseFactor = 0.1f,
+                                ),
+                            )
+                        }
                 ) {
                     if (details != null || listItem?.details != null) {
                         Text(
