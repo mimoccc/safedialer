@@ -104,20 +104,20 @@ class DataRepository(
             }
         }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
-    private val emails : Flow<List<MailItem>> = providerFlow(emailsProvider) {
+    private val emails: Flow<List<MailItem>> = providerFlow(emailsProvider) {
         getEmails() ?: emptyList()
     }.combine(contacts) { emailList, contacts ->
         emailList.filter { m ->
-            !m.isDeleted && !m.isArchived // todo
+            !m.isDeleted // && !m.isArchived // todo
         }.sortedByDescending { email ->
             email.createdAtMillis
         }.map { email ->
             val senderEmail = email.senderEmail.removeWhites()
-            val senderName = email.senderName.removeWhites()
+//            val senderName = email.senderName.removeWhites()
+            val recipient = email.recipients.removeWhites().ifEmpty { senderEmail }
             val contact = contacts.firstOrNull { c ->
-                c.email.contentEquals(senderEmail, true) ||
-                        c.emails?.any { e -> e.contentEquals(senderEmail, true) } == true ||
-                        c.displayName.contentEquals(senderName, true)
+                c.email.contentEquals(recipient, true) ||
+                        c.emails?.any { e -> e.contentEquals(recipient, true) } == true
             }
             email.copy(
                 contact = contact
@@ -142,21 +142,22 @@ class DataRepository(
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     // todo simplify
-    override val emailsMap: Flow<Map<String, List<MailThread>>> = emails.combine(contacts) { emailList, contacts ->
-        emailList.map { mail ->
-            MailThread(
-                mail.id,
-                mail.contact ?: contacts.firstOrNull { c ->
-                    c.email.contentEquals(mail.senderEmail, true) ||
-                    c.displayName.contentEquals(mail.senderName, true)
-                    c.emails?.any { e -> e.contentEquals(mail.senderEmail, true) } == true
-                },
-                listOf(mail)
-            )
-        }.associate { mt ->
-            val created = mt.messages.firstOrNull()?.createdAtMillis ?: 0L
-            created.formatDate() to listOf(mt)
-        }
+    override val emailsMap: Flow<Map<String, List<MailThread>>> =
+        emails.combine(contacts) { emailList, contacts ->
+            emailList.map { mail ->
+                MailThread(
+                    id = mail.id,
+                    contact = mail.contact ?: contacts.firstOrNull { c ->
+                        c.email.contentEquals(mail.senderEmail, true) ||
+                                c.displayName.contentEquals(mail.senderName, true)
+                        c.emails?.any { e -> e.contentEquals(mail.senderEmail, true) } == true
+                    },
+                    messages = listOf(mail)
+                )
+            }.associate { mt ->
+                val created = mt.messages.firstOrNull()?.createdAtMillis ?: 0L
+                created.formatDate() to listOf(mt)
+            }
 
 //        val participants = mutableSetOf<String>().apply {
 //            emailList.forEach { mail ->
@@ -193,7 +194,7 @@ class DataRepository(
 //            }
 //        }
 //        result.map { entry -> entry.key.formatDate() to entry.value }.toMap()
-    }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
+        }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     override val aiMap = aiThreads.map { threads ->
         threads.groupBy { mt -> mt.createdAtMillis.formatDate() }
