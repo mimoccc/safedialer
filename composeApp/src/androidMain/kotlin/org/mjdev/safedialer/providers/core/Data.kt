@@ -2,6 +2,7 @@ package org.mjdev.safedialer.providers.core
 
 import android.database.Cursor
 
+@Suppress("unused")
 class Data<T : Entity>(
     private val cursor: Cursor?,
     private val cls: Class<T>
@@ -20,15 +21,14 @@ class Data<T : Entity>(
         return data
     }
 
-    fun getCursor(): Cursor? {
-        return cursor
-    }
+    fun getCursor(): Cursor? = cursor
 
-    fun fromCursor(cursor: Cursor): T? {
-        return Entity.create(cursor, cls)
-    }
+    fun fromCursor(
+        cursor: Cursor
+    ): T? = Entity.create(cursor, cls)
 
-    fun fromCursor(cursor: Cursor, vararg projection: String): T? {
-        return Entity.create(cursor, cls, *projection)
-    }
+    fun fromCursor(
+        cursor: Cursor,
+        vararg projection: String
+    ): T? = Entity.create(cursor, cls, *projection)
 }

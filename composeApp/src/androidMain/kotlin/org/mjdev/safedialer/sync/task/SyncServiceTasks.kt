@@ -1,10 +1,8 @@
-package org.mjdev.safedialer.sync.tasks
+package org.mjdev.safedialer.sync.task
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import org.mjdev.safedialer.sync.calendar.SyncWorkerCalendar
-import org.mjdev.safedialer.sync.calllog.SyncWorkerCallLog
 
 class SyncServiceTasks : Service() {
     private var adapter: SyncWorkerTasks? = null

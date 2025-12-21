@@ -6,11 +6,14 @@ import android.content.Context
 import android.os.Build
 import android.provider.ContactsContract
 import androidx.annotation.RequiresApi
+import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.sync.SyncManager
 import kotlin.collections.plusAssign
 
 object ContactAutoEnricher {
     private val phoneRegex = Regex("(?:\\+?\\d[\\s-()]*){7,}")
+    private val accountType = BuildConfig.ACCOUNT_TYPE
+    private val accountName = BuildConfig.SERVER_UNAME
 
     @RequiresApi(Build.VERSION_CODES.ECLAIR)
     fun enrichFromEmail(
@@ -32,11 +35,11 @@ object ContactAutoEnricher {
                 ops += ContentProviderOperation.newInsert(ContactsContract.RawContacts.CONTENT_URI)
                     .withValue(
                         ContactsContract.RawContacts.ACCOUNT_TYPE,
-                        SyncManager.accountType
+                        accountType
                     )
                     .withValue(
                         ContactsContract.RawContacts.ACCOUNT_NAME,
-                        SyncManager.accountName
+                        accountName
                     )
                     .build()
                 ops += ContentProviderOperation.newInsert(ContactsContract.Data.CONTENT_URI)

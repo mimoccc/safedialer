@@ -161,6 +161,7 @@ android {
         authResValue("invoices")
         authResValue("notes")
         authResValue("authenticator")
+        authResValue("documents")
         //
         resValue(
             "string",
@@ -179,6 +180,7 @@ android {
         resValue("string", "sync_label_invoices", "Invoices")
         resValue("string", "sync_label_notes", "Notes")
         resValue("string", "sync_label_authenticator", "Authenticator")
+        resValue("string", "sync_label_documents", "Documents")
     }
     packaging {
         resources {

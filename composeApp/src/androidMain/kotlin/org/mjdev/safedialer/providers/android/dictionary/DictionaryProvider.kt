@@ -8,9 +8,7 @@ import org.mjdev.safedialer.providers.core.Data
 class DictionaryProvider(
     context: Context
 ) : AbstractProvider(context) {
-    fun getWords(): Data<Word>? {
-        return getContentTableData(Word.uri, Word::class.java)
-    }
+    fun getWords(): Data<Word>?  = getContentTableData(Word.uri, Word::class.java)
 
     override fun getUris(): List<Uri> = listOf(
         Word.uri

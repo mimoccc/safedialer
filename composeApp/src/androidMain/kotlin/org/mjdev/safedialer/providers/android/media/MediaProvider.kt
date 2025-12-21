@@ -6,6 +6,7 @@ import android.provider.MediaStore
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Data
 
+@Suppress("unused")
 class MediaProvider(
     context: Context
 ) : AbstractProvider(context) {
@@ -14,7 +15,9 @@ class MediaProvider(
         private const val ORDER_BY_COLUMN = MediaStore.MediaColumns.DATE_MODIFIED
     }
 
-    fun getFiles(storage: Storage): Data<File>? = when (storage) {
+    fun getFiles(
+        storage: Storage
+    ): Data<File>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(File.uriInternal, File::class.java)
         Storage.EXTERNAL -> getContentTableData(
             File.uriExternal,
@@ -25,7 +28,9 @@ class MediaProvider(
         )
     }
 
-    fun getImages(storage: Storage): Data<Image>? = when (storage) {
+    fun getImages(
+        storage: Storage
+    ): Data<Image>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Image.uriInternal, Image::class.java)
         Storage.EXTERNAL -> getContentTableData(
             Image.uriExternal,
@@ -36,7 +41,9 @@ class MediaProvider(
         )
     }
 
-    fun getVideos(storage: Storage): Data<Video>? = when (storage) {
+    fun getVideos(
+        storage: Storage
+    ): Data<Video>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Video.uriInternal, Video::class.java)
         Storage.EXTERNAL -> getContentTableData(
             Video.uriExternal,
@@ -47,7 +54,9 @@ class MediaProvider(
         )
     }
 
-    fun getAudios(storage: Storage): Data<Audio>? = when (storage) {
+    fun getAudios(
+        storage: Storage
+    ): Data<Audio>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Audio.uriInternal, Audio::class.java)
         Storage.EXTERNAL -> getContentTableData(
             Audio.uriExternal,
@@ -58,27 +67,34 @@ class MediaProvider(
         )
     }
 
-    fun getAlbums(storage: Storage): Data<Album>? = when (storage) {
+    fun getAlbums(
+        storage: Storage
+    ): Data<Album>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Album.uriInternal, Album::class.java)
         Storage.EXTERNAL -> getContentTableData(Album.uriExternal, Album::class.java)
     }
 
-    fun getArtists(storage: Storage): Data<Artist>? = when (storage) {
+    fun getArtists(
+        storage: Storage
+    ): Data<Artist>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Artist.uriInternal, Artist::class.java)
         Storage.EXTERNAL -> getContentTableData(Artist.uriExternal, Artist::class.java)
     }
 
-    fun getGenres(storage: Storage): Data<Genre>? = when (storage) {
+    fun getGenres(
+        storage: Storage
+    ): Data<Genre>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(Genre.uriInternal, Genre::class.java)
         Storage.EXTERNAL -> getContentTableData(Genre.uriExternal, Genre::class.java)
     }
 
-    fun getPlaylists(storage: Storage): Data<Playlist>? = when (storage) {
+    fun getPlaylists(
+        storage: Storage
+    ): Data<Playlist>? = when (storage) {
         Storage.INTERNAL -> getContentTableData(
             Playlist.uriInternal,
             Playlist::class.java
         )
-
         Storage.EXTERNAL -> getContentTableData(
             Playlist.uriExternal,
             Playlist::class.java

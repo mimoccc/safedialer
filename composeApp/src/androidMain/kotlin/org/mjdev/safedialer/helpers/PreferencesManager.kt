@@ -5,7 +5,7 @@ import android.content.SharedPreferences
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener
 import com.google.gson.Gson
 
-@Suppress("DEPRECATION", "unused")
+@Suppress("DEPRECATION", "unused", "MemberVisibilityCanBePrivate")
 class PreferencesManager(
     private val context: Context
 ) {
@@ -14,18 +14,22 @@ class PreferencesManager(
     private var mName: String? = null
     private var mSharedPreferences: SharedPreferences? = null
 
-    fun setName(name: String): PreferencesManager {
+    fun setName(
+        name: String
+    ): PreferencesManager {
         mName = name
         return this
     }
 
-    fun setMode(mode: Int): PreferencesManager {
+    fun setMode(
+        mode: Int
+    ): PreferencesManager {
         mMode = mode
         return this
     }
 
     fun init(): PreferencesManager {
-        if (mName?.isEmpty() ?: true) {
+        if (mName?.isEmpty() != false) {
             mName = context.packageName
         }
         if (
@@ -40,110 +44,148 @@ class PreferencesManager(
         return this
     }
 
-    fun putString(key: String?, value: String?) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putString(key, value)
-        editor?.apply()
-    }
-
-    fun getString(key: String?, defValue: String?): String? {
-        return mSharedPreferences?.getString(key, defValue) ?: defValue
-    }
-
-    fun getString(key: String?): String? {
-        return getString(key, "")
-    }
-
-    fun putStringSet(key: String?, values: MutableSet<String?>?) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putStringSet(key, values)
-        editor?.apply()
-    }
-
-    fun getStringSet(key: String?, defValues: MutableSet<String?>?): MutableSet<String?>? {
-        return mSharedPreferences?.getStringSet(key, defValues) ?: defValues
-    }
-
-    fun getStringSet(key: String?): MutableSet<String?>? {
-        return getStringSet(key, HashSet())
-    }
-
-    fun putInt(key: String?, value: Int) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putInt(key, value)
-        editor?.apply()
-    }
-
-    fun getInt(key: String?, defValue: Int): Int {
-        return mSharedPreferences?.getInt(key, defValue) ?: defValue
-    }
-
-    fun getInt(key: String?): Int {
-        return getInt(key, 0)
-    }
-
-    fun putFloat(key: String?, value: Float) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putFloat(key, value)
-        editor?.apply()
-    }
-
-    fun getFloat(key: String?, defValue: Float): Float {
-        return mSharedPreferences?.getFloat(key, defValue) ?: defValue
-    }
-
-    fun getFloat(key: String?): Float {
-        return getFloat(key, 0f)
-    }
-
-    fun putLong(key: String?, value: Long) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putLong(key, value)
-        editor?.apply()
-    }
-
-    fun getLong(key: String?, defValue: Long): Long {
-        return mSharedPreferences?.getLong(key, defValue) ?: defValue
-    }
-
-    fun getLong(key: String?): Long {
-        return getLong(key, 0)
-    }
-
-    fun putBoolean(key: String?, value: Boolean) {
-        val editor: SharedPreferences.Editor? = mSharedPreferences?.edit()
-        editor?.putBoolean(key, value)
-        editor?.apply()
-    }
-
-    fun getBoolean(key: String?, defValue: Boolean): Boolean {
-        return mSharedPreferences?.getBoolean(key, defValue) ?: defValue
-    }
-
-    fun getBoolean(key: String?): Boolean {
-        return getBoolean(key, false)
-    }
-
-    fun putObject(key: String?, value: Any?) {
-        if (value == null) {
-            return
+    fun putString(
+        key: String?,
+        value: String?
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putString(key, value)
+            apply()
         }
-        putString(key, mGson.toJson(value))
+        return this
     }
 
-    fun <T> getObject(key: String?, type: Class<T?>): T? {
-        if (mSharedPreferences == null) {
-            return null
+    fun getString(
+        key: String?,
+        defValue: String?
+    ): String? = mSharedPreferences?.getString(key, defValue) ?: defValue
+
+    fun getString(
+        key: String?
+    ): String? = getString(key, "")
+
+    fun putStringSet(
+        key: String?,
+        values: MutableSet<String?>?
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putStringSet(key, values)
+            apply()
         }
-        return mGson.fromJson<T?>(getString(key), type)
+        return this
     }
 
-    fun remove(key: String?) {
+    fun getStringSet(
+        key: String?,
+        defValues: MutableSet<String?>?
+    ): MutableSet<String?>? = mSharedPreferences?.getStringSet(key, defValues) ?: defValues
+
+    fun getStringSet(
+        key: String?
+    ): MutableSet<String?>? = getStringSet(key, HashSet())
+
+    fun putInt(
+        key: String?,
+        value: Int
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putInt(key, value)
+            apply()
+        }
+        return this
+    }
+
+    fun getInt(
+        key: String?,
+        defValue: Int
+    ): Int = mSharedPreferences?.getInt(key, defValue) ?: defValue
+
+    fun getInt(
+        key: String?
+    ): Int = getInt(key, 0)
+
+    fun putFloat(
+        key: String?,
+        value: Float
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putFloat(key, value)
+            apply()
+        }
+        return this
+    }
+
+    fun getFloat(
+        key: String?,
+        defValue: Float
+    ): Float = mSharedPreferences?.getFloat(key, defValue) ?: defValue
+
+    fun getFloat(
+        key: String?
+    ): Float = getFloat(key, 0f)
+
+    fun putLong(
+        key: String?,
+        value: Long
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putLong(key, value)
+            apply()
+        }
+        return this
+    }
+
+    fun getLong(
+        key: String?,
+        defValue: Long
+    ): Long = mSharedPreferences?.getLong(key, defValue) ?: defValue
+
+    fun getLong(
+        key: String?
+    ): Long = getLong(key, 0)
+
+    fun putBoolean(
+        key: String?,
+        value: Boolean
+    ): PreferencesManager {
+        mSharedPreferences?.edit()?.apply {
+            putBoolean(key, value)
+            apply()
+        }
+        return this
+    }
+
+    fun getBoolean(
+        key: String?,
+        defValue: Boolean
+    ): Boolean = mSharedPreferences?.getBoolean(key, defValue) ?: defValue
+
+    fun getBoolean(
+        key: String?
+    ): Boolean = getBoolean(key, false)
+
+    fun putObject(
+        key: String?,
+        value: Any?
+    ): PreferencesManager {
+        if (value == null) remove(key)
+        else putString(key, mGson.toJson(value))
+        return this
+    }
+
+    fun <T> getObject(
+        key: String?,
+        type: Class<T?>
+    ): T? = if (mSharedPreferences == null) null else mGson.fromJson<T?>(getString(key), type)
+
+    fun remove(key: String?): PreferencesManager {
         mSharedPreferences?.edit()?.remove(key)?.apply()
+        return this
     }
 
-    fun clear() {
+    fun clear(): PreferencesManager {
         mSharedPreferences?.edit()?.clear()?.apply()
+        return this
     }
 
     fun registerOnChangeListener(listener: OnSharedPreferenceChangeListener?) {

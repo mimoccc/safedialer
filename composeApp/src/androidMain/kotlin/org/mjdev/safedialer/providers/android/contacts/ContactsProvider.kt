@@ -20,9 +20,7 @@ class ContactsProvider(
     fun getContacts(): List<Contact>? {
         val contactsNoEmail = getContactsNoEmail()
         val contactsWithEmail = getEmailContacts()
-        val emailContactsMap = contactsWithEmail?.associateBy {
-            it.contactId
-        } ?: emptyMap()
+        val emailContactsMap = contactsWithEmail?.associateBy { c -> c.contactId } ?: emptyMap()
         val mergedContacts = contactsNoEmail?.map { contact ->
             contact.copy(
                 emails = emailContactsMap[contact.contactId]?.emails
@@ -31,13 +29,15 @@ class ContactsProvider(
         return mergedContacts
     }
 
-    private fun getContactsNoEmail(): List<Contact>? {
-        return getContentTableData(Contact.uri, Contact::class.java)?.getList()
-    }
+    private fun getContactsNoEmail(): List<Contact>? = getContentTableData(
+        Contact.uri,
+        Contact::class.java
+    )?.getList()
 
-    private fun getEmailContacts(): List<Contact>? {
-        return getContentTableData(Contact.uriEmail, Contact::class.java)?.getList()
-    }
+    private fun getEmailContacts(): List<Contact>? = getContentTableData(
+        Contact.uriEmail,
+        Contact::class.java
+    )?.getList()
 
     @SuppressLint("Recycle")
     fun getPhotoUri(

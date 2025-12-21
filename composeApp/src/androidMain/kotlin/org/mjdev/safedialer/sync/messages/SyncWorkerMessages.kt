@@ -1,22 +1,46 @@
 package org.mjdev.safedialer.sync.messages
 
-import android.accounts.Account
-import android.content.AbstractThreadedSyncAdapter
-import android.content.ContentProviderClient
 import android.content.Context
-import android.content.SyncResult
-import android.os.Bundle
+import android.util.Log
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.sync.SyncWorkerWebDav
+import org.mjdev.safedialer.webdav.WebDavClient
+import java.nio.file.Path
 
-@Suppress("unused")
+// todo more items
 class SyncWorkerMessages(
-    context: Context,
-) : AbstractThreadedSyncAdapter(context, true) {
-    override fun onPerformSync(
-        account: Account?,
-        extras: Bundle?,
-        authority: String?,
-        provider: ContentProviderClient?,
-        syncResult: SyncResult?
-    ) {
+    context: Context
+) : SyncWorkerWebDav<Entity>(
+    context = context,
+    dirName = WebDavClient.DIR_MESSAGES
+) {
+    override suspend fun prepareLocalFiles() {
+        // todo
+    }
+
+    override suspend fun mergeConflict(
+        conflict: ConflictType,
+        pathLocal: Path,
+        pathRemote: String,
+        localData: ByteArray,
+        remoteData: ByteArray
+    ): ConflictSolution {
+        // todo
+        Log.d(TAG, "mergeConflict: ($conflict) $pathLocal -> $pathRemote")
+        return when(conflict) {
+            ConflictType.MISSING_REMOTE -> {
+                ConflictSolution.UPLOAD_LOCAL
+            }
+            ConflictType.MISSING_LOCAL -> {
+                ConflictSolution.DOWNLOAD_REMOTE
+            }
+            ConflictType.LOCAL_DIFFERENT_FROM_REMOTE -> {
+                ConflictSolution.IGNORE
+            }
+        }
+    }
+
+    companion object {
+        private val TAG = SyncWorkerMessages::class.simpleName
     }
 }

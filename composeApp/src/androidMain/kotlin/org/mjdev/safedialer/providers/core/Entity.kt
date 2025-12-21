@@ -7,7 +7,7 @@ import android.util.Log
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 
-@Suppress("DEPRECATION")
+@Suppress("MemberVisibilityCanBePrivate")
 abstract class Entity {
     interface CompanionWithUri {
         val uri: Uri
@@ -21,8 +21,7 @@ abstract class Entity {
             val columns = mutableListOf<String>()
             for (field in cls.declaredFields) {
                 if (!field.isAnnotationPresent(IgnoreMapping::class.java)) {
-                    val contentField = field.getAnnotation(FieldMapping::class.java)
-                        ?: continue
+                    val contentField = field.getAnnotation(FieldMapping::class.java) ?: continue
                     columns.add(contentField.columnName)
                 }
             }
@@ -46,31 +45,24 @@ abstract class Entity {
 
         fun getId(
             entity: Entity
-        ): Long {
-            return getColumnValue("_id", entity)?.toString()?.toLongOrNull() ?: 0L
-        }
+        ): Long = getColumnValue("_id", entity)?.toString()?.toLongOrNull() ?: 0L
 
         fun getColumnValue(
             columnName: String,
             entity: Entity
-        ): Any? {
-            val field = getColumnField(columnName, entity)
-            return field?.get(entity)
-        }
+        ): Any? = getColumnField(columnName, entity)?.get(entity)
 
         fun getColumnValue(
             field: Field,
             entity: Entity
-        ): Any? {
-            return field.get(entity)
-        }
+        ): Any? = field.get(entity)
 
         fun getColumnField(
             columnName: String,
             entity: Entity
-        ): Field? = entity.javaClass.declaredFields.firstOrNull {
-            !it.isAnnotationPresent(IgnoreMapping::class.java) &&
-                    it.getAnnotation(FieldMapping::class.java)?.columnName == columnName
+        ): Field? = entity.javaClass.declaredFields.firstOrNull { field ->
+            !field.isAnnotationPresent(IgnoreMapping::class.java) &&
+                    field.getAnnotation(FieldMapping::class.java)?.columnName == columnName
         }
 
         fun getContentValues(
@@ -117,27 +109,29 @@ abstract class Entity {
             return contentValues
         }
 
-//        fun getFlattenedValues(
-//            columns: Array<String>,
-//            entity: Entity
-//        ): List<Any?> = columns.map { column ->
-//            val field = getColumnField(column, entity)
-//            val value = getColumnValue(field!!, entity)
-//            if (value is EnumInt) value.toString() else value
-//        }
+        fun getFlattenedValues(
+            columns: Array<String>,
+            entity: Entity
+        ): List<Any?> = columns.map { column ->
+            val field = getColumnField(column, entity)
+            val value = getColumnValue(field!!, entity)
+            if (value is EnumInt) value.toString() else value
+        }
 
+        @Suppress("DEPRECATION")
         fun <T : Entity> create(
             cursor: Cursor,
             cls: Class<T>
         ): T? = try {
             val entity: T = cls.newInstance()
             val fields = cls.declaredFields
-            create(entity, cursor, cls, fields)
+            create(entity, cursor, fields)
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
 
+        @Suppress("DEPRECATION")
         fun <T : Entity> create(
             cursor: Cursor,
             cls: Class<T>,
@@ -147,7 +141,7 @@ abstract class Entity {
             val fields = Array(projection.size) { i ->
                 getColumnField(projection[i], entity)!!
             }
-            create(entity, cursor, cls, fields)
+            create(entity, cursor, fields)
         } catch (e: Exception) {
             e.printStackTrace(); null
         }
@@ -155,7 +149,6 @@ abstract class Entity {
         fun <T : Entity> create(
             entity: T,
             cursor: Cursor,
-            cls: Class<T>,
             fields: Array<Field>
         ): T {
             for (field in fields) {
@@ -213,23 +206,18 @@ abstract class Entity {
             return entity
         }
 
-        fun Boolean.toInt(): Int  = if(this) 1 else 0
+        fun Boolean.toInt(): Int = if (this) 1 else 0
     }
 
-    override fun toString(): String {
-        val sb = StringBuilder()
-        sb.append("{")
-        val fields = this.javaClass.declaredFields
-        fields.forEachIndexed { idx, field ->
-            try {
-                if (idx > 0) sb.append(", ")
+    override fun toString(): String = StringBuilder().apply {
+        append("{")
+        this@Entity.javaClass.declaredFields.forEachIndexed { idx, field ->
+            runCatching {
+                if (idx > 0) append(", ")
                 field.isAccessible = true
-                sb.append(field.name).append("=").append(field.get(this))
-            } catch (e: Exception) {
-                e.printStackTrace()
+                append(field.name).append("=").append(field.get(this))
             }
         }
-        sb.append("}")
-        return sb.toString()
-    }
+        append("}")
+    }.toString()
 }

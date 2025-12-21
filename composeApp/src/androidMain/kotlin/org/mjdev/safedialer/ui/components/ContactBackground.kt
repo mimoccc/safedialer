@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
@@ -14,6 +13,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -75,17 +75,19 @@ fun ContactBackground(
     Image(
         modifier = Modifier
             .fillMaxSize()
+            .alpha(0.8f)
             .clip(shape),
         painter = painter,
-        colorFilter = dominantColor.value.let { tintColor ->
-            ColorFilter.colorMatrix(
-                ColorMatrix().apply {
-                    setToSaturation(0f)
-                }
-            ).let {
-                ColorFilter.tint(tintColor.copy(alpha = 0.7f), BlendMode.Modulate)
-            }
-        },
+//        colorFilter = dominantColor.value.let { tintColor ->
+//            ColorFilter.colorMatrix(
+//                ColorMatrix().apply {
+//                    setToSaturation(0f)
+//                }
+//            )
+//                .let {
+//                ColorFilter.tint(tintColor.copy(alpha = 0.7f), BlendMode.Modulate)
+//            }
+//        },
         contentDescription = "",
         contentScale = ContentScale.Crop,
     )

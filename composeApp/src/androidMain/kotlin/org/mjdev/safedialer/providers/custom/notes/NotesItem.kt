@@ -1,0 +1,23 @@
+package org.mjdev.safedialer.providers.custom.notes
+
+import android.net.Uri
+import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.core.FieldMapping
+import org.mjdev.safedialer.sync.notes.ProviderNotes
+
+data class NotesItem(
+    @FieldMapping(
+        ProviderNotes.ITEM_ID,
+        FieldMapping.PhysicalType.Long
+    )
+    val id: Long = 0L,
+    @FieldMapping(
+        ProviderNotes.ITEM_CREATED_AT,
+        FieldMapping.PhysicalType.Long
+    )
+    val createdAtMillis: Long = System.currentTimeMillis()
+) : Entity() {
+    companion object : CompanionWithUri {
+        override val uri: Uri = Uri.EMPTY
+    }
+}

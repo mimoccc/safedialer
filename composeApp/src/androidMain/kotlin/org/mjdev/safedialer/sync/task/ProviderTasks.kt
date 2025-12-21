@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.sync.tasks
+package org.mjdev.safedialer.sync.task
 
 import android.content.ContentProvider
 import android.content.ContentValues
@@ -38,4 +38,9 @@ class ProviderTasks : ContentProvider() {
         selection: String?,
         selectionArgs: Array<out String?>?
     ): Int = 0
+
+    companion object {
+        const val ITEM_ID = "id"
+        const val ITEM_CREATED_AT = "createdAt"
+    }
 }

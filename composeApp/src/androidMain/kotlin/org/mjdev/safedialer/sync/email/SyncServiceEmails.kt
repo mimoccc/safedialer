@@ -1,15 +1,15 @@
-package org.mjdev.safedialer.sync.contacts
+package org.mjdev.safedialer.sync.email
 
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
 
-class SyncServiceContacts : Service() {
-    private var adapter: SyncWorkerContacts? = null
+class SyncServiceEmails : Service() {
+    private var adapter: SyncWorkerEmails? = null
 
     override fun onCreate() {
         super.onCreate()
-        adapter = SyncWorkerContacts(this)
+        adapter = SyncWorkerEmails(this)
     }
 
     override fun onBind(

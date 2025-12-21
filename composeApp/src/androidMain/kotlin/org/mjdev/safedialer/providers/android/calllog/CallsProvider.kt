@@ -10,9 +10,7 @@ import org.mjdev.safedialer.providers.core.AbstractProvider
 class CallsProvider(
     context: Context
 ) : AbstractProvider(context) {
-    fun getCalls(): List<Call>? {
-        return getContentTableData(Call.uri, Call::class.java)?.getList()
-    }
+    fun getCalls(): List<Call>? = getContentTableData(Call.uri, Call::class.java)?.getList()
 
     override fun getUris(): List<Uri> = listOf(
         Call.uri

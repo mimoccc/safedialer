@@ -1,19 +1,21 @@
-package org.mjdev.safedialer.sync.calendar
+package org.mjdev.safedialer.sync.document
 
 import android.content.Context
+import android.os.Environment
 import android.util.Log
-import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.custom.ai.AIItem
+import org.mjdev.safedialer.providers.custom.document.DocumentItem
 import org.mjdev.safedialer.sync.SyncWorkerWebDav
 import org.mjdev.safedialer.webdav.WebDavClient
 import java.nio.file.Path
 
-// custom elements
 @Suppress("unused")
-class SyncWorkerCalendar(
+class SyncWorkerDocuments(
     context: Context
-) : SyncWorkerWebDav<Entity>(
+) : SyncWorkerWebDav<DocumentItem>(
     context = context,
-    dirName = WebDavClient.DIR_CALENDAR
+    dirName = WebDavClient.DIR_DOCUMENTS,
+    // filesDir = Environment.getExternalStorageDirectory().resolve(WebDavClient.DIR_DOCUMENTS)
 ) {
     override suspend fun prepareLocalFiles() {
         // todo
@@ -42,6 +44,6 @@ class SyncWorkerCalendar(
     }
 
     companion object {
-        private val TAG = SyncWorkerCalendar::class.simpleName
+        private val TAG = SyncWorkerDocuments::class.simpleName
     }
 }

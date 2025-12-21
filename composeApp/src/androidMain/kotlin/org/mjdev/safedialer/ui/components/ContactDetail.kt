@@ -191,7 +191,7 @@ fun ContactDetail(
                                 .fillMaxWidth()
                                 .weight(1f, true)
                                 .padding(
-                                    bottom = 20.dp,
+                                    bottom = 16.dp,
                                     top = 16.dp,
                                 ),
                         ) {

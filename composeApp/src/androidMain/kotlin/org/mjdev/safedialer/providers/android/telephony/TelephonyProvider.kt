@@ -11,28 +11,26 @@ import androidx.core.net.toUri
 @Suppress("unused")
 @TargetApi(Build.VERSION_CODES.KITKAT)
 class TelephonyProvider(context: Context) : AbstractProvider(context) {
-    fun getSms(filter: TelephonyFilter): List<Sms>? {
-        val uri = when (filter) {
+    fun getSms(filter: TelephonyFilter): List<Sms>? = getContentTableData(
+        when (filter) {
             TelephonyFilter.ALL -> Sms.uri
             TelephonyFilter.INBOX -> Sms.uriInbox
             TelephonyFilter.OUTBOX -> Sms.uriOutbox
             TelephonyFilter.SENT -> Sms.uriSent
             TelephonyFilter.DRAFT -> Sms.uriDraft
-        }
-        return getContentTableData(uri, Sms::class.java)?.getList()
-    }
+        }, Sms::class.java
+    )?.getList()
 
     fun getMms(filter: TelephonyFilter): List<Mms>? {
-        val uri = when (filter) {
+        val addressMap = getAllMmsAddresses()
+        // todo better mapping if possible
+        return getContentTableData(when (filter) {
             TelephonyFilter.ALL -> Mms.uri
             TelephonyFilter.INBOX -> Mms.uriInbox
             TelephonyFilter.OUTBOX -> Mms.uriOutbox
             TelephonyFilter.SENT -> Mms.uriSent
             TelephonyFilter.DRAFT -> Mms.uriDraft
-        }
-        val addressMap = getAllMmsAddresses()
-        // todo better mapping if possible
-        return getContentTableData(uri, Mms::class.java)?.getList()?.map { mms ->
+        }, Mms::class.java)?.getList()?.map { mms ->
             mms.copy(
                 address = addressMap[mms.id]
             )

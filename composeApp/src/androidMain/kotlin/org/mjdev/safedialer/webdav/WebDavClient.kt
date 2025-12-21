@@ -18,17 +18,19 @@ import okhttp3.logging.HttpLoggingInterceptor
 import org.kodein.di.DIAware
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.webdav.property.webdav.DisplayName
+import org.mjdev.safedialer.webdav.property.webdav.ResourceType
 import org.mjdev.safedialer.webdav.webdavlib.BasicDigestAuthHandler
 import org.mjdev.safedialer.webdav.webdavlib.DavCollection
+import org.mjdev.safedialer.webdav.webdavlib.Response
 
 @Suppress("unused", "RemoveExplicitTypeArguments", "MemberVisibilityCanBePrivate")
 class WebDavClient(
-    private val context: Context,
-    private val url: String = "https://${BuildConfig.SERVER}/webdav/",
-    private val user: String = BuildConfig.SERVER_UNAME,
-    private val password: String = BuildConfig.SERVER_UPASS,
-    private val vcardFileName: String = USER_FILE_VCARD,
-    private val pgpCertFile: String = USER_FILE_PGP,
+    val context: Context,
+    val baseUrl: String = "https://${BuildConfig.SERVER}/webdav/",
+    val user: String = BuildConfig.SERVER_UNAME,
+    val password: String = BuildConfig.SERVER_UPASS,
+    val vcardFileName: String = USER_FILE_VCARD,
+    val pgpCertFile: String = USER_FILE_PGP,
 ) : DIAware {
     override val di by lazy {
         (context as DIAware).di
@@ -99,10 +101,41 @@ class WebDavClient(
         }
     }.flowOn(Dispatchers.IO)
 
+    fun listExtended(
+        path: String
+    ): List<WebDavEntry> = runCatching {
+        val base = baseUrl.trimEnd('/')
+        val target = if (path.startsWith("http")) path else "$base/${path.trimStart('/')}"
+        val collection = DavCollection(
+            client,
+            target.toHttpUrl()
+        )
+        val entries = mutableListOf<WebDavEntry>()
+        collection.propfind(depth = 1, DisplayName.NAME, ResourceType.NAME) { response, relation ->
+            if (relation == Response.HrefRelation.MEMBER) {
+                val name = response[DisplayName::class.java]?.displayName
+                    ?: response.href.pathSegments.lastOrNull { it.isNotEmpty() }
+                    ?: ""
+                val isCollection =
+                    response[ResourceType::class.java]?.types?.contains(ResourceType.COLLECTION) == true
+                entries.add(WebDavEntry(name, response.href.toString(), isCollection))
+            }
+        }
+        entries
+    }.onFailure { e ->
+        Log.e(TAG, e.message ?: "")
+    }.getOrNull() ?: emptyList()
+
+    data class WebDavEntry(
+        val name: String,
+        val fullUrl: String,
+        val isCollection: Boolean
+    )
+
     fun list(
         path: String
     ): List<String> = runCatching {
-        val base = url.trimEnd('/')
+        val base = baseUrl.trimEnd('/')
         val target = if (path.startsWith("http")) path else "$base/${path.trimStart('/')}"
         val collection = DavCollection(
             client,
@@ -120,7 +153,7 @@ class WebDavClient(
     fun readFile(
         filePath: String
     ): ByteArray = runCatching {
-        val base = url.trimEnd('/')
+        val base = baseUrl.trimEnd('/')
         val target = if (filePath.startsWith("http")) filePath
         else "$base/${filePath.trimStart('/')}"
         val file = DavCollection(client, target.toHttpUrl())
@@ -136,7 +169,7 @@ class WebDavClient(
         data: ByteArray,
         contentType: String // = "text/vcard; charset=utf-8"
     ) = runCatching {
-        val base = url.trimEnd('/')
+        val base = baseUrl.trimEnd('/')
         val target =
             if (filePath.startsWith("http")) filePath else "$base/${filePath.trimStart('/')}"
         val request = Request.Builder()
@@ -150,12 +183,28 @@ class WebDavClient(
         Log.e(TAG, e.message ?: "")
     }
 
+    fun delete(
+        path: String
+    ) = runCatching {
+        val base = baseUrl.trimEnd('/')
+        val target = if (path.startsWith("http")) path else "$base/${path.trimStart('/')}"
+        val request = Request.Builder()
+            .url(target)
+            .delete()
+            .build()
+        client.newCall(request).execute().use { resp ->
+            if (!resp.isSuccessful) throw IllegalStateException("DELETE failed ${resp.code}")
+        }
+    }.onFailure { e ->
+        Log.e(TAG, e.message ?: "")
+    }
+
     fun move(
         sourcePath: String,
         destinationPath: String,
         overwrite: Boolean = true
     ) = runCatching {
-        val base = url.trimEnd('/')
+        val base = baseUrl.trimEnd('/')
         val source =
             if (sourcePath.startsWith("http")) sourcePath else "$base/${sourcePath.trimStart('/')}"
         val destination = if (destinationPath.startsWith("http")) destinationPath else "$base/${
@@ -174,14 +223,44 @@ class WebDavClient(
         Log.e(TAG, e.message ?: "")
     }
 
+    fun mkcol(
+        path: String
+    ) = runCatching {
+        val base = baseUrl.trimEnd('/')
+        val target = if (path.startsWith("http")) path else "$base/${path.trimStart('/')}"
+        val collection = DavCollection(client, target.toHttpUrl())
+        collection.mkCol(null) { resp ->
+            if (!resp.isSuccessful && resp.code != 405) { // 405 Method Not Allowed - often means already exists
+                throw IllegalStateException("MKCOL failed ${resp.code}")
+            }
+        }
+    }.onFailure { e ->
+        Log.e(TAG, e.message ?: "")
+    }
+
     companion object {
         val TAG = WebDavClient::class.simpleName
 
+        const val DIR_AI_HISTORY = ".ai_history"
+        const val DIR_AUTHENTICATOR = ".authenticator"
+
+        const val DIR_INVOICES = "Invoices"
         const val DIR_CONTACTS = "Contacts"
         const val DIR_CALL_LOG = "CallLog"
         const val DIR_TASKS = "Tasks"
         const val DIR_CALENDAR = "Calendar"
-        const val DIR_GALLERY = "Pictures/DCIM"
+        const val DIR_MESSAGES = "Messages"
+        const val DIR_NOTES = "Notes"
+        const val DIR_GALLERY = "Pictures"
+
+        // todo
+        const val DIR_DOCUMENTS = "Documents"
+        const val DIR_MUSIC = "Music"
+        const val DIR_VIDEOS = "Videos"
+        const val DIR_PRESENTATIONS = "Presentations"
+        const val DIR_PUBLIC = "Public"
+        const val DIR_REPOSITORIES = "Repositories"
+        const val DIR_WEB = "Web"
 
         const val DIR_IMAP = ".mail/imap"
         const val DIR_SMTP = ".mail/smtp"

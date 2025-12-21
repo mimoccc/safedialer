@@ -1,19 +1,17 @@
-package org.mjdev.safedialer.sync.calendar
+package org.mjdev.safedialer.sync.email
 
 import android.content.Context
 import android.util.Log
-import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.providers.custom.email.MailItem
 import org.mjdev.safedialer.sync.SyncWorkerWebDav
 import org.mjdev.safedialer.webdav.WebDavClient
 import java.nio.file.Path
 
-// custom elements
-@Suppress("unused")
-class SyncWorkerCalendar(
+class SyncWorkerEmails(
     context: Context
-) : SyncWorkerWebDav<Entity>(
+) : SyncWorkerWebDav<MailItem>(
     context = context,
-    dirName = WebDavClient.DIR_CALENDAR
+    dirName = WebDavClient.DIR_IMAP
 ) {
     override suspend fun prepareLocalFiles() {
         // todo
@@ -30,7 +28,7 @@ class SyncWorkerCalendar(
         Log.d(TAG, "mergeConflict: ($conflict) $pathLocal -> $pathRemote")
         return when(conflict) {
             ConflictType.MISSING_REMOTE -> {
-                ConflictSolution.UPLOAD_LOCAL
+                ConflictSolution.DELETE_REMOTE
             }
             ConflictType.MISSING_LOCAL -> {
                 ConflictSolution.DOWNLOAD_REMOTE
@@ -42,6 +40,6 @@ class SyncWorkerCalendar(
     }
 
     companion object {
-        private val TAG = SyncWorkerCalendar::class.simpleName
+        private val TAG = SyncWorkerEmails::class.simpleName
     }
 }

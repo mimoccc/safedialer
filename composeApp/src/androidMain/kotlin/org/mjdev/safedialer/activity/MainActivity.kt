@@ -1,9 +1,14 @@
 package org.mjdev.safedialer.activity
 
 import android.content.Context
+import android.content.Intent
 import android.content.res.Configuration
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
 import android.os.Handler
+import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -57,8 +62,14 @@ class MainActivity : ComponentActivity(), DIAware {
                 }
             }
         }
-        SyncManager.ensureAccount(this)
         checkPermissions()
+        checkFullFileAccessPermission()
+        SyncManager.ensureAccount(this)
+    }
+
+    override fun onStart() {
+        super.onStart()
+        SyncManager.requestImmediateSync(this)
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
@@ -79,6 +90,17 @@ class MainActivity : ComponentActivity(), DIAware {
 //        CactusContextInitializer.initialize(this)
     }.onFailure { e ->
         Log.e(TAG, e.message, e)
+    }
+
+    private fun checkFullFileAccessPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!Environment.isExternalStorageManager()) {
+                val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION).apply {
+                    data = Uri.parse("package:$packageName")
+                }
+                startActivity(intent)
+            }
+        }
     }
 
     private fun checkPermissions() = Permissions.check(

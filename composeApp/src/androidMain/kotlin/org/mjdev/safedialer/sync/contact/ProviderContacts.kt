@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.sync.contacts
+package org.mjdev.safedialer.sync.contact
 
 import android.content.ContentProvider
 import android.content.ContentValues

@@ -5,7 +5,7 @@ import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.providers.core.IgnoreMapping
 import org.mjdev.safedialer.providers.core.FieldMapping
-import org.mjdev.safedialer.sync.emails.ProviderEmails
+import org.mjdev.safedialer.sync.email.ProviderEmails
 
 data class MailItem(
     @FieldMapping(
