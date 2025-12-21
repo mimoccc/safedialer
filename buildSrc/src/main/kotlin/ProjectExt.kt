@@ -48,6 +48,7 @@ fun Project.assembleTask(configurationAction: Action<Task>) {
 
 class SafeMap : HashMap<String, String>() {
     companion object {
+        @Suppress("USELESS_ELVIS")
         operator fun SafeMap.getValue(
             thisRef: Any?,
             property: KProperty<*>

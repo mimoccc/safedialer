@@ -250,7 +250,7 @@ tasks.withType<Test> {
 
 buildkonfig {
     val isDebug = gradle.startParameter.taskNames.any { t ->
-        t.toLowerCase().contains("debug")
+        t.lowercase().contains("debug")
     }
     packageName = libs.versions.android.appnamespace.stringValue
     objectName = "BuildConfig"

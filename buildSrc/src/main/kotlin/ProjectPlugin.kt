@@ -59,6 +59,7 @@ class ProjectPlugin : BasePlugin() {
     }
 
     companion object {
+        @Suppress("USELESS_CAST")
         val Project.credentialsMap : SafeMap
             get() = extensions
                 .getByType(ProjectPluginExtension::class.java)
