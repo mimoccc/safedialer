@@ -6,9 +6,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Bundle
 import androidx.core.content.ContextCompat
+import java.util.concurrent.CopyOnWriteArrayList
 
 class ServiceCommandReceiver : BroadcastReceiver() {
-    private val listeners = mutableListOf<CommandReceiver>()
+    private val listeners = CopyOnWriteArrayList<CommandReceiver>()
     private val filter = IntentFilter(ACTION)
 
     override fun onReceive(context: Context?, intent: Intent?) {

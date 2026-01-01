@@ -1,14 +1,21 @@
 package org.mjdev.safedialer.webdav
 
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.isSpecified
 import ezvcard.Ezvcard
+import ezvcard.VCard
+import ezvcard.property.Photo
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -58,28 +65,22 @@ class WebDavClient(
             })
             .build()
 
-    private val userVCard by lazy {
+    val userVCard: Flow<VCard?> = flow {
         readFile(vcardFileName)
             .toString(Charsets.UTF_8)
             .let { text ->
-                Ezvcard.parse(text).all().firstOrNull()
+                Ezvcard.parse(text).all().firstOrNull().also { vcard ->
+                    emit(vcard)
+                }
             }
-    }
+    }.flowOn(Dispatchers.IO)
 
     val pgpCertData: ByteArray by lazy {
         readFile(pgpCertFile)
     }
 
-    val userPicture = flow<ImageBitmap?> {
-        userVCard?.photos?.firstOrNull()?.data?.let { photoData ->
-            BitmapFactory.decodeByteArray(
-                photoData,
-                0,
-                photoData.size
-            )?.asImageBitmap()?.let { bmp ->
-                emit(bmp)
-            }
-        }
+    val userPicture: Flow<ImageBitmap?> = userVCard.map { vCard ->
+        vCard?.photos?.firstOrNull()?.toImageBitmap()
     }.flowOn(Dispatchers.IO)
 
     val allEmails = flow<Map<String, ByteArray>> {
@@ -238,6 +239,32 @@ class WebDavClient(
         Log.e(TAG, e.message ?: "")
     }
 
+    fun getLastModified(
+        remotePath: String
+    ): Long? = runCatching {
+        val base = baseUrl.trimEnd('/')
+        val target = if (remotePath.startsWith("http")) remotePath
+        else "$base/${remotePath.trimStart('/')}"
+        val request = Request.Builder()
+            .url(target)
+            .head()
+            .build()
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                Log.w(TAG, "HEAD request failed with code ${response.code}")
+                return@use null
+            }
+            response.header("Last-Modified")?.let { lastModified ->
+                java.text.SimpleDateFormat(
+                    "EEE, dd MMM yyyy HH:mm:ss zzz",
+                    java.util.Locale.US
+                ).parse(lastModified)?.time
+            }
+        }
+    }.onFailure { e ->
+        Log.e(TAG, "Failed to get last modified: ${e.message}")
+    }.getOrNull()
+
     companion object {
         val TAG = WebDavClient::class.simpleName
 
@@ -267,5 +294,21 @@ class WebDavClient(
 
         const val USER_FILE_PGP = "pgp_mail_cert.asc"
         const val USER_FILE_VCARD = "vcard.vcf"
+
+        fun Photo.toImageBitmap(
+            width: Dp = Dp.Unspecified,
+            height: Dp = Dp.Unspecified
+        ): ImageBitmap? {
+            return data?.let { photoData ->
+                val bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.size)
+                if (bitmap != null && (width.isSpecified || height.isSpecified)) {
+                    val w = if (width.isSpecified) width.value.toInt() else bitmap.width
+                    val h = if (height.isSpecified) height.value.toInt() else bitmap.height
+                    Bitmap.createScaledBitmap(bitmap, w, h, true).asImageBitmap()
+                } else {
+                    bitmap?.asImageBitmap()
+                }
+            }
+        }
     }
 }

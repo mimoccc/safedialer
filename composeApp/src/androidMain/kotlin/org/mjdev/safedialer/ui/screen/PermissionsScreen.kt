@@ -27,7 +27,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.ui.components.TitleBar
+import org.mjdev.safedialer.ui.components.title.TitleBar
 import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

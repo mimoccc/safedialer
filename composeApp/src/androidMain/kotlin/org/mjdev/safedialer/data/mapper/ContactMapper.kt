@@ -9,12 +9,10 @@ import org.mjdev.safedialer.providers.android.calllog.CallType
 class ContactMapper (
     override val contact: Contact? = null
 ) :ListItem {
-//    override val contact: Contact?
-//        get() = null
     override val itemId: Long?
         get() = contact?.contactId ?: contact?.id
-    override val itemEmail: String?
-        get() = contact?.email ?: contact?.emails?.firstOrNull()
+    override val itemEmails: List<String>
+        get() = (listOf(contact?.email) + (contact?.emails?.map { e -> e.value } ?: listOf())).filterNotNull()
     override val itemPhone: String?
         get() = contact?.phone
     override val itemPhoto: Uri?
@@ -26,8 +24,8 @@ class ContactMapper (
     override val itemCallType: CallType?
         get() = null
 
-    override val details: String?
-        get() = null
+    override val details:  List<String>
+        get() = listOf()
 
     override val isBlocked: Boolean
         get() = false // todo

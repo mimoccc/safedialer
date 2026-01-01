@@ -1,13 +1,16 @@
 package org.mjdev.safedialer.di
 
 import android.Manifest
+import android.content.Context
 import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DI
-import org.kodein.di.bindConstant
+import org.kodein.di.bindProvider
+import org.kodein.di.instance
+import org.mjdev.safedialer.R
 
 @Suppress("DEPRECATION")
 val permissionsModule = DI.Module("PermissionsModule") {
-    bindConstant<Array<String>>("permissions") {
+    bindProvider <Array<String>>("permissions") {
         arrayOf(
             Manifest.permission.INTERNET,
             Manifest.permission.READ_CALL_LOG,
@@ -19,6 +22,7 @@ val permissionsModule = DI.Module("PermissionsModule") {
             Manifest.permission.RECEIVE_BOOT_COMPLETED,
             Manifest.permission.ANSWER_PHONE_CALLS,
             Manifest.permission.FOREGROUND_SERVICE,
+            Manifest.permission.POST_NOTIFICATIONS,
 //            Manifest.permission.FOREGROUND_SERVICE_PHONE_CALL, // todo ?
             Manifest.permission.READ_PHONE_STATE,
             Manifest.permission.READ_SMS,
@@ -26,10 +30,12 @@ val permissionsModule = DI.Module("PermissionsModule") {
             Manifest.permission.RECEIVE_MMS,
         )
     }
-    bindConstant<Permissions.Options>("permissionOptions") {
+    bindProvider<Permissions.Options>("permissionOptions") {
+        val context = instance<Context>()
+        val title = context.getString(R.string.title_permissions)
         Permissions.Options()
-            .setRationaleDialogTitle("Povolení")
-            .setSettingsDialogTitle("Povolení")
+            .setRationaleDialogTitle(title)
+            .setSettingsDialogTitle(title)
             .setCreateNewTask(true)
     }
 }

@@ -6,8 +6,15 @@ import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.providers.android.calllog.Call
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.custom.ai.AIItem
+import org.mjdev.safedialer.providers.custom.email.MailItem
 
 interface IDataRepository {
+    val contacts: Flow<List<Contact>>
+    val calls: Flow<List<Call>>
+    val messageThreads: Flow<List<MessageThread>>
+    val emails: Flow<List<MailItem>>
+    val aiThreads: Flow<List<AIItem>>
+
     val contactsMap: Flow<Map<String, List<Contact>>>
     val callsMap: Flow<Map<String, List<Call>>>
     val messagesMap: Flow<Map<String, List<MessageThread>>>

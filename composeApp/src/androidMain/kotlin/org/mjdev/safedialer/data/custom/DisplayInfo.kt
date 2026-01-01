@@ -10,7 +10,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import android.content.res.Configuration
 
-@Suppress("MemberVisibilityCanBePrivate")
+@Suppress("unused")
 data class DisplayInfo(
     val constraints: Constraints,
     val density: Density,
@@ -47,14 +47,16 @@ data class DisplayInfo(
     companion object {
         @Composable
         fun rememberDisplayInfo(
-            constraints: Constraints,
-            density: Density = LocalDensity.current,
-            configuration: Configuration = LocalConfiguration.current,
-        ) = remember(
-            constraints,
-            density,
-            configuration,
-            configuration.orientation
-        ) { DisplayInfo(constraints, density, configuration) }
+            constraints: Constraints
+        ) : DisplayInfo{
+            val density: Density = LocalDensity.current
+            val configuration: Configuration = LocalConfiguration.current
+            return remember(
+                constraints,
+                density,
+                configuration,
+                configuration.orientation
+            ) { DisplayInfo(constraints, density, configuration) }
+        }
     }
 }

@@ -1,6 +1,7 @@
 import Constants.TASK_ASSEMBLE
 import Constants.TASK_BUILD
 import Constants.TASK_CLEAN
+import Constants.TASK_RELEASE
 import SafeMap.Companion.toSafeMap
 import org.gradle.accessors.dm.LibrariesForLibs
 import org.gradle.api.Action
@@ -29,18 +30,28 @@ fun Project.cleanTask(configurationAction: Action<Task>) {
 }
 
 @Throws(UnknownTaskException::class)
-fun Project.buildTask(configurationAction: Action<Task>) {
+fun Project.buildTask(
+    releaseOnly: Boolean = true,
+    configurationAction: Action<Task>
+) {
     tasks.filter { t ->
-        t.name.contains(TASK_BUILD)
+        t.name.contains(TASK_BUILD, true).let { cts ->
+            (if (releaseOnly) t.name.contains(TASK_RELEASE, true) else true) && cts
+        }
     }.forEach { t ->
         tasks.named(t.name, configurationAction)
     }
 }
 
 @Throws(UnknownTaskException::class)
-fun Project.assembleTask(configurationAction: Action<Task>) {
+fun Project.assembleTask(
+    releaseOnly: Boolean = true,
+    configurationAction: Action<Task>
+) {
     tasks.filter { t ->
-        t.name.contains(TASK_ASSEMBLE)
+        t.name.contains(TASK_ASSEMBLE).let { cts ->
+            (if (releaseOnly) t.name.contains(TASK_RELEASE, true) else true) && cts
+        }
     }.forEach { t ->
         tasks.named(t.name, configurationAction)
     }
@@ -82,7 +93,7 @@ fun Project.readPropsFile(
     }.toSafeMap().apply {
         forEach { p ->
             val key = p.key
-            val value = if(key.contains("pass", true)) "******" else p.value
+            val value = if (key.contains("pass", true)) "******" else p.value
             println("$key = $value")
         }
     }

@@ -1,42 +1,48 @@
 package org.mjdev.safedialer.sync.email
 
 import android.content.Context
+import android.content.SyncResult
 import android.util.Log
-import org.mjdev.safedialer.providers.custom.email.MailItem
+import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.sync.SyncWorkerWebDav
-import org.mjdev.safedialer.webdav.WebDavClient
 import java.nio.file.Path
+import kotlin.io.path.deleteIfExists
 
 class SyncWorkerEmails(
-    context: Context
-) : SyncWorkerWebDav<MailItem>(
-    context = context,
-    dirName = WebDavClient.DIR_IMAP
-) {
-    override suspend fun prepareLocalFiles() {
-        // todo
+    context: Context,
+    dirName: String,
+    providerAuth: String
+) : SyncWorkerWebDav<Contact>(context, dirName, providerAuth) {
+    override fun prepareLocalFiles(syncResult: SyncResult?) {
     }
 
-    override suspend fun mergeConflict(
+    override fun mergeChanges() {
+    }
+
+    override fun mergeConflict(
         conflict: ConflictType,
         pathLocal: Path,
         pathRemote: String,
         localData: ByteArray,
         remoteData: ByteArray
-    ): ConflictSolution {
-        // todo
-        Log.d(TAG, "mergeConflict: ($conflict) $pathLocal -> $pathRemote")
-        return when(conflict) {
+    ): ConflictSolution = runCatching {
+        when (conflict) {
             ConflictType.MISSING_REMOTE -> {
-                ConflictSolution.DELETE_REMOTE
+                pathLocal.deleteIfExists()
+                ConflictSolution.IGNORE
             }
+
             ConflictType.MISSING_LOCAL -> {
                 ConflictSolution.DOWNLOAD_REMOTE
             }
+
             ConflictType.LOCAL_DIFFERENT_FROM_REMOTE -> {
-                ConflictSolution.IGNORE
+                ConflictSolution.UPDATE_LOCAL
             }
         }
+    }.getOrElse { e ->
+        Log.e(TAG, "Error in mergeConflict, using safe fallback", e)
+        ConflictSolution.IGNORE
     }
 
     companion object {

@@ -210,7 +210,30 @@ class ComposeFloatingWindow(
             windowHeight: Int = WindowManager.LayoutParams.WRAP_CONTENT,
             windowWidth: Int = WindowManager.LayoutParams.WRAP_CONTENT,
             windowFlags: Int = DEFAULT_WINDOW_FLAGS,
-            windowAnimationResId: Int = androidx.appcompat.R.style.Animation_AppCompat_Dialog,
+            windowAnimationResId: Int = android.R.style.Animation_Dialog,
+            windowGravity: Int = Gravity.START or Gravity.TOP
+        ) = WindowManager.LayoutParams().apply {
+            height = windowHeight
+            width = windowWidth
+            format = PixelFormat.TRANSLUCENT
+            gravity = windowGravity
+            windowAnimations = windowAnimationResId
+            flags = windowFlags
+            if (context !is Activity) {
+                type = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
+                } else {
+                    WindowManager.LayoutParams.TYPE_SYSTEM_ALERT
+                }
+            }
+        }
+
+        fun fullScreenLayoutParams(
+            context: Context,
+            windowHeight: Int = WindowManager.LayoutParams.MATCH_PARENT,
+            windowWidth: Int = WindowManager.LayoutParams.MATCH_PARENT,
+            windowFlags: Int = DEFAULT_WINDOW_FLAGS,
+            windowAnimationResId: Int = android.R.style.Animation_Dialog,
             windowGravity: Int = Gravity.START or Gravity.TOP
         ) = WindowManager.LayoutParams().apply {
             height = windowHeight
@@ -230,7 +253,7 @@ class ComposeFloatingWindow(
 
         fun alertLayoutParams(
             context: Context,
-            windowAnimationResId: Int = androidx.appcompat.R.style.Animation_AppCompat_Dialog,
+            windowAnimationResId: Int = android.R.style.Animation_Dialog,
             windowGravity: Int = Gravity.START or Gravity.TOP
         ) = defaultLayoutParams(
             context,

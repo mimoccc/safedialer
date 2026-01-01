@@ -15,8 +15,8 @@ class EmailThreadMapper(
 
     override val itemId: Long?
         get() = contact?.contactId ?: contact?.id ?: email?.id
-    override val itemEmail: String?
-        get() = email?.contact?.email
+    override val itemEmails: List<String>
+        get() = (listOf(contact?.email) + (contact?.emails?.map { e -> e.value } ?: listOf())).filterNotNull()
     override val itemPhone: String?
         get() = email?.lastMessage?.subject ?: email?.contact?.email ?: email?.contact?.phone
     override val itemPhoto: Uri?
@@ -29,9 +29,9 @@ class EmailThreadMapper(
     override val itemCallType: CallType?
         get() = null
 
-    override val details: String
-        get() = (email?.lastMessage?.body ?: email?.lastMessage?.subject ?: "---")
-            .take(MAX_MAIL_DETAILS_LENGTH)
+    override val details: List<String>
+        get() = listOf((email?.lastMessage?.body ?: email?.lastMessage?.subject ?: "---")
+            .take(MAX_MAIL_DETAILS_LENGTH))
 
     override val isBlocked: Boolean
         get() = false // todo
@@ -53,6 +53,7 @@ class EmailThreadMapper(
         get() = false // todo
 
     companion object {
+        @Suppress("unused")
         fun MailThread.asListItem() = EmailThreadMapper(this)
 
         const val MAX_MAIL_DETAILS_LENGTH = 320

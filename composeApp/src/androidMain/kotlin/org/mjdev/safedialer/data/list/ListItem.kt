@@ -9,14 +9,14 @@ interface ListItem {
     val contact: Contact?
 
     val itemId: Long?
-    val itemEmail: String?
+    val itemEmails: List<String>
     val itemPhone: String?
     val itemPhoto: Uri?
     val itemName: String?
     val itemDate: Long?
     val itemCallType: CallType?
 
-    val details: String?
+    val details: List<String>
 
     val isBlocked: Boolean
     val isMissed: Boolean
@@ -32,8 +32,8 @@ interface ListItem {
         val TAG = ListItem::class.simpleName
 
         val PREVIEW = object : ListItem {
-            override val details: String
-                get() = ""
+            override val details: List<String>
+                get() = listOf()
             override val isBlocked: Boolean
                 get() = false
             override val isMissed: Boolean
@@ -56,14 +56,14 @@ interface ListItem {
                 get() = null
             override val itemId: Long
                 get() = 0L
-            override val itemEmail: String
-                get() = "john.doe@test.com"
+            override val itemEmails: List<String>
+                get() = listOf()
             override val itemPhone: String
-                get() = "+420777333444555"
+                get() = ""
             override val itemPhoto: Uri
                 get() = Uri.EMPTY
             override val itemName: String
-                get() = "John Doe"
+                get() = ""
             override val itemDate: Long
                 get() = System.currentTimeMillis()
             override val itemCallType: CallType?

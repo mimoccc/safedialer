@@ -22,18 +22,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import org.mjdev.safedialer.extensions.ComposeExt1.canScroll
-import org.mjdev.safedialer.extensions.ComposeExt1.isLandscape
-import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ComposeExt.canScroll
+import org.mjdev.safedialer.extensions.ComposeExt.isLandscape
+import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.sync.SyncAccountTypes
-import org.mjdev.safedialer.ui.components.FabState.Companion.rememberFabState
-import org.mjdev.safedialer.ui.components.FloatButton
-import org.mjdev.safedialer.ui.components.TabbedScreen
-import org.mjdev.safedialer.ui.components.TitleBar
+import org.mjdev.safedialer.ui.components.dialer.FabState.Companion.rememberFabState
+import org.mjdev.safedialer.ui.components.dialer.FloatButton
+import org.mjdev.safedialer.ui.components.tabs.TabbedScreen
+import org.mjdev.safedialer.ui.components.title.TitleBar
 import org.mjdev.safedialer.ui.state.TabsState
 import org.mjdev.safedialer.ui.state.TabsState.Companion.rememberTabsState
+import org.mjdev.safedialer.ui.theme.AppTheme
 import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -41,7 +42,7 @@ import org.mjdev.safedialer.viewmodel.MainViewModel
 @Composable
 fun MainScreen(
     startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo from past
-) {
+) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
         MainViewModel(MockDataRepository(context))
     }

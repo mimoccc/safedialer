@@ -25,9 +25,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import org.mjdev.safedialer.data.custom.DisplayInfo
 import org.mjdev.safedialer.data.custom.DisplayInfo.Companion.rememberDisplayInfo
-import org.mjdev.safedialer.extensions.ComposeExt1.applyIf
+import org.mjdev.safedialer.extensions.ComposeExt.applyIf
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 @Previews
 @Composable
@@ -54,60 +55,62 @@ fun ResponsiveContainer(
     },
     content: @Composable (DisplayInfo) -> Unit = {},
     preview : @Composable BoxScope.(item:Any?) -> Unit = {},
-) = BoxWithConstraints(
-    modifier.fillMaxSize()
-) {
-    val displayInfo = rememberDisplayInfo(constraints)
-    Column(
-        modifier = modifier,
+) = AppTheme {
+    BoxWithConstraints(
+        modifier.fillMaxSize()
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .weight(1f),
+        val displayInfo = rememberDisplayInfo(constraints)
+        Column(
+            modifier = modifier,
         ) {
-            AnimatedVisibility(
-                visible = displayInfo.isPortrait,
-                enter = enter,
-                exit = exit
-            ) {
-                portraitLeftMenu?.invoke(displayInfo)
-            }
-            Box(
+            Row(
                 modifier = Modifier
-                    .width(displayInfo.contentWidth)
-                    .fillMaxHeight()
-                    .applyIf(isInPreviewMode) {
-                        background(Color.LightGray)
+                    .fillMaxSize()
+                    .weight(1f),
+            ) {
+                AnimatedVisibility(
+                    visible = displayInfo.isPortrait,
+                    enter = enter,
+                    exit = exit
+                ) {
+                    portraitLeftMenu?.invoke(displayInfo)
+                }
+                Box(
+                    modifier = Modifier
+                        .width(displayInfo.contentWidth)
+                        .fillMaxHeight()
+                        .applyIf(isInPreviewMode) {
+                            background(Color.LightGray)
+                        },
+                    content = {
+                        content(displayInfo)
                     },
-                content = {
-                    content(displayInfo)
-                },
-            )
+                )
+                AnimatedVisibility(
+                    visible = displayInfo.isLandscape,
+                    enter = enter,
+                    exit = exit
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxHeight()
+                            .width(displayInfo.previewWidth)
+                            .applyIf(isInPreviewMode) {
+                                background(Color.Gray)
+                            },
+                        content = {
+                            preview(displayInfo)
+                        },
+                    )
+                }
+            }
             AnimatedVisibility(
                 visible = displayInfo.isLandscape,
                 enter = enter,
                 exit = exit
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxHeight()
-                        .width(displayInfo.previewWidth)
-                        .applyIf(isInPreviewMode) {
-                            background(Color.Gray)
-                        },
-                    content = {
-                        preview(displayInfo)
-                    },
-                )
+                landscapeBottomMenu?.invoke(displayInfo)
             }
-        }
-        AnimatedVisibility(
-            visible = displayInfo.isLandscape,
-            enter = enter,
-            exit = exit
-        ) {
-            landscapeBottomMenu?.invoke(displayInfo)
         }
     }
 }

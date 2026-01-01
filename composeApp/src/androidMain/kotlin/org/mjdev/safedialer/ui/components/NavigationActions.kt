@@ -16,13 +16,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 @Previews
 @Composable
 fun NavigationActions(
     showActions: Boolean = true,
     onServeClick: () -> Unit = {}
-) {
+) = AppTheme {
     if (showActions) {
         IconButton(
             modifier = Modifier.size(36.dp),

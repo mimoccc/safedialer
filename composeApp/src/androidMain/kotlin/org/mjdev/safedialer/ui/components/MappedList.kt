@@ -24,10 +24,12 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.ImageLoader
-import org.mjdev.safedialer.extensions.ComposeExt1.rememberImageLoader
+import coil3.ImageLoader
+import org.mjdev.safedialer.extensions.ComposeExt.rememberImageLoader
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.providers.core.Entity
+import org.mjdev.safedialer.ui.components.contact.ContactDetail
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 typealias MapFilter<T> = (Map<String, List<T>>, String) -> Map<String, List<T>>
 
@@ -42,12 +44,12 @@ fun MappedList(
     ),
     fontFamily: FontFamily = FontFamily.Default,
     context: Context = LocalContext.current,
-    imageLoader: ImageLoader = rememberImageLoader(context),
+    imageLoader: ImageLoader = rememberImageLoader(),
     showDate: Boolean = false,
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
     filter: MapFilter<Entity> = { m, s -> m },
-) {
+) = AppTheme {
     val filteredData = remember(filterText.value, mapData) {
         if (filterText.value.trim().isNotEmpty()) {
             filter(mapData, filterText.value)
@@ -82,9 +84,7 @@ fun MappedList(
                 entry.value.size
             ) { index ->
                 ContactDetail(
-                    modifier = Modifier.fillMaxWidth(),
                     item = entry.value[index],
-                    textStyle = textStyle,
                     fontFamily = fontFamily,
                     imageLoader = imageLoader,
                     isFirst = index == 0,

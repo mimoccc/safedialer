@@ -14,8 +14,8 @@ class CallMapper(
         get() = call?.contact
     override val itemId: Long?
         get() = call?.contact?.contactId ?: call?.contact?.contactId ?: call?.id
-    override val itemEmail: String?
-        get() = call?.contact?.email ?: contact?.emails?.firstOrNull()
+    override val itemEmails: List<String>
+        get() = (listOf(contact?.email) + (contact?.emails?.map { e -> e.value } ?: listOf())).filterNotNull()
     override val itemPhone: String?
         get() = call?.contact?.phone ?: call?.number
     override val itemPhoto: Uri?
@@ -27,8 +27,8 @@ class CallMapper(
     override val itemCallType: CallType?
         get() = call?.type
 
-    override val details: String?
-        get() = null
+    override val details: List<String>
+        get() = listOf()
     override val isBlocked: Boolean
         get() = call?.type == CallType.BLOCKED
     override val isMissed: Boolean
@@ -49,6 +49,7 @@ class CallMapper(
         get() = false // todo
 
     companion object {
+        @Suppress("unused")
         fun Call.asListItem() = CallMapper(this)
     }
 }

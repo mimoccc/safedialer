@@ -10,11 +10,12 @@ import android.telephony.TelephonyManager.EXTRA_STATE_IDLE
 import android.telephony.TelephonyManager.EXTRA_STATE_OFFHOOK
 import android.telephony.TelephonyManager.EXTRA_STATE_RINGING
 import androidx.core.content.ContextCompat
+import java.util.concurrent.CopyOnWriteArrayList
 import androidx.core.content.ContextCompat.RECEIVER_EXPORTED
 
 @Suppress("DEPRECATION")
 class IncomingCallBroadcastReceiver : BroadcastReceiver() {
-    private val listeners = mutableListOf<CallListener>()
+    private val listeners = CopyOnWriteArrayList<CallListener>()
     private val filter = IntentFilter(ACTION_PHONE_STATE)
 
     override fun onReceive(context: Context?, intent: Intent?) {

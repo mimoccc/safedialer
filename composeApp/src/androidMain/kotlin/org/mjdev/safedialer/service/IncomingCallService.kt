@@ -21,7 +21,6 @@ import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
-import org.mjdev.safedialer.dao.DAO
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.service.calls.CallListener
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
@@ -30,9 +29,9 @@ import org.mjdev.safedialer.service.command.ServiceCommand
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
 import org.mjdev.safedialer.sync.SyncManager
-import org.mjdev.safedialer.ui.components.CallDialog
+import org.mjdev.safedialer.ui.components.call.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
-import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.alertLayoutParams
+import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.fullScreenLayoutParams
 
 @Suppress("DEPRECATION", "unused")
 class IncomingCallService :
@@ -49,7 +48,6 @@ class IncomingCallService :
         get() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Settings.canDrawOverlays(this)
         } else true
-    private val dao by instance<DAO>()
     private val phoneLookup by instance<PhoneLookup>()
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.Default)
 
@@ -129,17 +127,17 @@ class IncomingCallService :
     }
 
     private fun showAlert(
-        phoneNumber: String?,
+        caller: String?,
         info: String?,
         isDangerous: Boolean = false,
         context: Context = applicationContext,
     ) = ComposeFloatingWindow(
         context = context,
-        windowParams = alertLayoutParams(context),
+        windowParams = fullScreenLayoutParams(context),
     ) {
         setContent {
             CallDialog(
-                phoneNumber = phoneNumber,
+                caller = caller,
                 info = info,
             )
         }

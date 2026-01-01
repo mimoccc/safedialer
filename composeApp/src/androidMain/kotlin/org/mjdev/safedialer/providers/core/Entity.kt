@@ -6,6 +6,8 @@ import android.net.Uri
 import android.util.Log
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import kotlin.collections.getOrPut
+import kotlin.jvm.java
 
 @Suppress("MemberVisibilityCanBePrivate")
 abstract class Entity {
@@ -15,6 +17,8 @@ abstract class Entity {
 
     @Suppress("unused")
     companion object {
+        private val fieldCache = mutableMapOf<Class<*>, Array<Field>>()
+
         fun <T> getColumns(
             cls: Class<T>
         ): Array<String> {
@@ -121,10 +125,12 @@ abstract class Entity {
         @Suppress("DEPRECATION")
         fun <T : Entity> create(
             cursor: Cursor,
-            cls: Class<T>
+            cls: Class<T>,
         ): T? = try {
             val entity: T = cls.newInstance()
-            val fields = cls.declaredFields
+            val fields = fieldCache.getOrPut(cls) {
+               cls.declaredFields
+            }
             create(entity, cursor, fields)
         } catch (e: Exception) {
             e.printStackTrace()

@@ -12,7 +12,6 @@ import android.provider.Settings
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nabinbhandari.android.permissions.PermissionHandler
@@ -21,15 +20,20 @@ import org.kodein.di.DIAware
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.compose.withDI
 import org.kodein.di.instance
+import org.mjdev.safedialer.R
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
+import org.mjdev.safedialer.extensions.ComposeExt.enableEdgeToEdge
+import org.mjdev.safedialer.extensions.CustomExt.stringResource
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.service.IncomingCallService
+import org.mjdev.safedialer.service.IncomingCallService.Companion.showAlert
 import org.mjdev.safedialer.sync.SyncManager
 import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.screen.PermissionsScreen
 import org.mjdev.safedialer.ui.theme.AppTheme
+import org.mjdev.safedialer.ui.theme.backgroundDark
 
 @Suppress("DEPRECATION")
 class MainActivity : ComponentActivity(), DIAware {
@@ -39,15 +43,17 @@ class MainActivity : ComponentActivity(), DIAware {
     private val options by instance<Permissions.Options>("permissionOptions")
     private val preferencesManager by instance<PreferencesManager>()
 
-    // todo translations
-    private val rationale = "Prosím povolte přístup k telefonním císlum, " +
-            "abychom mohli sledovat prichozí hovory."
+    private val rationale by stringResource(R.string.permissions_rationale)
+
     private val wasPermissionsGranted
         get() = preferencesManager.getBoolean(PERMISSIONS_GRANTED, false)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            backgroundDark,
+            backgroundDark
+        )
         addLockScreenFlags()
         initializeLLM()
         super.onCreate(savedInstanceState)
@@ -70,6 +76,7 @@ class MainActivity : ComponentActivity(), DIAware {
     override fun onStart() {
         super.onStart()
         SyncManager.requestImmediateSync(this)
+        showAlert(this, getString(R.string.test_cell_number))
     }
 
     override fun onConfigurationChanged(newConfig: Configuration) {

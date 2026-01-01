@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Shape
 import org.mjdev.safedialer.extensions.ColorExt.darker
 import org.mjdev.safedialer.extensions.ColorExt.lighter
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 @Previews
 @Composable
@@ -27,44 +28,46 @@ fun PhotoGradientBox(
     startLightRatio: Float = 0.5f,
     endLightRatio: Float = 0.5f,
     shape: Shape = RectangleShape,
-) = BoxWithConstraints(
-    modifier = modifier
-) {
-    val start = startColor.lighter(startLightRatio).copy(alpha = startAlpha)
-    val end = endColor.darker(endLightRatio).copy(alpha = endAlpha)
-    val width = constraints.maxWidth
-    val height = constraints.maxHeight
-    Box(
-        modifier = modifier.background(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    Color.Transparent,
-                    Color.Transparent,
-                    Color.Transparent,
-                    Color.Transparent,
-                    Color.Transparent,
-                    Color.Transparent,
-                    end,
+) = AppTheme {
+    BoxWithConstraints(
+        modifier = modifier
+    ) {
+        val start = startColor.lighter(startLightRatio).copy(alpha = startAlpha)
+        val end = endColor.darker(endLightRatio).copy(alpha = endAlpha)
+        val width = constraints.maxWidth
+        val height = constraints.maxHeight
+        Box(
+            modifier = modifier.background(
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Transparent,
+                        Color.Transparent,
+                        end,
+                    ),
+                    center = Offset(-(width / 2).toFloat(), (height / 2).toFloat())
                 ),
-                center = Offset(-(width / 2).toFloat(), (height / 2).toFloat())
-            ),
-            shape = shape,
-            alpha = radialAlpha
+                shape = shape,
+                alpha = radialAlpha
+            )
         )
-    )
-    Box(
-        modifier = modifier.background(
-            brush = Brush.verticalGradient(
-                colors = listOf(
-                    start,
-                    Color.Transparent,
-                    Color.Transparent,
-                    end,
-                    end,
-                )
-            ),
-            shape = shape,
-            alpha = verticalAlpha
+        Box(
+            modifier = modifier.background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        start,
+                        Color.Transparent,
+                        Color.Transparent,
+                        end,
+                        end,
+                    )
+                ),
+                shape = shape,
+                alpha = verticalAlpha
+            )
         )
-    )
+    }
 }

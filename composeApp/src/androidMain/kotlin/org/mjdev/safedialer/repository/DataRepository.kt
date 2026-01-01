@@ -17,6 +17,7 @@ import org.mjdev.safedialer.providers.custom.email.MailThread
 import org.mjdev.safedialer.providers.android.messages.Message
 import org.mjdev.safedialer.providers.android.messages.MessageThread
 import org.mjdev.safedialer.extensions.DateExt.formatDate
+import org.mjdev.safedialer.extensions.StringExt.extractEmail
 import org.mjdev.safedialer.extensions.StringExt.isNotNBlank
 import org.mjdev.safedialer.extensions.StringExt.removeWhites
 import org.mjdev.safedialer.providers.android.calllog.Call
@@ -36,12 +37,14 @@ class DataRepository(
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : ADataRepository(context, scope), IDataRepository {
 
+    private val objectCache: MutableMap<Any, Any> = mutableMapOf()
+
     private val contactsProvider: ContactsProvider by instance()
     private val callsProvider: CallsProvider by instance()
     private val telephonyProvider: TelephonyProvider by instance()
     private val emailsProvider: EmailsProvider by instance()
 
-    private val contacts: Flow<List<Contact>> = providerFlow(contactsProvider) {
+    override val contacts: Flow<List<Contact>> = providerFlow(contactsProvider) {
         getContacts()?.filter { pn ->
             pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
         }?.mergeBy { contact ->
@@ -56,7 +59,7 @@ class DataRepository(
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     // todo missing some numbers
-    private val calls: Flow<List<Call>> = callsNoContacts.combine(contacts) { calls, contacts ->
+    override val calls: Flow<List<Call>> = callsNoContacts.combine(contacts) { calls, contacts ->
         calls.map { call ->
             call.copy(
                 contact = contacts.firstOrNull { contact ->
@@ -88,7 +91,7 @@ class DataRepository(
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     // todo some sms or mms are without data, and contact
-    private val messageThreads: Flow<List<MessageThread>> =
+    override val messageThreads: Flow<List<MessageThread>> =
         allThreads.combine(contacts) { threads, contacts ->
             threads.map { (threadId, msgs) ->
                 MessageThread(
@@ -104,7 +107,7 @@ class DataRepository(
             }
         }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
-    private val emails: Flow<List<MailItem>> = providerFlow(emailsProvider) {
+    override val emails: Flow<List<MailItem>> = providerFlow(emailsProvider) {
         getEmails() ?: emptyList()
     }.combine(contacts) { emailList, contacts ->
         emailList.filter { m ->
@@ -117,7 +120,7 @@ class DataRepository(
             val recipient = email.recipients.removeWhites().ifEmpty { senderEmail }
             val contact = contacts.firstOrNull { c ->
                 c.email.contentEquals(recipient, true) ||
-                        c.emails?.any { e -> e.contentEquals(recipient, true) } == true
+                        c.emails?.any { e -> e.value.contentEquals(recipient, true) } == true
             }
             email.copy(
                 contact = contact
@@ -125,7 +128,7 @@ class DataRepository(
         }
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
-    private val aiThreads: Flow<List<AIItem>> = flow {
+    override val aiThreads: Flow<List<AIItem>> = flow {
         emit(emptyList<AIItem>()) // todo
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
@@ -150,7 +153,7 @@ class DataRepository(
                     contact = mail.contact ?: contacts.firstOrNull { c ->
                         c.email.contentEquals(mail.senderEmail, true) ||
                                 c.displayName.contentEquals(mail.senderName, true)
-                        c.emails?.any { e -> e.contentEquals(mail.senderEmail, true) } == true
+                        c.emails?.any { e -> e.value.contentEquals(mail.senderEmail, true) } == true
                     },
                     messages = listOf(mail)
                 )
@@ -202,23 +205,37 @@ class DataRepository(
 
     override suspend fun findContactByPhone(
         phoneNumber: String?
-    ): Contact? = if (phoneNumber == null) null else contacts.last().firstOrNull { c ->
-        c.phone?.contains(phoneNumber) == true || c.normalizedPhone?.contains(phoneNumber) == true
+    ): Contact? = if (phoneNumber == null) null
+    else {
+        if (objectCache.contains(phoneNumber)) objectCache[phoneNumber] as? Contact
+        else contacts.last().firstOrNull { c ->
+            c.phone?.contains(phoneNumber) == true || c.normalizedPhone?.contains(phoneNumber) == true
+        }?.apply {
+            objectCache[phoneNumber] = this
+        }
     }
 
+    @Suppress("SENSELESS_COMPARISON")
     override suspend fun findContactBySender(
         email: String?,
         senderName: String?
-    ): Contact? = contacts.last().firstOrNull { c ->
-        val isEmail = if (email == null) false else {
-            c.email?.contains(email) == true || c.emails?.any { e ->
-                e?.contains(email) == true
-            } == true
+    ): Contact? {
+        val emailNormalized = email?.extractEmail()
+        return if (emailNormalized == null && senderName == null) null
+        else {
+            if (objectCache.contains(emailNormalized!!)) objectCache[emailNormalized] as? Contact
+            else if (objectCache.contains(senderName!!)) objectCache[senderName] as? Contact
+            else contacts.last().firstOrNull { c ->
+                val isEmail = c.email?.contains(emailNormalized) == true ||
+                        c.emails?.any { e -> e.value.contentEquals(emailNormalized, true)
+                } == true
+                val isName = c.displayName?.contains(senderName) == true
+                isEmail || isName
+            }?.apply {
+                if (email != null) objectCache[emailNormalized] = this
+                if (senderName != null) objectCache[senderName] = this
+            }
         }
-        val isName = if (senderName == null) false else {
-            c.displayName?.contains(senderName) == true
-        }
-        isEmail || isName
     }
 
     companion object {

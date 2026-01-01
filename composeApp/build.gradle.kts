@@ -27,13 +27,13 @@ plugins {
 fun VariantDimension.authResValue(name: String) = resValue(
     "string",
     "authority_$name",
-    "${libs.versions.android.appnamespace.stringValue}.$name"
+    "${(libs.versions.android.appnamespace).stringValue}.$name"
 )
 
 fun VariantDimension.syncAccountTypeResValue() = resValue(
     "string",
     "account_type",
-    "${libs.versions.android.appnamespace.stringValue}.sync_account"
+    "${(libs.versions.android.appnamespace).stringValue}.sync_account"
 )
 
 val mjdevServer by credentialsMap
@@ -83,6 +83,8 @@ kotlin {
             implementation(libs.lottie.compose)
             implementation(libs.coil.compose)
             implementation(libs.coil.base)
+            implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+            implementation("io.coil-kt.coil3:coil-svg:3.3.0")
             implementation(libs.permissions)
             implementation(libs.ktor.server.core)
             implementation(libs.ktor.server.netty)
@@ -100,14 +102,25 @@ kotlin {
             implementation(libs.jakarta.mail)
             implementation(libs.jakarta.activation)
             implementation(libs.ez.vcard)
+            implementation(libs.accompanist.permissions)
+
             implementation("org.bouncycastle:bcprov-jdk18on:1.78")
             implementation("org.bouncycastle:bcpg-jdk18on:1.78")
             implementation("org.bouncycastle:bcmail-jdk18on:1.78")
             implementation("org.bouncycastle:bcpkix-jdk18on:1.78")
+
             implementation("androidx.palette:palette-ktx:1.0.0")
+
+            implementation("androidx.glance:glance:1.1.1")
+            implementation("androidx.glance:glance-preview:1.1.1")
+            implementation("androidx.glance:glance-appwidget-preview:1.1.1")
             implementation("androidx.glance:glance-appwidget:1.1.1")
             implementation("androidx.glance:glance-material3:1.1.1")
             implementation("androidx.glance:glance-material:1.1.1")
+
+            implementation("com.google.android.glance.tools:appwidget-host:0.2.2")
+            implementation("com.google.android.glance.tools:appwidget-preview:0.1.2")
+            implementation("com.google.android.glance.tools:appwidget-viewer:0.2.2")
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -137,15 +150,15 @@ kotlin {
 }
 
 android {
-    namespace = libs.versions.android.appnamespace.stringValue
-    compileSdk = libs.versions.android.compileSdk.intValue
+    namespace = (libs.versions.android.appnamespace).stringValue
+    compileSdk = (libs.versions.android.compileSdk).intValue
     defaultConfig {
-        applicationId = libs.versions.android.appnamespace.stringValue
-        minSdk = libs.versions.android.minSdk.intValue
+        applicationId = (libs.versions.android.appnamespace).stringValue
+        minSdk = (libs.versions.android.minSdk).intValue
         // noinspection OldTargetApi
-        targetSdk = libs.versions.android.targetSdk.intValue
-        versionCode = libs.versions.android.versionCode.intValue
-        versionName = libs.versions.android.versionName.stringValue
+        targetSdk = (libs.versions.android.targetSdk).intValue
+        versionCode = (libs.versions.android.versionCode).intValue
+        versionName = (libs.versions.android.versionName).stringValue
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         //
         syncAccountTypeResValue()
@@ -166,7 +179,7 @@ android {
         resValue(
             "string",
             "app_name",
-            mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
+            mjdevServer.ifEmpty { (libs.versions.android.appName).stringValue }
         )
         //
         resValue("string", "sync_label_calendar", "Calendar")
@@ -254,25 +267,25 @@ buildkonfig {
     val isDebug = gradle.startParameter.taskNames.any { t ->
         t.lowercase().contains("debug")
     }
-    packageName = libs.versions.android.appnamespace.stringValue
+    packageName = (libs.versions.android.appnamespace).stringValue
     objectName = "BuildConfig"
     defaultConfigs {
-        buildConfigField(STRING, "APP_ID", libs.versions.android.appnamespace.stringValue)
+        buildConfigField(STRING, "APP_ID", (libs.versions.android.appnamespace).stringValue)
         buildConfigField(
             STRING,
             "APP_NAME",
-            mjdevServer.ifEmpty { libs.versions.android.appName.stringValue }
+            mjdevServer.ifEmpty { (libs.versions.android.appName).stringValue }
         )
         buildConfigField(BOOLEAN, "IS_DEBUG", isDebug.toString())
         buildConfigField(STRING, "SERVER", mjdevServer)
         buildConfigField(STRING, "SERVER_UNAME", mjdevServerUser)
         buildConfigField(STRING, "SERVER_UPASS", mjdevServerPass)
-        buildConfigField(STRING, "SERVER_PORT_IMAP", libs.versions.port.imap.stringValue)
-        buildConfigField(STRING, "SERVER_PORT_SMTP", libs.versions.port.smtp.stringValue)
+        buildConfigField(STRING, "SERVER_PORT_IMAP", (libs.versions.port.imap).stringValue)
+        buildConfigField(STRING, "SERVER_PORT_SMTP", (libs.versions.port.smtp).stringValue)
         buildConfigField(
             STRING,
             "ACCOUNT_TYPE",
-            "${libs.versions.android.appnamespace.stringValue}.sync_account"
+            "${(libs.versions.android.appnamespace).stringValue}.sync_account"
         )
     }
 }

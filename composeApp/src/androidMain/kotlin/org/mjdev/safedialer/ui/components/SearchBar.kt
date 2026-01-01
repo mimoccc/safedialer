@@ -1,7 +1,6 @@
 package org.mjdev.safedialer.ui.components
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -18,6 +17,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.components.text.SearchField
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Previews
@@ -27,7 +28,7 @@ fun SearchBar(
     filterText: MutableState<String> = remember { mutableStateOf("") },
     focusRequester: FocusRequester = remember { FocusRequester() },
     textSize: TextUnit = 14.sp,
-) {
+) = AppTheme {
     SearchField(
         modifier = modifier.focusRequester(focusRequester),
         textState = filterText,

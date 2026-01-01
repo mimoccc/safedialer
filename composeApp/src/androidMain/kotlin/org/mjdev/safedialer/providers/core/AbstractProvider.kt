@@ -19,8 +19,15 @@ abstract class AbstractProvider(
         contentResolver.registerContentObserver(uri, notifyForDescendants, observer)
     }
 
-    fun unregisterContentObserver(observer: ContentObserver) {
+    fun unregisterContentObserver(
+        observer: ContentObserver
+    ) {
         contentResolver.unregisterContentObserver(observer)
+    }
+
+    protected open fun <T : Entity> postProcess(
+        entity: T
+    ) {
     }
 
     protected fun <T : Entity> getContentTableData(
@@ -34,7 +41,7 @@ abstract class AbstractProvider(
             null,
             null
         ) ?: return null
-        return Data(cursor, clazz)
+        return Data(cursor, clazz) { entity -> postProcess(entity) }
     }
 
     protected fun <T : Entity> getContentTableData(
@@ -54,7 +61,7 @@ abstract class AbstractProvider(
         if (cursor == null) {
             return null
         }
-        return Data(cursor, clazz)
+        return Data(cursor, clazz) { entity -> postProcess(entity) }
     }
 
     protected fun <T : Entity> getContentRowData(
@@ -78,6 +85,7 @@ abstract class AbstractProvider(
         try {
             if (cursor.moveToNext()) {
                 t = Entity.create(cursor, clazz)
+                t?.let { postProcess(it) }
             }
         } finally {
             cursor.close()
@@ -85,7 +93,10 @@ abstract class AbstractProvider(
         return t
     }
 
-    protected fun updateTableRow(uri: Uri, entity: Entity): Int {
+    protected fun updateTableRow(
+        uri: Uri,
+        entity: Entity
+    ): Int {
         val id = Entity.getId(entity)
         val columns = Entity.getWriteColumns(entity.javaClass)
         if (columns.isNotEmpty()) {

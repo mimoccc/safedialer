@@ -1,9 +1,12 @@
+@file:Suppress("unused")
+
 package org.mjdev.safedialer.extensions
 
 import java.lang.reflect.ParameterizedType
 import kotlin.reflect.KClass
 
-inline fun <reified T> className(): String = T::class.java.simpleName
+inline fun <reified T> className(): String =
+    T::class.java.simpleName
 
 fun className(
     clazz: Class<*>

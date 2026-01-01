@@ -6,6 +6,7 @@ import android.content.res.Configuration.UI_MODE_TYPE_TELEVISION
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.Wallpapers.GREEN_DOMINATED_EXAMPLE
+import androidx.compose.ui.unit.dp
 
 @Preview(
     uiMode = UI_MODE_TYPE_TELEVISION,
@@ -21,10 +22,11 @@ annotation class TvPreview
     name = "Portrait",
     group = "device",
     showBackground = true,
-    device = Devices.PIXEL_7,
+    device = Devices.AUTOMOTIVE_1024p,
     backgroundColor = 0xFF444444,
     widthDp = 480,
     heightDp = 800,
+    wallpaper = GREEN_DOMINATED_EXAMPLE,
 )
 annotation class PreviewPortrait
 
@@ -36,6 +38,7 @@ annotation class PreviewPortrait
     backgroundColor = 0xFF444444,
     widthDp = 800,
     heightDp = 480,
+    wallpaper = GREEN_DOMINATED_EXAMPLE,
 )
 annotation class PreviewLandscape
 

@@ -5,18 +5,20 @@ import android.database.Cursor
 @Suppress("unused")
 class Data<T : Entity>(
     private val cursor: Cursor?,
-    private val cls: Class<T>
+    private val cls: Class<T>,
+    private val postProcessor: ((T) -> Unit)? = null
 ) {
     fun getList(): List<T> {
         val data = mutableListOf<T>()
         if (cursor == null) return data
-        try {
+        cursor.use { cursor ->
             while (cursor.moveToNext()) {
-                val t = Entity.create(cursor, cls)
-                if (t != null) data.add(t)
+                val t = Entity.create<T>(cursor, cls)
+                if (t != null) {
+                    postProcessor?.invoke(t)
+                    data.add(t)
+                }
             }
-        } finally {
-            cursor.close()
         }
         return data
     }

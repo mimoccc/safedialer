@@ -18,7 +18,6 @@ class MainApp : Application(), DIAware {
     override fun onCreate() {
         callsManager.registerAppWithTelecom(capabilities)
         super.onCreate()
-//        CouchbaseLite.init(this)
         // todo check if from boot & permissions granted & permission activity
         IncomingCallService.start(this)
     }

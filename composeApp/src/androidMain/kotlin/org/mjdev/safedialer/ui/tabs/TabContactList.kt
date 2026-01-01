@@ -15,12 +15,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import org.jetbrains.compose.ui.tooling.preview.Preview
-import org.mjdev.safedialer.extensions.ComposeExt1.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.MapFilter
 import org.mjdev.safedialer.ui.components.MappedList
+import org.mjdev.safedialer.ui.theme.AppTheme
 import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @Suppress("UNCHECKED_CAST")
@@ -29,7 +30,7 @@ import org.mjdev.safedialer.viewmodel.MainViewModel
 fun TabContactList(
     scrollState: LazyListState = rememberLazyListState(),
     filterText: MutableState<String> = remember { mutableStateOf("") },
-) {
+) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
         MainViewModel(MockDataRepository(context))
     }

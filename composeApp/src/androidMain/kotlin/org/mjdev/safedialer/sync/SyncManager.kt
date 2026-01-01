@@ -16,6 +16,7 @@ import android.os.Bundle
 import android.util.Log
 import org.mjdev.safedialer.BuildConfig
 
+@Suppress("DEPRECATION")
 object SyncManager {
     private val TAG = SyncManager::class.simpleName
 
@@ -63,7 +64,8 @@ object SyncManager {
     }
 
     fun requestImmediateSync(
-        context: Context
+        context: Context,
+        authority: String = ""
     ) {
         Log.d(TAG, "Requesting account sync.")
         val account = ensureAccount(context)
@@ -80,28 +82,29 @@ object SyncManager {
             ContentResolver.getSyncAdapterTypes().filter { syncAdapter ->
                 syncAdapter.accountType == accountType
             }.forEach { syncAdapterType ->
-                val syncForText = "sync for: ${syncAdapterType.authority}"
-                Log.d(TAG, "Checking $syncForText")
-                val isRunning = isSyncActive(account, syncAdapterType.authority)
-                val isPending = isSyncPending(account, syncAdapterType.authority)
-                val isAutomatic = getSyncAutomatically(account, syncAdapterType.authority)
-                val isSyncable: Boolean = getIsSyncable(account, syncAdapterType.authority) == 1
-                if (isRunning) {
-                    Log.d(TAG, "Sync $syncForText, already active.")
-                    cancelSync(account, syncAdapterType.authority)
+                if (authority.isEmpty() || syncAdapterType.authority == authority) {
+                    val syncForText = "sync for: ${syncAdapterType.authority}"
+                    Log.d(TAG, "Checking $syncForText")
+                    val isRunning = isSyncActive(account, syncAdapterType.authority)
+                    val isPending = isSyncPending(account, syncAdapterType.authority)
+                    val isEnabled = getSyncAutomatically(account, syncAdapterType.authority)
+                    val isSyncable: Boolean = getIsSyncable(account, syncAdapterType.authority) == 1
+                    if (isEnabled) {
+                        if (isRunning) {
+                            Log.d(TAG, "Sync $syncForText, already active.")
+                            cancelSync(account, syncAdapterType.authority)
+                        }
+                        if (isPending) {
+                            Log.d(TAG, "Sync $syncForText, already active, but pending.")
+                            cancelSync(account, syncAdapterType.authority)
+                        }
+                        if (!isSyncable) {
+                            setIsSyncable(account, syncAdapterType.authority, 1)
+                        }
+                        Log.d(TAG, "Sync for: ${syncAdapterType.authority}, requested.")
+                        requestSync(account, syncAdapterType.authority, syncBundle)
+                    }
                 }
-                if (isPending) {
-                    Log.d(TAG, "Sync $syncForText, already active, but pending.")
-                    cancelSync(account, syncAdapterType.authority)
-                }
-                if (!isAutomatic) {
-                    setSyncAutomatically(account, syncAdapterType.authority, true)
-                }
-                if (!isSyncable) {
-                    setIsSyncable(account, syncAdapterType.authority, 1)
-                }
-                Log.d(TAG, "Sync for: ${syncAdapterType.authority}, requested.")
-                requestSync(account, syncAdapterType.authority, syncBundle)
             }
         }
     }

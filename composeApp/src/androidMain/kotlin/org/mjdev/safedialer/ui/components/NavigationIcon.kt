@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 @Previews
 @Composable
@@ -27,7 +28,7 @@ fun NavigationIcon(
     imageBitmap: ImageBitmap? = null,
     icon: ImageVector = Icons.Filled.Phone,
     onClick: () -> Unit = {}
-) {
+) = AppTheme {
     IconButton(
         modifier = modifier.size(size),
         onClick = onClick,

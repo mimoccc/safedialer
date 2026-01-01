@@ -2,10 +2,21 @@ package org.mjdev.safedialer.extensions
 
 import android.content.Context
 import android.content.res.Configuration
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.BlurMaskFilter
+import android.view.View
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorLong
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -13,27 +24,34 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PaintingStyle
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelLazy
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.LocalViewModelStoreOwner
-import coil.ImageLoader
+import coil3.ImageLoader
+import kotlinx.coroutines.flow.flow
 import org.kodein.di.LazyDI
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.direct
 import org.kodein.di.instance
 import org.mjdev.safedialer.di.mainDI
 
-object ComposeExt1 {
+@Suppress("unused")
+object ComposeExt {
 
     val isLandscape: Boolean
         @Composable
@@ -55,10 +73,95 @@ object ComposeExt1 {
         override fun isInitialized(): Boolean = true
     }
 
-    @JvmOverloads
+    fun ComponentActivity.enableEdgeToEdge(
+        statusBarColor: Color = Color.DarkGray,
+        navigationBarColor: Color = Color.DarkGray,
+    ) = enableEdgeToEdge(
+        statusBarStyle = SystemBarStyle.dark(statusBarColor.toColorInt()),
+        navigationBarStyle = SystemBarStyle.dark(navigationBarColor.toColorInt())
+    )
+
+    @Composable
+    fun rememberCurrentSize(): State<DpSize> {
+        val view: View = LocalView.current
+        return remember(view.width, view.height) {
+            derivedStateOf {
+                DpSize(view.width.dp, view.height.dp)
+            }
+        }
+    }
+
+    @Composable
+    fun Modifier.dashedBorder(
+        width: Dp,
+        radius: Dp,
+        color: Color
+    ) = drawBehind {
+        drawIntoCanvas { canvas ->
+            val paint = Paint().apply {
+                strokeWidth = width.toPx()
+                this.color = color
+                style = PaintingStyle.Stroke
+                pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+            }
+            canvas.drawRoundRect(
+                width.toPx(),
+                width.toPx(),
+                size.width - width.toPx(),
+                size.height - width.toPx(),
+                radius.toPx(),
+                radius.toPx(),
+                paint
+            )
+        }
+    }
+
+    @ColorLong
+    fun Color.toColorLong(): Long {
+        return if ((value and 0x3FUL) < 16UL) {
+            value
+        } else {
+            (value and 0x3FUL.inv()) or ((value and 0x3FUL) - 1UL)
+        }.toLong()
+    }
+
+    @ColorInt
+    fun Color.toColorInt(): Int {
+        return if ((value and 0x3FUL) < 16UL) {
+            value
+        } else {
+            (value and 0x3FUL.inv()) or ((value and 0x3FUL) - 1UL)
+        }.toInt()
+    }
+
+    @Composable
+    fun rememberAssetImage(
+        name: String = "avatar1.png",
+    ) : ImageBitmap {
+        val context: Context = LocalContext.current
+        return remember {
+            context.assets.open(name).use { inputStream ->
+                BitmapFactory.decodeStream(inputStream).asImageBitmap()
+            }
+        }
+    }
+
+    @Suppress("ParamsComparedByRef")
+    @Composable
+    fun <T> collectAsState(
+        key: Any? = Unit,
+        initial: T? = null,
+        block: suspend () -> T?
+    ) = remember(key) {
+        flow {
+            emit(block())
+        }
+    }.collectAsState(initial)
+
+    @Suppress("ParamsComparedByRef")
     @Composable
     inline fun <reified VM : ViewModel> rememberViewModelSafe(
-        tag: Any? = null,
+        key: Any? = null,
         context: Context = LocalContext.current,
         localDi: LazyDI? = mainDI(context), // todo : remove?
         crossinline mockModelFactory: (Context) -> VM // todo ???
@@ -75,7 +178,7 @@ object ComposeExt1 {
                         object : ViewModelProvider.Factory {
                             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                                 @Suppress("UNCHECKED_CAST")
-                                return localDi.direct.instance<VM>(tag) as T
+                                return localDi.direct.instance<VM>(key) as T
                             }
                         }
                     }
@@ -85,12 +188,13 @@ object ComposeExt1 {
     }
 
     @Composable
-    fun rememberImageLoader(
-        context: Context = LocalContext.current,
-    ) = remember {
-        val di by context.closestDI { mainDI(context) }
-        val imageLoader: ImageLoader by di.instance()
-        imageLoader
+    fun rememberImageLoader(): ImageLoader {
+        val context: Context = LocalContext.current
+        return remember {
+            val di by context.closestDI { mainDI(context) }
+            val imageLoader: ImageLoader by di.instance()
+            imageLoader
+        }
     }
 
     /**
@@ -124,7 +228,7 @@ object ComposeExt1 {
      * halo effect instead of relying on `BlurMaskFilter`. This approach uses a gradient
      * with varying alpha values to simulate a blurred edge, providing a similar visual
      * effect that is more consistent across different Android versions. See
-     * [drawOutlineCircularShadowGradient] for an example of how to implement the
+     * "drawOutlineCircularShadowGradient" for an example of how to implement the
      * gradient-based halo effect.
      *
      * For cases where drawing outside the composable bounds is required, consider

@@ -1,4 +1,10 @@
 package org.mjdev.safedialer.sip
 
-class SIPClient {
+import android.content.Context
+
+@Suppress("unused")
+class SIPClient(
+    val context: Context
+) {
+    // todo
 }

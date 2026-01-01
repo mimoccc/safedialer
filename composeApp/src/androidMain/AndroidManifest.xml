@@ -3,7 +3,16 @@
         xmlns:tools="http://schemas.android.com/tools">
 
     <uses-feature
+            android:name="android.hardware.microphone"
+            android:required="false" />
+    <uses-feature
             android:name="android.hardware.telephony"
+            android:required="false" />
+    <uses-feature
+            android:required="false"
+            android:name="android.hardware.touchscreen" />
+    <uses-feature
+            android:name="android.hardware.wifi"
             android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
@@ -14,14 +23,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission
-            android:name="android.permission.READ_CALL_LOG"
-            tools:ignore="SmsAndCallLogPolicy" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <!--suppress DeprecatedClassUsageInspection -->
-    <uses-permission
-            android:name="android.permission.PROCESS_OUTGOING_CALLS"
-            tools:ignore="SmsAndCallLogPolicy" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <uses-permission android:name="android.permission.WRITE_CONTACTS" />
@@ -31,11 +34,17 @@
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission
+            android:name="android.permission.READ_CALL_LOG"
+            tools:ignore="SmsAndCallLogPolicy" />
     <uses-permission
             android:name="android.permission.INTERNAL_SYSTEM_WINDOW"
             tools:ignore="ProtectedPermissions" />
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
-    <uses-permission android:name="android.permission.READ_SYNC_STATS" />
     <uses-permission
             android:name="android.permission.READ_SMS"
             tools:ignore="SmsAndCallLogPolicy" />
@@ -45,21 +54,37 @@
     <uses-permission
             android:name="android.permission.SEND_SMS"
             tools:ignore="SmsAndCallLogPolicy" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!--suppress DeprecatedClassUsageInspection -->
+    <uses-permission
+            android:name="android.permission.PROCESS_OUTGOING_CALLS"
+            tools:ignore="SmsAndCallLogPolicy" />
+    <uses-permission
+            android:name="android.permission.WRITE_CALL_LOG"
+            tools:ignore="SmsAndCallLogPolicy" />
+    <uses-permission
+            android:name="android.permission.WRITE_BLOCKED_NUMBERS"
+            tools:ignore="ProtectedPermissions" />
     <uses-permission
             android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
             tools:ignore="ScopedStorage" />
 
     <application
+            android:requestLegacyExternalStorage="true"
             android:name="org.mjdev.safedialer.app.MainApp"
             android:allowBackup="false"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
+            android:allowAudioPlaybackCapture="true"
+            android:allowClearUserData="true"
+            android:appCategory="social"
+            android:autoRevokePermissions="disallowed"
+            android:largeHeap="true"
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.SplashScreen.Splash">
 
         <activity
+                android:largeHeap="true"
                 android:name=".activity.MainActivity"
                 android:launchMode="singleTask"
                 android:alwaysRetainTaskState="true"
@@ -73,24 +98,31 @@
         </activity>
 
         <activity
+                android:largeHeap="true"
                 android:name="com.nabinbhandari.android.permissions.PermissionsActivity"
                 android:theme="@style/Permissions.TransparentTheme" />
 
-        <receiver android:name=".widget.AppWidget"
-                android:exported="true"
-                tools:ignore="Instantiatable">
+        <receiver
+                android:name=".widget.app.AppWidgetReceiver"
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                     android:name="android.appwidget.provider"
-                    android:resource="@xml/app_widget_info" />
+                    android:resource="@xml/app_widget" />
         </receiver>
 
-        <service
-                android:name="org.mjdev.safedialer.service.IncomingCallService"
-                android:exported="false"
-                android:foregroundServiceType="phoneCall" />
+        <receiver
+            android:name=".widget.media.MediaPlayerWidgetReceiver"
+            android:exported="true">
+            <intent-filter>
+            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+        </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/media_player_widget" />
+        </receiver>
 
         <receiver
                 android:name="org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver"
@@ -111,6 +143,13 @@
         </receiver>
 
         <service
+                android:largeHeap="true"
+                android:name="org.mjdev.safedialer.service.IncomingCallService"
+                android:exported="false"
+                android:foregroundServiceType="phoneCall" />
+
+        <service
+                android:largeHeap="true"
                 android:name=".sync.SyncAuthenticatorService"
                 android:exported="true"
                 android:permission="android.permission.BIND_ACCOUNT_AUTHENTICATOR">
@@ -123,6 +162,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.calendar.ProviderCalendar"
                 android:authorities="@string/authority_calendar"
                 android:exported="true"
@@ -130,6 +170,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.calendar.SyncServiceCalendar"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -143,6 +184,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.calllog.ProviderCallLog"
                 android:authorities="@string/authority_call_log"
                 android:exported="true"
@@ -150,6 +192,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.calllog.SyncServiceCallLog"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -163,6 +206,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.contact.ProviderContacts"
                 android:authorities="@string/authority_contacts"
                 android:exported="true"
@@ -170,6 +214,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.contact.SyncServiceContacts"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -183,6 +228,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.email.ProviderEmails"
                 android:authorities="@string/authority_emails"
                 android:exported="true"
@@ -191,6 +237,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.email.SyncServiceEmails"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -204,6 +251,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.gallery.ProviderGallery"
                 android:authorities="@string/authority_gallery"
                 android:exported="true"
@@ -211,6 +259,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.gallery.SyncServiceGallery"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -224,6 +273,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.task.ProviderTasks"
                 android:authorities="@string/authority_tasks"
                 android:exported="true"
@@ -231,6 +281,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.task.SyncServiceTasks"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -244,6 +295,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.ai.ProviderAI"
                 android:authorities="@string/authority_ai"
                 android:exported="true"
@@ -251,6 +303,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.ai.SyncServiceAI"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -264,6 +317,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.messages.ProviderMessages"
                 android:authorities="@string/authority_messages"
                 android:exported="true"
@@ -271,6 +325,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.messages.SyncServiceMessages"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -284,6 +339,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.invoices.ProviderInvoices"
                 android:authorities="@string/authority_invoices"
                 android:exported="true"
@@ -291,6 +347,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.invoices.SyncServiceInvoices"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -304,6 +361,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.authenticator.ProviderAuthenticator"
                 android:authorities="@string/authority_authenticator"
                 android:exported="true"
@@ -311,6 +369,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.authenticator.SyncServiceAuthenticator"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -324,6 +383,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.notes.ProviderNotes"
                 android:authorities="@string/authority_notes"
                 android:exported="true"
@@ -331,6 +391,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.notes.SyncServiceNotes"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"
@@ -344,6 +405,7 @@
         </service>
 
         <provider
+                android:largeHeap="true"
                 android:name=".sync.document.ProviderDocuments"
                 android:authorities="@string/authority_documents"
                 android:exported="true"
@@ -351,6 +413,7 @@
                 android:grantUriPermissions="true" />
 
         <service
+                android:largeHeap="true"
                 android:name=".sync.document.SyncServiceDocuments"
                 android:exported="true"
                 android:permission="android.permission.BIND_SYNC_ADAPTER"

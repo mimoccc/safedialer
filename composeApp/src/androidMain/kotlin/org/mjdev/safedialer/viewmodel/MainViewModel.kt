@@ -13,7 +13,6 @@ import org.mjdev.safedialer.repository.base.IDataRepository
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
-@Suppress("unused")
 class MainViewModel(
     val dataRepository: IDataRepository
 ) : ViewModel() {
@@ -26,6 +25,8 @@ class MainViewModel(
 
     private val _isTabsVisible = MutableStateFlow(true)
     val isTabsVisible: StateFlow<Boolean> = _isTabsVisible.asStateFlow()
+
+    val contacts = dataRepository.contacts
 
     val contactMap = dataRepository.contactsMap
     val callsMap = dataRepository.callsMap

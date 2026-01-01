@@ -1,16 +1,14 @@
 package org.mjdev.safedialer.extensions
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
 import android.view.WindowManager
 
+@Suppress("DEPRECATION")
 object ActivityExt {
 
-    @Suppress("DEPRECATION")
-    @SuppressLint("NewApi")
     fun Activity.addLockScreenFlags() {
         if (isOreoMr1Plus()) {
             setShowWhenLocked(true)

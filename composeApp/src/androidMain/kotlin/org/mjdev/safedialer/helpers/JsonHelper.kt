@@ -3,7 +3,7 @@ package org.mjdev.safedialer.helpers
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 
-@Suppress("DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING")
+@Suppress("DEPRECATION", "EXPECT_ACTUAL_CLASSIFIERS_ARE_IN_BETA_WARNING", "unused")
 object JsonHelper {
 
     // todo may be singleton in di ?

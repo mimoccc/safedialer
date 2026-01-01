@@ -21,6 +21,7 @@ import io.github.alexzhirkevich.qrose.options.roundCorners
 import io.github.alexzhirkevich.qrose.options.solid
 import io.github.alexzhirkevich.qrose.rememberQrCodePainter
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.ui.theme.AppTheme
 
 // todo : params
 @Suppress("unused", "FunctionName")
@@ -34,7 +35,7 @@ fun QrCodeView(
     contentDescription: String = data,
     framesColor: Color = Color.Black,
     pointColor: Color = Color.Black
-) {
+) = AppTheme {
     val qrcodePainter = rememberQrCodePainter(data) {
         if (logoPainter != null) {
             logo {

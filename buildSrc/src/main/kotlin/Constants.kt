@@ -4,4 +4,5 @@ object Constants {
     const val TASK_BUILD = "build"
     const val TASK_CLEAN = "clean"
     const val TASK_ASSEMBLE = "assemble"
+    const val TASK_RELEASE = "release"
 }

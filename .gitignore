@@ -36,3 +36,5 @@ _site
 /sign/mjdev.jks
 /screenshots/
 credentials
+/sources/plain-app-main.zip
+/.output.txt

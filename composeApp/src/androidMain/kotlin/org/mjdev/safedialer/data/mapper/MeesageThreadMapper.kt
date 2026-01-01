@@ -17,8 +17,8 @@ class MessageThreadMapper(
 
     override val itemId: Long?
         get() = message?.contact?.contactId ?: message?.contact?.id ?: message?.threadId
-    override val itemEmail: String?
-        get() = message?.contact?.email
+    override val itemEmails: List<String>
+        get() = (listOf(contact?.email) + (contact?.emails?.map { e -> e.value } ?: listOf())).filterNotNull()
     override val itemPhone: String?
         get() = message?.contact?.phone ?: message?.lastMessage?.message?.let {
             when (it) {
@@ -49,8 +49,8 @@ class MessageThreadMapper(
     override val itemCallType: CallType?
         get() = null
 
-    override val details: String
-        get() = message?.lastMessage?.body ?: ""
+    override val details: List<String>
+        get() = listOf(message?.lastMessage?.body ?: "")
 
     override val isBlocked: Boolean
         get() = false // todo
@@ -72,6 +72,7 @@ class MessageThreadMapper(
         get() = false // todo
 
     companion object {
+        @Suppress("unused")
         fun MessageThread.asListItem() = MessageThreadMapper(this)
     }
 }

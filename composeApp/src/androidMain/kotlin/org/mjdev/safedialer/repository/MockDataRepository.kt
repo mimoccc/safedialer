@@ -31,11 +31,11 @@ class MockDataRepository(
     context: Context,
     scope: CoroutineScope = CoroutineScope(Dispatchers.IO + Job()),
 ) : ADataRepository(context, scope), IDataRepository {
-    private val contacts: Flow<List<Contact>> = flow {
+    override val contacts: Flow<List<Contact>> = flow {
         emit(mockContacts)
     }.flowOn(Dispatchers.Default)
 
-    private val calls: Flow<List<Call>> = contacts.combine(
+    override val calls: Flow<List<Call>> = contacts.combine(
         flow {
             emit(mockCalls)
         }
@@ -60,14 +60,14 @@ class MockDataRepository(
         mmsList.groupBy { it.threadId }
     }.flowOn(Dispatchers.Default)
 
-    private val messageThreads: Flow<Map<Long, List<MessageThread>>> = contacts.combine(
+    override val messageThreads: Flow<List<MessageThread>> = contacts.combine(
         smsThreads.combine(mmsThreads) { smsMap, mmsMap ->
             Pair(smsMap, mmsMap)
         }
     ) { contactsList, pair ->
         val smsMap = pair.first
         val mmsMap = pair.second
-        val result = mutableMapOf<Long, List<MessageThread>>()
+        val result = mutableListOf<MessageThread>()
         val allThreadIds = (smsMap.keys.map { it } + mmsMap.keys).toSet()
         for (threadId in allThreadIds) {
             val smsList = smsMap[threadId] ?: emptyList()
@@ -84,7 +84,7 @@ class MockDataRepository(
                 is Mms -> null
                 else -> null
             }
-            result[threadId] = listOf(
+            result.add(
                 MessageThread(
                     threadId = threadId,
                     contact = senderContact,
@@ -95,21 +95,21 @@ class MockDataRepository(
         result
     }.flowOn(Dispatchers.Default)
 
-    private val emails: Flow<List<MailItem>> = contacts.combine(flow {
+    override val emails: Flow<List<MailItem>> = contacts.combine(flow {
         emit(mockEmails)
     }) { lastContacts, emailList ->
         emailList.map { email ->
             email.copy(
                 contact = lastContacts.firstOrNull { c ->
                     c.emails?.any { e ->
-                        e.removeWhites() == email.senderEmail.removeWhites()
+                        e.value.removeWhites() == email.senderEmail.removeWhites()
                     } ?: false
                 }
             )
         }.sortedByDescending { email -> email.createdAtMillis }
     }.flowOn(Dispatchers.Default)
 
-    private val aiThreads: Flow<List<AIItem>> = flow {
+    override val aiThreads: Flow<List<AIItem>> = flow {
         emit(emptyList<AIItem>()) // todo
     }.flowOn(Dispatchers.Default)
 
@@ -119,8 +119,8 @@ class MockDataRepository(
         }
     }.flowOn(Dispatchers.Default)
 
-    override val messagesMap: Flow<Map<String, List<MessageThread>>> = messageThreads.map { map ->
-        map.values.flatten().groupBy { mt ->
+    override val messagesMap: Flow<Map<String, List<MessageThread>>> = messageThreads.map { threads ->
+        threads.groupBy { mt ->
             mt.date.formatDate()
         }
     }.flowOn(Dispatchers.Default)
@@ -185,7 +185,7 @@ class MockDataRepository(
     ): Contact? = contacts.firstOrNull()?.first { c ->
         val isEmail = if (email == null) false else {
             c.email?.contains(email) == true ||
-                    c.emails?.any { e -> e?.contains(email) == true } == true
+                    c.emails?.any { e -> e.value.contentEquals(email) } == true
         }
         val isName = if (senderName == null) false else {
             c.displayName?.contains(senderName) == true
@@ -202,7 +202,7 @@ class MockDataRepository(
                 contactId = idx.toLong(),
                 id = idx.toLong(),
                 email = "john.doe$idx@example.com",
-                emails = listOf("john.doe$idx@example.com"),
+                emails = listOf(),
             )
         }
 
