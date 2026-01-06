@@ -30,8 +30,9 @@ class EmailThreadMapper(
         get() = null
 
     override val details: List<String>
-        get() = listOf((email?.lastMessage?.body ?: email?.lastMessage?.subject ?: "---")
-            .take(MAX_MAIL_DETAILS_LENGTH))
+        get() = listOf(
+            // todo mailItem read body to lines
+        )
 
     override val isBlocked: Boolean
         get() = false // todo

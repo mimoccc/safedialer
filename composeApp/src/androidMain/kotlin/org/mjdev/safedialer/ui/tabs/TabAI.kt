@@ -7,44 +7,31 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.ui.tooling.preview.Preview
 import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
-import org.mjdev.safedialer.extensions.DateExt.formatDate
-import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.providers.custom.ai.AIItem
+import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
-import org.mjdev.safedialer.ui.components.MapFilter
-import org.mjdev.safedialer.ui.components.MappedList
+import org.mjdev.safedialer.ui.components.list.MappedList
 import org.mjdev.safedialer.ui.theme.AppTheme
 import org.mjdev.safedialer.viewmodel.MainViewModel
 
 @Suppress("UNCHECKED_CAST")
-@Preview
+@Previews
 @Composable
 fun TabAI(
     scrollState: LazyListState = rememberLazyListState(),
-    filterText: MutableState<String> = remember { mutableStateOf("") },
+    filterText: State<String> = remember { mutableStateOf("") },
 ) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(MockDataRepository(context))
+        MainViewModel(context, MockDataRepository(context))
     }
     val aiMessagesMap by viewModel.aiMessages.collectAsState(LinkedHashMap())
-    val filter: MapFilter<AIItem> = remember {
-        { m, s ->
-            m.values.flatten().filter { i ->
-                i.toString().contains(s, true)
-            }.groupBy { c ->
-                c.createdAtMillis.formatDate()
-            }
-        }
-    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,8 +45,7 @@ fun TabAI(
             mapData = aiMessagesMap,
             showDate = true,
             scrollState = scrollState,
-            filterText = filterText,
-            filter = filter as MapFilter<Entity>
+            filterText = filterText
         )
     }
 }

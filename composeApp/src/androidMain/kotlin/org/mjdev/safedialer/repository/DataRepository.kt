@@ -1,6 +1,7 @@
 package org.mjdev.safedialer.repository
 
 import android.content.Context
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -45,9 +46,8 @@ class DataRepository(
     private val emailsProvider: EmailsProvider by instance()
 
     override val contacts: Flow<List<Contact>> = providerFlow(contactsProvider) {
-        getContacts()?.filter { pn ->
-            pn.displayName.isNotNBlank() && pn.phone.isNotNBlank()
-        }?.mergeBy { contact ->
+        Log.d(TAG, "Fetching contacts from provider...")
+        getContacts()?.mergeBy { contact ->
             contact.contactId
         }?.sortedBy { contact ->
             contact.displayName
@@ -133,7 +133,7 @@ class DataRepository(
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     override val contactsMap: Flow<Map<String, List<Contact>>> = contacts.map { cl ->
-        cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: "" }
+        cl.groupBy { c -> c.displayName?.firstOrNull()?.uppercase() ?: " " }
     }.flowOn(Dispatchers.Default).shareIn(scope, Eagerly, 1)
 
     override val callsMap: Flow<Map<String, List<Call>>> = calls.map { cl ->
@@ -227,8 +227,9 @@ class DataRepository(
             else if (objectCache.contains(senderName!!)) objectCache[senderName] as? Contact
             else contacts.last().firstOrNull { c ->
                 val isEmail = c.email?.contains(emailNormalized) == true ||
-                        c.emails?.any { e -> e.value.contentEquals(emailNormalized, true)
-                } == true
+                        c.emails?.any { e ->
+                            e.value.contentEquals(emailNormalized, true)
+                        } == true
                 val isName = c.displayName?.contains(senderName) == true
                 isEmail || isName
             }?.apply {

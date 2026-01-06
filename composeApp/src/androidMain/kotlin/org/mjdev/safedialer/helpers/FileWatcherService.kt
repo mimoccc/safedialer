@@ -17,8 +17,9 @@ import kotlin.io.path.isDirectory
 import kotlin.io.path.readBytes
 
 @Suppress("RedundantSuspendModifier")
-class FileWatcherService(
-    private val basePath: Path,
+open class FileWatcherService(
+    private val path: Path,
+    private val recursively: Boolean = false,
     private val onFileCreated: (Path, ByteArray) -> Unit,
     private val onFileModified: (Path, ByteArray) -> Unit,
     private val onFileDeleted: (Path) -> Unit
@@ -26,13 +27,13 @@ class FileWatcherService(
     private val scope = CoroutineScope(Dispatchers.IO)
     private var watchJob: Job? = null
     private var watchService: WatchService? = null
-    private val watchKeys = mutableMapOf<WatchKey, Path>()
+    private val watchKeys = mutableMapOf<Path, WatchKey>()
 
     fun start() {
         watchJob = scope.launch {
             try {
                 watchService = FileSystems.getDefault().newWatchService()
-                registerDirectoryRecursively(basePath)
+                registerDirectory(path)
                 watchLoop()
             } catch (e: Exception) {
                 Log.e(TAG, "Watch service error", e)
@@ -42,14 +43,14 @@ class FileWatcherService(
 
     fun stop() {
         watchJob?.cancel()
-        watchKeys.keys.forEach { it.cancel() }
+        watchKeys.values.forEach { w -> w.cancel() }
         watchKeys.clear()
         watchService?.close()
         watchService = null
     }
 
-    private suspend fun registerDirectoryRecursively(
-        path: Path
+    private suspend fun registerDirectory(
+        path: Path,
     ): Unit = withContext(Dispatchers.IO) {
         if (path.isDirectory()) {
             val key: WatchKey = path.register(
@@ -58,11 +59,13 @@ class FileWatcherService(
                 StandardWatchEventKinds.ENTRY_DELETE,
                 StandardWatchEventKinds.ENTRY_MODIFY
             )
-            watchKeys[key] = path
-            val files: Array<File>? = path.toFile().listFiles()
-            files?.forEach { file: File ->
-                if (file.isDirectory) {
-                    registerDirectoryRecursively(file.toPath())
+            watchKeys[path] = key
+            if (recursively) {
+                val files: Array<File>? = path.toFile().listFiles()
+                files?.forEach { file: File ->
+                    if (file.isDirectory) {
+                        registerDirectory(file.toPath())
+                    }
                 }
             }
         }
@@ -71,7 +74,11 @@ class FileWatcherService(
     private suspend fun watchLoop(): Unit = withContext(Dispatchers.IO) {
         while (true) {
             val key: WatchKey = watchService?.take() ?: break
-            val dir: Path = watchKeys[key] ?: continue
+            val dir: Path = watchKeys.map { e ->
+                e.key to e.value
+            }.firstOrNull { e ->
+                e.second == key
+            }?.first ?: continue
             val events: List<WatchEvent<*>> = key.pollEvents()
             for (event: WatchEvent<*> in events) {
                 val kind: WatchEvent.Kind<*> = event.kind()
@@ -81,41 +88,50 @@ class FileWatcherService(
                 val filename: Path = ev.context()
                 val child: Path = dir.resolve(filename)
                 when (kind) {
-                    StandardWatchEventKinds.ENTRY_CREATE -> handleCreate(child)
-                    StandardWatchEventKinds.ENTRY_MODIFY -> handleModify(child)
-                    StandardWatchEventKinds.ENTRY_DELETE -> handleDelete(child)
+                    StandardWatchEventKinds.ENTRY_CREATE -> handleCreate(dir, child)
+                    StandardWatchEventKinds.ENTRY_MODIFY -> handleModify(dir, child)
+                    StandardWatchEventKinds.ENTRY_DELETE -> handleDelete(dir, child)
                 }
             }
             val valid: Boolean = key.reset()
             if (!valid) {
-                watchKeys.remove(key)
+                watchKeys.remove(dir)
                 if (watchKeys.isEmpty()) break
             }
         }
     }
 
     private suspend fun handleCreate(
-        path: Path
+        dir: Path,
+        file: Path
     ) {
-        if (path.isDirectory()) {
-            registerDirectoryRecursively(path)
-        } else if (path.toFile().name.endsWith(".eml")) {
-            onFileCreated(path, path.readBytes())
+        if (dir.isDirectory()) {
+            if (recursively) {
+                registerDirectory(dir)
+            }
+        } else {
+            onFileCreated(file, file.readBytes())
         }
     }
 
+    @Suppress("unused")
     private suspend fun handleModify(
-        path: Path
+        dir: Path,
+        file: Path
     ) {
-        if (!path.isDirectory() && path.toFile().name.endsWith(".eml")) {
-            onFileModified(path, path.readBytes())
+        if (!file.isDirectory()) {
+            onFileModified(file, file.readBytes())
         }
     }
 
     private suspend fun handleDelete(
-        path: Path
+        dir: Path,
+        file: Path
     ) {
-        onFileDeleted(path)
+        if (watchKeys.contains(dir)) {
+            watchKeys.remove(dir)
+        }
+        onFileDeleted(file)
     }
 
     companion object {

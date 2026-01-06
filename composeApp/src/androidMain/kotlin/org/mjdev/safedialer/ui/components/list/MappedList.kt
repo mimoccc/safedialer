@@ -1,6 +1,6 @@
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.list
 
-import android.content.Context
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,24 +14,25 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.ImageLoader
+import org.mjdev.safedialer.extensions.AppComposeExt.rememberMapFilter
 import org.mjdev.safedialer.extensions.ComposeExt.rememberImageLoader
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.ui.components.contact.ContactDetail
 import org.mjdev.safedialer.ui.theme.AppTheme
-
-typealias MapFilter<T> = (Map<String, List<T>>, String) -> Map<String, List<T>>
 
 @Previews
 @Composable
@@ -43,17 +44,20 @@ fun MappedList(
         fontSize = 20.sp
     ),
     fontFamily: FontFamily = FontFamily.Default,
-    context: Context = LocalContext.current,
     imageLoader: ImageLoader = rememberImageLoader(),
     showDate: Boolean = false,
     scrollState: LazyListState = rememberLazyListState(),
-    filterText: MutableState<String> = remember { mutableStateOf("") },
-    filter: MapFilter<Entity> = { m, s -> m },
+    filterText: State<String> = remember { mutableStateOf("") },
+    noItemsText: String = "List is empty"
 ) = AppTheme {
-    val filteredData = remember(filterText.value, mapData) {
-        if (filterText.value.trim().isNotEmpty()) {
-            filter(mapData, filterText.value)
-        } else mapData
+    val filteredData by rememberMapFilter(
+        map = mapData,
+        filterText = filterText.value,
+    )
+    val noItems by remember(filteredData) {
+        derivedStateOf {
+            filteredData.count() == 0
+        }
     }
     LazyColumn(
         modifier = modifier
@@ -100,6 +104,20 @@ fun MappedList(
                     .padding(0.dp)
                     .background(MaterialTheme.colorScheme.background.copy(alpha = 0.0f))
                     .height(64.dp)
+            )
+        }
+    }
+    AnimatedVisibility(
+        modifier = Modifier.fillMaxSize(),
+        visible = noItems
+    ) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = noItemsText,
+                fontWeight = FontWeight.Bold
             )
         }
     }

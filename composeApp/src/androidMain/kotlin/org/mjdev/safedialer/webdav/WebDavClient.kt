@@ -1,28 +1,19 @@
 package org.mjdev.safedialer.webdav
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.util.Log
-import androidx.compose.ui.graphics.ImageBitmap
-import androidx.compose.ui.graphics.asImageBitmap
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.isSpecified
 import ezvcard.Ezvcard
 import ezvcard.VCard
-import ezvcard.property.Photo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.map
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import org.kodein.di.DIAware
 import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.webdav.property.webdav.DisplayName
 import org.mjdev.safedialer.webdav.property.webdav.ResourceType
@@ -30,7 +21,7 @@ import org.mjdev.safedialer.webdav.webdavlib.BasicDigestAuthHandler
 import org.mjdev.safedialer.webdav.webdavlib.DavCollection
 import org.mjdev.safedialer.webdav.webdavlib.Response
 
-@Suppress("unused", "RemoveExplicitTypeArguments", "MemberVisibilityCanBePrivate")
+@Suppress("unused", "MemberVisibilityCanBePrivate")
 class WebDavClient(
     val context: Context,
     val baseUrl: String = "https://${BuildConfig.SERVER}/webdav/",
@@ -38,32 +29,25 @@ class WebDavClient(
     val password: String = BuildConfig.SERVER_UPASS,
     val vcardFileName: String = USER_FILE_VCARD,
     val pgpCertFile: String = USER_FILE_PGP,
-) : DIAware {
-    override val di by lazy {
-        (context as DIAware).di
-    }
-
-    // todo DI
-    private val auth: BasicDigestAuthHandler
+) {
+    private val client: OkHttpClient
         get() = BasicDigestAuthHandler(
             domain = null,
             username = user,
             password = password.toCharArray()
-        )
-
-    // todo DI
-    private val client: OkHttpClient
-        get() = OkHttpClient.Builder()
-            .followRedirects(false)
-            .authenticator(auth)
-            .addNetworkInterceptor(auth)
-            .addInterceptor(HttpLoggingInterceptor().apply {
-                setLevel(
-                    if (BuildConfig.IS_DEBUG) HttpLoggingInterceptor.Level.BODY
-                    else HttpLoggingInterceptor.Level.NONE
-                )
-            })
-            .build()
+        ).let { auth ->
+            OkHttpClient.Builder()
+                .followRedirects(false)
+                .authenticator(auth)
+                .addNetworkInterceptor(auth)
+                .addInterceptor(HttpLoggingInterceptor().apply {
+                    setLevel(
+                        if (BuildConfig.IS_DEBUG) HttpLoggingInterceptor.Level.HEADERS
+                        else HttpLoggingInterceptor.Level.NONE
+                    )
+                })
+                .build()
+        }
 
     val userVCard: Flow<VCard?> = flow {
         readFile(vcardFileName)
@@ -75,31 +59,8 @@ class WebDavClient(
             }
     }.flowOn(Dispatchers.IO)
 
-    val pgpCertData: ByteArray by lazy {
-        readFile(pgpCertFile)
-    }
-
-    val userPicture: Flow<ImageBitmap?> = userVCard.map { vCard ->
-        vCard?.photos?.firstOrNull()?.toImageBitmap()
-    }.flowOn(Dispatchers.IO)
-
-    val allEmails = flow<Map<String, ByteArray>> {
-        Log.d(TAG, "Getting imap folders")
-        list(DIR_IMAP).apply {
-            Log.d(TAG, "Got imap folders: $this")
-        }.map { mFolder ->
-            Log.d(TAG, "Getting files in: $mFolder")
-            list("$DIR_IMAP/$mFolder").map { mailFile ->
-                val mailPath = "$DIR_IMAP/$mFolder/$mailFile"
-                Log.d(TAG, "Got file: $mailPath")
-                val emailData = readFile(mailPath)
-                Log.d(TAG, "File size: ${emailData.size}")
-                mailPath to emailData
-            } ?: emptyList()
-        }.flatten().toMap().let { emails ->
-            Log.d(TAG, "Got ${emails.size} emails.")
-            emit(emails)
-        }
+    val pgpCertData: Flow<ByteArray> = flow {
+        emit(readFile(pgpCertFile))
     }.flowOn(Dispatchers.IO)
 
     fun listExtended(
@@ -126,12 +87,6 @@ class WebDavClient(
     }.onFailure { e ->
         Log.e(TAG, e.message ?: "")
     }.getOrNull() ?: emptyList()
-
-    data class WebDavEntry(
-        val name: String,
-        val fullUrl: String,
-        val isCollection: Boolean
-    )
 
     fun list(
         path: String
@@ -294,21 +249,5 @@ class WebDavClient(
 
         const val USER_FILE_PGP = "pgp_mail_cert.asc"
         const val USER_FILE_VCARD = "vcard.vcf"
-
-        fun Photo.toImageBitmap(
-            width: Dp = Dp.Unspecified,
-            height: Dp = Dp.Unspecified
-        ): ImageBitmap? {
-            return data?.let { photoData ->
-                val bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.size)
-                if (bitmap != null && (width.isSpecified || height.isSpecified)) {
-                    val w = if (width.isSpecified) width.value.toInt() else bitmap.width
-                    val h = if (height.isSpecified) height.value.toInt() else bitmap.height
-                    Bitmap.createScaledBitmap(bitmap, w, h, true).asImageBitmap()
-                } else {
-                    bitmap?.asImageBitmap()
-                }
-            }
-        }
     }
 }

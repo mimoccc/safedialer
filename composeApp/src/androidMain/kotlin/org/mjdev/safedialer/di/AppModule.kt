@@ -42,6 +42,7 @@ import org.mjdev.safedialer.R
 import org.mjdev.safedialer.data.User
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
 import org.mjdev.safedialer.helpers.PreferencesManager
+import org.mjdev.safedialer.helpers.VCFHelper.toImageBitmap
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
 import org.mjdev.safedialer.repository.MockDataRepository
@@ -50,7 +51,6 @@ import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
 import org.mjdev.safedialer.service.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
 import org.mjdev.safedialer.webdav.WebDavClient
-import org.mjdev.safedialer.webdav.WebDavClient.Companion.toImageBitmap
 import java.io.File
 import java.util.concurrent.TimeUnit
 

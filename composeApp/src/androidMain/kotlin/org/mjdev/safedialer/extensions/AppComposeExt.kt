@@ -49,4 +49,31 @@ object AppComposeExt {
         }.collectAsState(User(), context)
     }
 
+    @Composable
+    fun <T> rememberMapFilter(
+        map: Map<String, List<T>>,
+        filterText: String,
+        ignoreCase : Boolean = true,
+        comparer: (T, String) -> Boolean = { i, s ->
+            i.toString().contains(s, ignoreCase)
+        },
+    ) = remember(map, filterText) {
+        flow<Map<String, List<T>>> {
+            val s = filterText.trim()
+            if (s.isEmpty() || map.isEmpty())
+                emit(map)
+            else {
+                map.map { (label, data) ->
+                    label to data.filter { i ->
+                        comparer(i, filterText)
+                    }
+                }.toMap().filter { (_, data) ->
+                    data.isNotEmpty()
+                }.also { m ->
+                    emit(m)
+                }
+            }
+        }
+    }.collectAsState(emptyMap())
+
 }

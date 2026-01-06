@@ -1,24 +1,23 @@
 package org.mjdev.safedialer.viewmodel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineStart
+import android.content.Context
+import androidx.lifecycle.AndroidViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import org.kodein.di.DIAware
+import org.mjdev.safedialer.di.mainDI
+import org.mjdev.safedialer.extensions.CustomExt.application
+import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.repository.base.IDataRepository
-import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.EmptyCoroutineContext
 
 class MainViewModel(
+    context: Context,
     val dataRepository: IDataRepository
-) : ViewModel() {
+) : AndroidViewModel(context.application) , DIAware {
 
-    private val _filterText = MutableStateFlow("")
-    val filterText: StateFlow<String> = _filterText.asStateFlow()
+    override val di by context.closestDI { mainDI(context) }
 
     private val _serverState = MutableStateFlow(false)
     val serverState: StateFlow<Boolean> = _serverState.asStateFlow()
@@ -41,12 +40,6 @@ class MainViewModel(
     fun setTabsVisible(visible: Boolean) {
         _isTabsVisible.value = visible
     }
-
-    fun runSafe(
-        context: CoroutineContext = EmptyCoroutineContext,
-        start: CoroutineStart = CoroutineStart.DEFAULT,
-        block: suspend CoroutineScope.() -> Unit
-    ) = viewModelScope.launch(context, start, block)
 
     suspend fun findContactByPhone(
         phoneNumber: String?

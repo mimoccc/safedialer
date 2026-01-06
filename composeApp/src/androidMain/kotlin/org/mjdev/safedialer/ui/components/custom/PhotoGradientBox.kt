@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.custom
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,6 +15,7 @@ import org.mjdev.safedialer.extensions.ColorExt.lighter
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.theme.AppTheme
 
+@Suppress("unused")
 @Previews
 @Composable
 fun PhotoGradientBox(

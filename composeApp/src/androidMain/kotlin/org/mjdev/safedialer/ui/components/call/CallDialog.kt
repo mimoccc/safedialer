@@ -43,7 +43,7 @@ fun CallDialog(
     imageLoader: ImageLoader = rememberImageLoader(),
 ) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(MockDataRepository(context))
+        MainViewModel(context, MockDataRepository(context))
     }
     val contact by collectAsState(caller) {
         viewModel.findContactByPhone(caller)
@@ -61,6 +61,8 @@ fun CallDialog(
                     haze(hazeState)
                 },
             imageLoader = imageLoader,
+            showBckImage = false,
+            showShadows = false,
             contact = contact?.asListItem(),
             shape = RoundedCornerShape(16.dp),
         )
@@ -74,6 +76,7 @@ fun CallDialog(
                 showCloseButton = true,
                 isLast = false,
                 showBckImage = false,
+                showShadows = false,
                 mainBckColor = Color.Transparent,
             )
             Box(

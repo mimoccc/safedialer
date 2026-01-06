@@ -22,6 +22,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import org.mjdev.safedialer.extensions.ComposeExt.canScroll
 import org.mjdev.safedialer.extensions.ComposeExt.isLandscape
 import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
@@ -44,10 +45,10 @@ fun MainScreen(
     startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo from past
 ) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(MockDataRepository(context))
+        MainViewModel(context,MockDataRepository(context))
     }
     val isTabsVisible by viewModel.isTabsVisible.collectAsState()
-    val filterText by viewModel.filterText.collectAsState()
+    val filterText = remember { mutableStateOf("") }
     val fabState = rememberFabState(isTabsVisible)
     val scrollState = rememberLazyListState()
     val tabState: TabsState = rememberTabsState(startTab = startTab)
@@ -57,7 +58,7 @@ fun MainScreen(
         TopAppBarDefaults.exitUntilCollapsedScrollBehavior(
             state = titleBarState,
             canScroll = {
-                scrollState.canScroll && filterText.trim().isEmpty()
+                scrollState.canScroll && filterText.value.trim().isEmpty()
             },
         )
     val floatingActionIcon: @Composable () -> Unit = {
@@ -88,9 +89,7 @@ fun MainScreen(
                     showActions = true,
                     titleBarState = titleBarState,
                     scrollBehavior = titleScrollBehavior,
-                    filterText = remember { mutableStateOf(filterText) }.apply {
-                        value = filterText
-                    },
+                    filterText = filterText,
                     onServeClick = {
                         viewModel.toggleServerState()
                     },
@@ -106,9 +105,7 @@ fun MainScreen(
                 scrollState = scrollState,
                 tabState = tabState,
                 fabState = fabState,
-                filterText = remember {
-                    mutableStateOf(filterText)
-                }.apply { value = filterText },
+                filterText = filterText,
             )
         }
         ServerScreen(

@@ -10,4 +10,12 @@ object MD5Utils {
         digest.doFinal(out, 0)
         return out.joinToString("") { "%02x".format(it) }
     }
+
+    fun computeMd5Bytes(data: ByteArray): ByteArray {
+        val digest = MD5Digest()
+        digest.update(data, 0, data.size)
+        val out = ByteArray(digest.digestSize)
+        digest.doFinal(out, 0)
+        return out
+    }
 }

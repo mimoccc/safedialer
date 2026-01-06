@@ -2,17 +2,26 @@ package org.mjdev.safedialer.helpers
 
 import android.content.ContentUris.withAppendedId
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri.withAppendedPath
-import android.provider.ContactsContract.CommonDataKinds.Email.TYPE_WORK
+import android.provider.ContactsContract
 import android.provider.ContactsContract.CommonDataKinds.Event
 import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.provider.ContactsContract.CommonDataKinds.Relation
 import android.provider.ContactsContract.CommonDataKinds.StructuredPostal
 import android.provider.ContactsContract.Contacts
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.isSpecified
 import ezvcard.Ezvcard
 import ezvcard.VCard
+import ezvcard.parameter.AddressType
+import ezvcard.parameter.EmailType
 import ezvcard.parameter.ImageType
 import ezvcard.parameter.RelatedType
+import ezvcard.parameter.TelephoneType
 import ezvcard.property.Address
 import ezvcard.property.Anniversary
 import ezvcard.property.Birthday
@@ -34,6 +43,7 @@ import java.nio.file.Path
 
 @Suppress("unused")
 object VCFHelper {
+    private const val X_PHOTO_URL = "X-PHOTO-URL"
 
     private fun getContactPhotoBytes(
         context: Context,
@@ -67,8 +77,8 @@ object VCFHelper {
             contact.middleName?.let { additionalNames.add(it) }
             contact.namePrefix?.let { prefixes.add(it) }
             contact.nameSuffix?.let { suffixes.add(it) }
-            contact.phoneticName?.let { sortString = SortString(it) }
         }
+        contact.phoneticName?.let { sortString = SortString(it) }
         formattedName = FormattedName(contact.displayName)
         organization = Organization().apply {
             contact.company?.let { values.add(it) }
@@ -76,14 +86,45 @@ object VCFHelper {
         }
         contact.jobTitle?.let { titles.add(Title(it)) }
         contact.phones?.forEach { p ->
-            addTelephoneNumber(Telephone(p.value))
+            addTelephoneNumber(Telephone(p.value).apply {
+                types.add(
+                    when (p.type) {
+                        Phone.TYPE_HOME -> TelephoneType.HOME
+                        Phone.TYPE_MOBILE -> TelephoneType.CELL
+                        Phone.TYPE_WORK -> TelephoneType.WORK
+                        Phone.TYPE_FAX_WORK, Phone.TYPE_FAX_HOME -> TelephoneType.FAX
+                        Phone.TYPE_PAGER -> TelephoneType.PAGER
+                        else -> TelephoneType.HOME
+                    }
+                )
+            })
         }
         contact.emails?.forEach { e ->
-            addEmail(Email(e.value))
+            addEmail(Email(e.value).apply {
+                types.add(
+                    when (e.type) {
+                        ContactsContract.CommonDataKinds.Email.TYPE_HOME -> EmailType.HOME
+                        ContactsContract.CommonDataKinds.Email.TYPE_WORK -> EmailType.WORK
+                        else -> EmailType.HOME
+                    }
+                )
+            })
         }
         contact.addresses?.forEach { a ->
             addAddress(Address().apply {
-                streetAddress = a.value
+                val parts = a.value.split("|")
+                streetAddress = parts.getOrNull(0)
+                locality = parts.getOrNull(1)
+                region = parts.getOrNull(2)
+                postalCode = parts.getOrNull(3)
+                country = parts.getOrNull(4)
+                types.add(
+                    when (a.type) {
+                        StructuredPostal.TYPE_HOME -> AddressType.HOME
+                        StructuredPostal.TYPE_WORK -> AddressType.WORK
+                        else -> AddressType.HOME
+                    }
+                )
             })
         }
         contact.importantDates?.forEach { d ->
@@ -96,7 +137,6 @@ object VCFHelper {
         contact.relationships?.forEach { r ->
             addRelated(Related().apply {
                 text = r.value
-                r.label?.let { types.add(RelatedType.get(it)) }
                 when (r.type) {
                     Relation.TYPE_SPOUSE -> types.add(RelatedType.SPOUSE)
                     Relation.TYPE_FATHER -> types.add(RelatedType.get("father"))
@@ -126,10 +166,17 @@ object VCFHelper {
                 addCategories(categories)
             }
         }
-        val pBytes = contact.photoBytes ?:
-        getContactPhotoBytes(context, contact.contactId.toString())
-        pBytes?.let { b ->
-            addPhoto(Photo(b, ImageType.JPEG))
+        contact.photoUrls?.forEach { photoUrl ->
+            addExtendedProperty(X_PHOTO_URL, photoUrl)
+        }
+        contact.let { c ->
+            val pBytes = c.photoBytes ?: getContactPhotoBytes(
+                context,
+                contact.contactId.toString()
+            )
+            pBytes?.let { b ->
+                addPhoto(Photo(b, ImageType.JPEG))
+            }
         }
     }.let { vcard ->
         Ezvcard.write(vcard).go()
@@ -141,44 +188,54 @@ object VCFHelper {
     ): Contact {
         val vcard = Ezvcard.parse(data?.inputStream()).first()
         return Contact().apply {
-            id = vcard.uid.value.toLong()
+            id = vcard.uid?.value?.toLong() ?: 0L
             displayName = vcard.formattedName?.value
             firstName = vcard.structuredName?.given
             lastName = vcard.structuredName?.family
             middleName = vcard.structuredName?.additionalNames?.firstOrNull()
             namePrefix = vcard.structuredName?.prefixes?.firstOrNull()
             nameSuffix = vcard.structuredName?.suffixes?.firstOrNull()
+            phoneticName = vcard.sortString?.value
+            company = vcard.organization?.values?.firstOrNull()
+            department = vcard.organization?.values?.getOrNull(1)
+            jobTitle = vcard.titles.firstOrNull()?.value
             phones = vcard.telephoneNumbers.map { tel ->
                 val type = when {
-                    tel.types.contains(ezvcard.parameter.TelephoneType.HOME) -> Phone.TYPE_HOME
-                    tel.types.contains(ezvcard.parameter.TelephoneType.WORK) -> Phone.TYPE_WORK
-                    tel.types.contains(ezvcard.parameter.TelephoneType.CELL) -> Phone.TYPE_MOBILE
-                    tel.types.contains(ezvcard.parameter.TelephoneType.FAX) -> Phone.TYPE_FAX_WORK
-                    tel.types.contains(ezvcard.parameter.TelephoneType.PAGER) -> Phone.TYPE_PAGER
+                    tel.types.contains(TelephoneType.HOME) -> Phone.TYPE_HOME
+                    tel.types.contains(TelephoneType.WORK) -> Phone.TYPE_WORK
+                    tel.types.contains(TelephoneType.CELL) -> Phone.TYPE_MOBILE
+                    tel.types.contains(TelephoneType.FAX) -> Phone.TYPE_FAX_WORK
+                    tel.types.contains(TelephoneType.PAGER) -> Phone.TYPE_PAGER
                     else -> Phone.TYPE_OTHER
                 }
                 LabeledValue(tel.text, type)
             }
             emails = vcard.emails.map { email ->
                 val type = when {
-                    email.types.contains(ezvcard.parameter.EmailType.HOME) -> android.provider.ContactsContract.CommonDataKinds.Email.TYPE_HOME
-                    email.types.contains(ezvcard.parameter.EmailType.WORK) -> android.provider.ContactsContract.CommonDataKinds.Email.TYPE_WORK
-                    else -> android.provider.ContactsContract.CommonDataKinds.Email.TYPE_OTHER
+                    email.types.contains(EmailType.HOME) ->
+                        ContactsContract.CommonDataKinds.Email.TYPE_HOME
+                    email.types.contains(EmailType.WORK) ->
+                        ContactsContract.CommonDataKinds.Email.TYPE_WORK
+                    else -> ContactsContract.CommonDataKinds.Email.TYPE_OTHER
                 }
                 LabeledValue(email.value, type)
             }
-            notes = vcard.notes.firstOrNull()?.value
-            company = vcard.organization?.values?.firstOrNull()
-            jobTitle = vcard.titles.firstOrNull()?.value
-            phoneticName = vcard.sortString?.value
             addresses = vcard.addresses.map { addr ->
                 val type = when {
-                    addr.types.contains(ezvcard.parameter.AddressType.HOME) -> StructuredPostal.TYPE_HOME
-                    addr.types.contains(ezvcard.parameter.AddressType.WORK) -> StructuredPostal.TYPE_WORK
+                    addr.types.contains(AddressType.HOME) -> StructuredPostal.TYPE_HOME
+                    addr.types.contains(AddressType.WORK) -> StructuredPostal.TYPE_WORK
                     else -> StructuredPostal.TYPE_OTHER
                 }
-                LabeledValue(addr.streetAddress ?: "", type)
+                val fullAddress = listOfNotNull(
+                    addr.streetAddress,
+                    addr.locality,
+                    addr.region,
+                    addr.postalCode,
+                    addr.country
+                ).joinToString("|")
+                LabeledValue(fullAddress, type)
             }
+            notes = vcard.notes.firstOrNull()?.value
             websites = vcard.urls.map { it.value }
             importantDates = mutableListOf<LabeledValue>().apply {
                 vcard.birthdays.firstOrNull()?.let {
@@ -198,7 +255,25 @@ object VCFHelper {
                 }
                 LabeledValue(rel.text ?: "", type)
             }
+            groups = vcard.categories?.values?.toList() ?: emptyList()
+            photoUrls = vcard.getExtendedProperties(X_PHOTO_URL).map { it.value }
             photoBytes = vcard.photos.firstOrNull()?.data
+        }
+    }
+
+    fun Photo.toImageBitmap(
+        width: Dp = Dp.Unspecified,
+        height: Dp = Dp.Unspecified
+    ): ImageBitmap? {
+        return data?.let { photoData ->
+            val bitmap = BitmapFactory.decodeByteArray(photoData, 0, photoData.size)
+            if (bitmap != null && (width.isSpecified || height.isSpecified)) {
+                val w = if (width.isSpecified) width.value.toInt() else bitmap.width
+                val h = if (height.isSpecified) height.value.toInt() else bitmap.height
+                Bitmap.createScaledBitmap(bitmap, w, h, true).asImageBitmap()
+            } else {
+                bitmap?.asImageBitmap()
+            }
         }
     }
 }

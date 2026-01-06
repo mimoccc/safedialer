@@ -14,6 +14,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -28,7 +29,7 @@ import dev.chrisbanes.haze.hazeChild
 import org.mjdev.safedialer.extensions.ComposeExt.applyIf
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.sync.SyncAccountTypes
-import org.mjdev.safedialer.ui.components.ResponsiveContainer
+import org.mjdev.safedialer.ui.components.custom.ResponsiveContainer
 import org.mjdev.safedialer.ui.components.dialer.DialPad
 import org.mjdev.safedialer.ui.components.dialer.FabState
 import org.mjdev.safedialer.ui.components.dialer.FabState.Companion.rememberFabState
@@ -36,13 +37,14 @@ import org.mjdev.safedialer.ui.state.TabsState
 import org.mjdev.safedialer.ui.state.TabsState.Companion.rememberTabsState
 import org.mjdev.safedialer.ui.theme.AppTheme
 
+@Suppress("unused")
 @Previews
 @Composable
 fun TabbedScreen(
     modifier: Modifier = Modifier,
     startTab: SyncAccountTypes = SyncAccountTypes.CALL_LOG, // todo last item
     scrollState: LazyListState = rememberLazyListState(),
-    filterText: MutableState<String> = remember { mutableStateOf("") },
+    filterText: State<String> = remember { mutableStateOf("") },
     tabState: TabsState = rememberTabsState(startTab = startTab),
     fabState: FabState = rememberFabState(),
     hazeState: HazeState = remember { HazeState() },
@@ -64,7 +66,7 @@ fun TabbedScreen(
     ) {
         val phoneNumber: MutableState<String> = remember { mutableStateOf("") }
         // todo dialPad
-//    val dialPadVisible = remember(fabState.isVisible) { fabState.isVisible }
+//        val dialPadVisible = remember(fabState.isVisible) { fabState.isVisible }
         ResponsiveContainer(
             modifier = Modifier.background(backgroundColor),
             ratio = 0.4f,
@@ -140,7 +142,7 @@ fun TabbedScreen(
                 .fillMaxWidth()
                 .align(Alignment.BottomCenter),
             phoneNumber = phoneNumber,
-//        visible = !dialPadVisible,
+//            visible = !dialPadVisible,
         )
     }
 }

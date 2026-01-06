@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.image
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -45,7 +45,8 @@ fun ImageCard(
     textPadding: Dp = 12.dp,
     showImage: Boolean = true,
     lightAlpha: Float = 0.3f, // todo
-    darkAlpha : Float = 0.3f, // todo
+    darkAlpha: Float = 0.3f,
+    showShadows: Boolean= true, // todo
 ) = AppTheme {
     val ImageRendererBitmap: @Composable (ImageBitmap) -> Unit = { bitmap ->
         Image(
@@ -94,7 +95,7 @@ fun ImageCard(
             if (showImage) {
                 imageRenderer(source)
             }
-            Spacer(
+            if(showShadows) Spacer(
                 modifier = Modifier
                     .fillMaxSize()
                     .drawWithCache {

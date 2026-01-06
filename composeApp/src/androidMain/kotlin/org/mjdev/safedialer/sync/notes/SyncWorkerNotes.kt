@@ -9,8 +9,7 @@ import java.nio.file.Path
 class SyncWorkerNotes(
     context: Context,
     dirName: String,
-    providerAuth: String
-) : SyncWorkerWebDav<Contact>(context, dirName, providerAuth) {
+) : SyncWorkerWebDav<Contact>(context, dirName) {
     override fun prepareLocalFiles(syncResult: SyncResult?) {
     }
 

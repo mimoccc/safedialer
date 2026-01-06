@@ -18,6 +18,7 @@ import java.util.Properties
 object MailItemExt {
 
     fun parseMail(
+        path: String,
         mailData: ByteArray
     ): MailItem {
         val session = Session.getInstance(Properties())
@@ -32,12 +33,12 @@ object MailItemExt {
             addAll(addressesToList(message.getRecipients(Message.RecipientType.CC)))
             addAll(addressesToList(message.getRecipients(Message.RecipientType.BCC)))
         }.distinct().joinToString(",")
-        val body = extractText(message)
+//        val body = extractText(message) // todo mail body
         return MailItem(
             senderName = senderName,
             senderEmail = senderEmail,
             subject = subject,
-            body = body,
+            fileUri = path,
             createdAtMillis = createdAtMillis,
             mailboxName = "",
             recipients = recipientsCsv,

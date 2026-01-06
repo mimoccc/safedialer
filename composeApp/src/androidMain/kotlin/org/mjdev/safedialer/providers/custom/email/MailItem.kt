@@ -33,10 +33,10 @@ data class MailItem(
     val subject: String = "",
 
     @FieldMapping(
-        ProviderEmails.MAIL_ITEM_BODY,
+        ProviderEmails.MAIL_ITEM_URI,
         FieldMapping.PhysicalType.String
     )
-    val body: String = "",
+    val fileUri: String = "",
 
     @FieldMapping(
         ProviderEmails.MAIL_ITEM_CREATED_AT_MILLIS,
@@ -82,8 +82,8 @@ data class MailItem(
 ) : Entity() {
 
     // todo : mail folders
-    val isArchived
-        get() = mailboxName.contentEquals("Archives", true)
+//    val isArchived
+//        get() = mailboxName.contentEquals("Archives", true)
 
     companion object : CompanionWithUri {
         override val uri: Uri = Uri.EMPTY

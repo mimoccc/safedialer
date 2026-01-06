@@ -15,10 +15,11 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.TaskAlt
 import androidx.compose.material.icons.filled.VoiceChat
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.vector.ImageVector
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.ui.tabs.TabAI
+import org.mjdev.safedialer.ui.tabs.TabCallLog
 import org.mjdev.safedialer.ui.tabs.TabContactList
 import org.mjdev.safedialer.ui.tabs.TabEmails
 import org.mjdev.safedialer.ui.tabs.TabMessages
@@ -31,7 +32,7 @@ enum class SyncAccountTypes(
     val titleResId: Int = -1,
     val icon: ImageVector = Icons.Default.Apps,
     val searchable: Boolean = true,
-    val content: @Composable (scrollState: LazyListState, filterText: MutableState<String>) -> Unit,
+    val content: @Composable (scrollState: LazyListState, filterText: State<String>) -> Unit,
 ) {
     CALL_LOG(
         priority = 0,
@@ -42,7 +43,7 @@ enum class SyncAccountTypes(
         needLogon = false,
         needDetail = true,
         content = { ss, ft ->
-            org.mjdev.safedialer.ui.tabs.TabCallLog(ss, ft)
+           TabCallLog(ss, ft)
         }
     ),
     CONTACTS(

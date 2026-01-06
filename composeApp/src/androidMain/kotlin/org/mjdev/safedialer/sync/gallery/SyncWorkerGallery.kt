@@ -4,18 +4,12 @@ import android.content.Context
 import android.content.SyncResult
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.sync.SyncWorkerWebDav
-import java.nio.file.Path
 
 // todo multiple items
 class SyncWorkerGallery(
     context: Context,
     dirName: String,
-    providerAuth: String
-) : SyncWorkerWebDav<Contact>(
-    context,
-    dirName,
-    providerAuth
-) {
+) : SyncWorkerWebDav<Contact>(context, dirName) {
     override fun prepareLocalFiles(syncResult: SyncResult?) {
     }
 

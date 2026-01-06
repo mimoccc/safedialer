@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import org.mjdev.safedialer.extensions.AppComposeExt.rememberCurrentUser
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.ui.components.NavigationActions
-import org.mjdev.safedialer.ui.components.NavigationIcon
-import org.mjdev.safedialer.ui.components.SearchBar
+import org.mjdev.safedialer.ui.components.navigation.NavigationActions
+import org.mjdev.safedialer.ui.components.navigation.NavigationIcon
+import org.mjdev.safedialer.ui.components.text.SearchBar
 import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,7 +77,7 @@ fun TitleBar(
                     NavigationIcon(
                         modifier = Modifier.padding(start = 8.dp),
                         size = 64.dp,
-                        imageBitmap = user.value?.picture,
+                        imageBitmap = user.value.picture,
                     ) {
                         onNavigationIconClick()
                     }

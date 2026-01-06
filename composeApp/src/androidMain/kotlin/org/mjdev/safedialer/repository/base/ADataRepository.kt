@@ -5,13 +5,13 @@ import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.callbackFlow
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.CustomExt.closestDI
-import org.mjdev.safedialer.extensions.CustomExt.runAsync
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.repository.base.EntityContentObserver.Companion.entityContentObserver
@@ -33,11 +33,11 @@ abstract class ADataRepository(
         }
         val observer = entityContentObserver(provider) { uri ->
             Log.d(TAG, "Got changes for: ${provider::class.simpleName}, uri: $uri")
-            runAsync(scope = scope) {
+            scope.launch {
                 val entities = runCatching {
                     block(provider)
                 }.getOrElse { exception ->
-                    Log.e(TAG, exception.message, exception)
+                    Log.e(TAG, "Error in providerFlow block: ${exception.message}", exception)
                     emptyList()
                 }
                 if (entities.isNotEmpty()) {
@@ -45,7 +45,7 @@ abstract class ADataRepository(
                         TAG,
                         "Emitting changes (${entities.size}) ${provider::class.simpleName}, uri: $uri"
                     )
-                    send(entities)
+                    trySend(entities)
                 } else {
                     Log.d(TAG, "No entities ${provider::class.simpleName}, uri: $uri")
                 }

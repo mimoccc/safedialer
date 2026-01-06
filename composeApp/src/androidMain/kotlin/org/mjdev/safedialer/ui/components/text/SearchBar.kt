@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.text
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.size
@@ -17,7 +17,6 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.sp
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.ui.components.text.SearchField
 import org.mjdev.safedialer.ui.theme.AppTheme
 
 @OptIn(ExperimentalMaterial3Api::class)

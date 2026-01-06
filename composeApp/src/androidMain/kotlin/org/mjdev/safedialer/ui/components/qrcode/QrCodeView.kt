@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.qrcode
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box

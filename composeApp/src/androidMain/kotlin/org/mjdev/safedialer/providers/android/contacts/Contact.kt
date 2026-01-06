@@ -1,3 +1,5 @@
+@file:Suppress("ArrayInDataClass")
+
 package org.mjdev.safedialer.providers.android.contacts
 
 import android.net.Uri
@@ -172,6 +174,10 @@ data class Contact(
 
     @IgnoreMapping
     var photoBytes: ByteArray? = null,
+
+    // todo
+    @IgnoreMapping
+    var photoUrls : List<String>? = null,
 ) : Entity() {
     companion object : CompanionWithUri {
         @IgnoreMapping

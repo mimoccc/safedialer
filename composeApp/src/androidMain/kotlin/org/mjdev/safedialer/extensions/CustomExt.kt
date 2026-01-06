@@ -1,31 +1,24 @@
 package org.mjdev.safedialer.extensions
 
 import android.app.Activity
+import android.app.Application
 import android.content.AbstractThreadedSyncAdapter
-import android.content.ContentProvider
 import android.content.Context
 import android.content.ContextWrapper
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.State
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
-import androidx.core.net.toUri
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.kodein.di.android.DIPropertyDelegateProvider
-import org.mjdev.safedialer.sync.email.ProviderEmails.Companion.EmailsProviderAuth
 import java.nio.file.Path
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
@@ -54,18 +47,6 @@ object CustomExt {
     }.getOrElse { e ->
         e.printStackTrace()
         this
-    }
-
-    fun ContentProvider.submitOnChangeEvent(
-        id: Long? = null,
-        auth: String? = context?.EmailsProviderAuth
-    ) = if (auth == null) throw (RuntimeException("Empty auth can not be updated."))
-    else CoroutineScope(Dispatchers.Default).launch {
-        val uriPath = if (id != null) "content://$auth/$id" else "content://$auth"
-        val uri = uriPath.toUri()
-        withContext(Dispatchers.Main) {
-            context!!.contentResolver.notifyChange(uri, null)
-        }
     }
 
     fun runAsync(
@@ -115,6 +96,9 @@ object CustomExt {
     fun <T> T?.ifNull(
         block: () -> T?
     ) = this ?: block()
+
+    val Context.application: Application
+        get() = this.applicationContext as Application
 
 //    fun closestDI(
 //        context: Context,

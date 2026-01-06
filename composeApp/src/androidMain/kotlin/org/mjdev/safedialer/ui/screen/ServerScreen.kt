@@ -57,7 +57,7 @@ fun ServerScreen(
 ) = AppTheme {
     val server: ManagementServer = rememberCallServer()
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(MockDataRepository(context))
+        MainViewModel(context, MockDataRepository(context))
     }
     var httpAddress by remember { mutableStateOf("") }
     AnimatedVisibility(

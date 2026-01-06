@@ -3,23 +3,25 @@ package org.mjdev.safedialer.sync.document
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
-import org.mjdev.safedialer.R
-import org.mjdev.safedialer.sync.contact.SyncWorkerContacts
 import org.mjdev.safedialer.webdav.WebDavClient
 
 class SyncServiceDocuments : Service() {
-    private var adapter: SyncWorkerDocuments? = null
     private val dirName = WebDavClient.DIR_DOCUMENTS
-    private val providerAuth: String by lazy {
-        getString(R.string.authority_documents)
-    }
 
     override fun onCreate() {
         super.onCreate()
-        adapter = SyncWorkerDocuments(this, dirName, providerAuth)
+        synchronized(SyncServiceDocuments::class.java) {
+            if (adapter == null) {
+                adapter = SyncWorkerDocuments(this, dirName)
+            }
+        }
     }
 
     override fun onBind(
         intent: Intent?
     ): IBinder? = adapter?.syncAdapterBinder
+
+    companion object {
+        private var adapter: SyncWorkerDocuments? = null
+    }
 }

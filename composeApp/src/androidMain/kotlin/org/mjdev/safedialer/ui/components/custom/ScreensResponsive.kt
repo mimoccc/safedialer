@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package org.mjdev.safedialer.ui.components
+package org.mjdev.safedialer.ui.components.custom
 
 
 import androidx.compose.animation.AnimatedVisibility

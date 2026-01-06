@@ -78,12 +78,13 @@ fun ContactDetail(
     showDate: Boolean = false,
     showDivider: Boolean = true,
     showBckImage: Boolean = false,
+    showShadows: Boolean = false,
     hazeState: HazeState = remember { HazeState() },
     useBlur: Boolean = true,
     mainBckColor: Color = MaterialTheme.colorScheme.background
 ) = AppTheme {
     val viewModel by rememberViewModelSafe { context ->
-        MainViewModel(MockDataRepository(context))
+        MainViewModel(context, MockDataRepository(context))
     }
     val context = LocalContext.current
 //    val secondaryColor = MaterialTheme.colorScheme.secondaryContainer
@@ -143,9 +144,11 @@ fun ContactDetail(
                         haze(hazeState)
                     },
                 imageLoader = imageLoader,
+                mainBckColor=mainBckColor,
                 contact = listItem,
                 shape = background,
                 showBckImage = showBckImage,
+                showShadows = showShadows,
 //                    shadingAlpha = backgroundAlpha,
 //                    colorExtracted = { color ->
 //                        secondaryBckColor = color ?: sBckColor

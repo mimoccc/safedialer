@@ -1,7 +1,7 @@
 package org.mjdev.safedialer.sync
 
-import android.app.NotificationManager
 import android.accounts.Account
+import android.app.NotificationManager
 import android.content.AbstractThreadedSyncAdapter
 import android.content.ContentProviderClient
 import android.content.ContentResolver.getSyncAutomatically
@@ -12,11 +12,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.net.toUri
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -43,61 +38,41 @@ abstract class SyncWorkerWebDav<T : Entity>(
     context: Context,
     // synced subfolder in root webdav folder
     val dirName: String,
-    val providerAuth: String,
-    val filesDir: File = provideFileBase(context),
+    val filesDir: File? = provideFileBase(context),
     autoInitialize: Boolean = true,
     allowParallelSyncs: Boolean = false
 ) : AbstractThreadedSyncAdapter(context, autoInitialize, allowParallelSyncs), DIAware {
     override val di by closestDI()
 
-    protected var isRunning = false
-
     protected val webDav: WebDavClient by instance()
     protected val notificationManager: NotificationManager by instance()
-
+    protected var authority: String? = null
     // base root webdav folder containing all the user data
     protected val baseRemoteFilesPath: String = "${webDav.baseUrl.trimEnd('/')}/$dirName"
-
     private val notificationId = dirName.hashCode()
-
     // standard path root of webdav custom folder
     protected val baseLocalFilesPath: Path by lazy {
-        Paths.get(
-            filesDir.absolutePath,
-            dirName
-        ).createIfNoExists()
+        Paths.get(filesDir?.absolutePath, dirName).createIfNoExists()
     }
-
     // Private subfolder in synced folder / user visible only
     protected val privateSyncDir: Path by lazy {
-        baseLocalFilesPath.resolve(
-            DIR_PRIVATE
-        ).createIfNoExists()
+        baseLocalFilesPath.resolve(DIR_PRIVATE).createIfNoExists()
     }
     // Company subfolder in synced folder / company visible
     protected val companySyncDir: Path by lazy {
-        baseLocalFilesPath.resolve(
-            DIR_COMPANY
-        ).createIfNoExists()
+        baseLocalFilesPath.resolve(DIR_COMPANY).createIfNoExists()
     }
     // Public subfolder in synced folder / public for everybody
     protected val publicSyncDir: Path by lazy {
-        baseLocalFilesPath.resolve(
-            DIR_PUBLIC
-        ).createIfNoExists()
+        baseLocalFilesPath.resolve(DIR_PUBLIC).createIfNoExists()
     }
-
     // Invoices only incoming subfolder / only user visible
     protected val incomingSyncDir: Path by lazy {
-        baseLocalFilesPath.resolve(
-            DIR_INCOMING
-        ).createIfNoExists()
+        baseLocalFilesPath.resolve(DIR_INCOMING).createIfNoExists()
     }
     // Invoices only outgoing subfolder / only user visible
     protected val outgoingSyncDir: Path by lazy {
-        baseLocalFilesPath.resolve(
-            DIR_OUTGOING
-        ).createIfNoExists()
+        baseLocalFilesPath.resolve(DIR_OUTGOING).createIfNoExists()
     }
 
     override fun onPerformSync(
@@ -107,36 +82,38 @@ abstract class SyncWorkerWebDav<T : Entity>(
         provider: ContentProviderClient?,
         syncResult: SyncResult?
     ) {
+        this.authority = authority
         val isEnabled = getSyncAutomatically(account, authority)
         if (!isEnabled) return
-        if (isRunning) return
-        isRunning = true
+        if (isRunning.contains(dirName)) return
+        isRunning.add(dirName)
+        Log.d(TAG, "Performing sync for $dirName")
+        showNotification()
         runCatching {
-            Log.d(TAG, "Performing sync for $dirName")
-            showNotification()
             prepareLocalFiles(syncResult)
+        }.onFailure { e -> e.printStackTrace() }
+        runCatching {
             prepareRemoteFiles(syncResult)
+        }.onFailure { e -> e.printStackTrace() }
+        runCatching {
             mergeChanges()
-            hideNotification()
-        }.onFailure { e ->
-            e.printStackTrace()
-        }
+        }.onFailure { e -> e.printStackTrace() }
+        hideNotification()
+        isRunning.remove(dirName)
     }
 
     private fun prepareRemoteFiles(
         syncResult: SyncResult?
-    ) = runCatching {
-        Log.d(this::class.simpleName, "Syncing: $dirName")
+    ) {
+        Log.d(TAG, "Syncing remote files for: $dirName")
         syncDirectory(
             localDirPath = baseLocalFilesPath,
             remoteDirPath = baseRemoteFilesPath,
             syncResult = syncResult
         )
-    }.onFailure { e ->
-        e.printStackTrace()
     }
 
-    private fun showNotification() = runCatching {
+    protected fun showNotification() = runCatching {
         NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle("Syncing $dirName")
             .setContentText("Sync in progress...")
@@ -147,11 +124,9 @@ abstract class SyncWorkerWebDav<T : Entity>(
                 notificationManager.cancel(notificationId)
                 notificationManager.notify(notificationId, notification)
             }
-    }.onFailure { e ->
-        e.printStackTrace()
-    }
+    }.onFailure { e -> e.printStackTrace() }
 
-    private fun updateNotification(
+    protected fun updateNotification(
         syncResult: SyncResult?
     ) = runCatching {
         val stats = syncResult?.stats
@@ -167,96 +142,101 @@ abstract class SyncWorkerWebDav<T : Entity>(
             .setOngoing(true)
             .build()
         notificationManager.notify(notificationId, notification)
-    }.onFailure { e ->
-        e.printStackTrace()
-    }
+    }.onFailure { e -> e.printStackTrace() }
 
-    private fun hideNotification() = runCatching {
+    protected fun hideNotification() = runCatching {
         notificationManager.cancel(notificationId)
-    }.onFailure { e ->
-        e.printStackTrace()
-    }
+    }.onFailure { e -> e.printStackTrace() }
 
-    private fun syncDirectory(
+    protected fun syncDirectory(
         localDirPath: Path,
         remoteDirPath: String,
         syncResult: SyncResult?
     ) {
-        runCatching {
-            if (!localDirPath.exists()) localDirPath.createDirectories()
-            val remoteDirStr = remoteDirPath.replace(webDav.baseUrl, "")
-            webDav.mkcol(remoteDirStr)
-            val localEntries = Files.list(localDirPath).collect(
-                Collectors.toList()
-            )
-            val remoteEntries = webDav.listExtended(remoteDirStr).filter { remoteFile ->
-                remoteFile.name != "." &&
-                        remoteFile.name != ".." &&
-                        remoteFile.name.trimEnd('/') != dirName
-            }
-            val processedRemoteNames = mutableSetOf<String>()
-            localEntries.forEach { localPath ->
-                val name = localPath.name
-                val remoteEntry = remoteEntries.find { it.name == name }
-                val remotePath = "${remoteDirPath.trimEnd('/')}/$name"
-                val remoteFileStr = remotePath.replace(webDav.baseUrl, "")
-                if (localPath.isDirectory()) {
-                    syncDirectory(localPath, remotePath, syncResult)
+        Log.d(TAG, "syncDirectory: local=$localDirPath, remote=$remoteDirPath")
+        if (!localDirPath.exists()) {
+            val created = localDirPath.createDirectories()
+            Log.d(TAG, "Created local directory: $localDirPath, success=$created")
+        }
+        val remoteDirStr = remoteDirPath.replace(webDav.baseUrl, "")
+        webDav.mkcol(remoteDirStr)
+        val localEntries = Files.list(localDirPath).collect(
+            Collectors.toList()
+        )
+        val remoteEntries = webDav.listExtended(remoteDirStr).filter { remoteFile ->
+            remoteFile.name != "." &&
+                    remoteFile.name != ".." &&
+                    remoteFile.name.trimEnd('/') != dirName
+        }
+        Log.d(
+            TAG,
+            "Found ${localEntries.size} local and ${remoteEntries.size} remote entries in $dirName"
+        )
+        val processedRemoteNames = mutableSetOf<String>()
+        localEntries.forEach { localPath ->
+            val name = localPath.name
+            val remoteEntry = remoteEntries.find { it.name == name }
+            val remotePath = "${remoteDirPath.trimEnd('/')}/$name"
+            val remoteFileStr = remotePath.replace(webDav.baseUrl, "")
+            if (localPath.isDirectory()) {
+                syncDirectory(localPath, remotePath, syncResult)
+            } else {
+                if (remoteEntry == null) {
+                    Log.d(TAG, "Conflict: MISSING_REMOTE for $name")
+                    val localData = localPath.readBytes()
+                    handleConflict(
+                        ConflictType.MISSING_REMOTE,
+                        localPath,
+                        remotePath,
+                        localData,
+                        ByteArray(0),
+                        syncResult
+                    )
                 } else {
-                    if (remoteEntry == null) {
-                        val localData = localPath.readBytes()
+                    val localData = localPath.readBytes()
+                    val remoteData = webDav.readFile(remoteFileStr)
+                    if (!localData.contentEquals(remoteData)) {
+                        Log.d(TAG, "Conflict: LOCAL_DIFFERENT_FROM_REMOTE for $name")
                         handleConflict(
-                            ConflictType.MISSING_REMOTE,
+                            ConflictType.LOCAL_DIFFERENT_FROM_REMOTE,
                             localPath,
                             remotePath,
                             localData,
-                            ByteArray(0),
-                            syncResult
-                        )
-                    } else {
-                        val localData = localPath.readBytes()
-                        val remoteData = webDav.readFile(remoteFileStr)
-                        if (!localData.contentEquals(remoteData)) {
-                            handleConflict(
-                                ConflictType.LOCAL_DIFFERENT_FROM_REMOTE,
-                                localPath,
-                                remotePath,
-                                localData,
-                                remoteData,
-                                syncResult
-                            )
-                        }
-                    }
-                }
-                processedRemoteNames.add(name)
-            }
-            remoteEntries.forEach { remoteEntry ->
-                if (remoteEntry.name !in processedRemoteNames) {
-                    val name = remoteEntry.name
-                    val localPath = localDirPath.resolve(name)
-                    val remotePath = "${remoteDirPath.trimEnd('/')}/$name"
-                    val remoteFileStr = remotePath.replace(webDav.baseUrl, "")
-                    if (remoteEntry.isCollection) {
-                        syncDirectory(localPath, remotePath, syncResult)
-                    } else {
-                        val remoteData = webDav.readFile(remoteFileStr)
-                        handleConflict(
-                            ConflictType.MISSING_LOCAL,
-                            localPath,
-                            remotePath,
-                            ByteArray(0),
                             remoteData,
                             syncResult
                         )
+                    } else {
+                        Log.d(TAG, "File $name is up to date.")
                     }
                 }
             }
-        }.onFailure { e ->
-            e.printStackTrace()
+            processedRemoteNames.add(name)
+        }
+        remoteEntries.forEach { remoteEntry ->
+            if (remoteEntry.name !in processedRemoteNames) {
+                val name = remoteEntry.name
+                val localPath = localDirPath.resolve(name)
+                val remotePath = "${remoteDirPath.trimEnd('/')}/$name"
+                val remoteFileStr = remotePath.replace(webDav.baseUrl, "")
+                if (remoteEntry.isCollection) {
+                    syncDirectory(localPath, remotePath, syncResult)
+                } else {
+                    Log.d(TAG, "Conflict: MISSING_LOCAL for $name")
+                    val remoteData = webDav.readFile(remoteFileStr)
+                    handleConflict(
+                        ConflictType.MISSING_LOCAL,
+                        localPath,
+                        remotePath,
+                        ByteArray(0),
+                        remoteData,
+                        syncResult
+                    )
+                }
+            }
         }
     }
 
-    private fun handleConflict(
+    open fun handleConflict(
         type: ConflictType,
         pathLocal: Path,
         pathRemote: String,
@@ -264,39 +244,44 @@ abstract class SyncWorkerWebDav<T : Entity>(
         remoteData: ByteArray,
         syncResult: SyncResult?
     ) {
-        runCatching {
-            val solution = mergeConflict(type, pathLocal, pathRemote, localData, remoteData)
-            val remoteFileStr = pathRemote.replace(webDav.baseUrl, "")
-            when (solution) {
-                ConflictSolution.UPLOAD_LOCAL, ConflictSolution.UPDATE_REMOTE -> {
-                    webDav.putFile(remoteFileStr, localData, "application/octet-stream")
-                    syncResult?.stats?.numInserts = (syncResult.stats?.numInserts ?: 0) + 1
-                }
-
-                ConflictSolution.DOWNLOAD_REMOTE, ConflictSolution.UPDATE_LOCAL -> {
-                    pathLocal.writeBytes(remoteData)
-                    syncResult?.stats?.numUpdates = (syncResult.stats?.numUpdates ?: 0) + 1
-                }
-
-                ConflictSolution.DELETE_LOCAL -> {
-                    pathLocal.deleteIfExists()
-                    syncResult?.stats?.numDeletes = (syncResult.stats?.numDeletes ?: 0) + 1
-                }
-
-                ConflictSolution.DELETE_REMOTE -> {
-                    webDav.delete(remoteFileStr)
-                    syncResult?.stats?.numDeletes = (syncResult.stats?.numDeletes ?: 0) + 1
-                }
-
-                ConflictSolution.IGNORE -> {
-                    syncResult?.stats?.numSkippedEntries =
-                        (syncResult.stats?.numSkippedEntries ?: 0) + 1
-                }
+        val solution = mergeConflict(type, pathLocal, pathRemote, localData, remoteData)
+        Log.d(TAG, "handleConflict: type=$type, path=$pathLocal, solution=$solution")
+        val remoteFileStr = pathRemote.replace(webDav.baseUrl, "")
+        when (solution) {
+            ConflictSolution.UPLOAD_LOCAL, ConflictSolution.UPDATE_REMOTE -> {
+                Log.d(TAG, "Uploading local file to remote: $pathRemote")
+                webDav.putFile(remoteFileStr, localData, "application/octet-stream")
+                syncResult?.stats?.numInserts = (syncResult.stats?.numInserts ?: 0) + 1
             }
-            updateNotification(syncResult)
-        }.onFailure { e ->
-            e.printStackTrace()
+
+            ConflictSolution.DOWNLOAD_REMOTE, ConflictSolution.UPDATE_LOCAL -> {
+                Log.d(
+                    TAG,
+                    "Downloading remote file to local: $pathLocal (size=${remoteData.size})"
+                )
+                pathLocal.writeBytes(remoteData)
+                syncResult?.stats?.numUpdates = (syncResult.stats?.numUpdates ?: 0) + 1
+            }
+
+            ConflictSolution.DELETE_LOCAL -> {
+                Log.d(TAG, "Deleting local file: $pathLocal")
+                pathLocal.deleteIfExists()
+                syncResult?.stats?.numDeletes = (syncResult.stats?.numDeletes ?: 0) + 1
+            }
+
+            ConflictSolution.DELETE_REMOTE -> {
+                Log.d(TAG, "Deleting remote file: $pathRemote")
+                webDav.delete(remoteFileStr)
+                syncResult?.stats?.numDeletes = (syncResult.stats?.numDeletes ?: 0) + 1
+            }
+
+            ConflictSolution.IGNORE -> {
+                Log.d(TAG, "Ignoring conflict for: $pathLocal")
+                syncResult?.stats?.numSkippedEntries =
+                    (syncResult.stats?.numSkippedEntries ?: 0) + 1
+            }
         }
+        updateNotification(syncResult)
     }
 
     abstract fun prepareLocalFiles(syncResult: SyncResult?)
@@ -308,8 +293,8 @@ abstract class SyncWorkerWebDav<T : Entity>(
         pathRemote: String,
         localData: ByteArray,
         remoteData: ByteArray
-    ): ConflictSolution = runCatching {
-        when (conflict) {
+    ): ConflictSolution {
+        return when (conflict) {
             ConflictType.MISSING_REMOTE -> {
                 if (localData.isEmpty() || isDeleted(pathLocal)) ConflictSolution.IGNORE
                 else ConflictSolution.UPLOAD_LOCAL
@@ -348,9 +333,6 @@ abstract class SyncWorkerWebDav<T : Entity>(
                 }
             }
         }
-    }.getOrElse { e ->
-        Log.e(TAG, "Error in mergeConflict, using safe fallback", e)
-        ConflictSolution.IGNORE
     }
 
     fun delete(path: Path) {
@@ -362,22 +344,28 @@ abstract class SyncWorkerWebDav<T : Entity>(
         return false
     }
 
-    fun submitOnChangeEvent(
-        id: Long? = null,
-    ) = CoroutineScope(Dispatchers.Default).launch {
-        val uriPath = if (id != null) "content://$providerAuth/$id"
-        else "content://$providerAuth"
-        val uri = uriPath.toUri()
-        withContext(Dispatchers.Main) {
-            context!!.contentResolver.notifyChange(uri, null)
-        }
-    }
+//    fun submitOnChangeEvent(
+//        id: Long? = null,
+//        authority: String? = null
+//    ) {
+//        val providerAuth = authority ?: this.authority
+//        if (providerAuth == null) throw (RuntimeException("Missing authority."))
+//        else CoroutineScope(Dispatchers.Main).launch {
+//            val uriPath = if (id != null) "content://$providerAuth/$id"
+//            else "content://$providerAuth"
+//            val uri = uriPath.toUri()
+//            Log.d(TAG, "Submitting change of $dirName : $id")
+//            context?.contentResolver?.notifyChange(uri, null)
+//        }
+//    }
 
     enum class ConflictType {
         // remote file is missing
         MISSING_REMOTE,
+
         // local file is missing
         MISSING_LOCAL,
+
         // local or remote file different
         LOCAL_DIFFERENT_FROM_REMOTE,
     }
@@ -386,16 +374,22 @@ abstract class SyncWorkerWebDav<T : Entity>(
     enum class ConflictSolution {
         // ignore, no op
         IGNORE,
+
         // upload local to remote
         UPLOAD_LOCAL,
+
         // download remote to local
         DOWNLOAD_REMOTE,
+
         // delete local
         DELETE_LOCAL,
+
         // delete remote
         DELETE_REMOTE,
+
         // update local file, replace with remote
         UPDATE_LOCAL,
+
         // update remote file, replace with local
         UPDATE_REMOTE
     }
@@ -403,38 +397,50 @@ abstract class SyncWorkerWebDav<T : Entity>(
     companion object {
         private val TAG = this::class.simpleName
 
+        protected var isRunning = mutableListOf<String>()
+
         // public subdirectory
         private const val DIR_PUBLIC = "Public"
+
         // private subdirectory
-        private const val DIR_PRIVATE = "Private"
+        const val DIR_PRIVATE = "Private"
+
         // company visible directory
         private const val DIR_COMPANY = "Company"
 
         // subdir only for invoices
         private const val DIR_INCOMING = "Incoming"
+
         // subdir only for invoices
         private const val DIR_OUTGOING = "Outgoing"
 
-        private fun String.toHumanReadable(): String = this.replace(".", "")
+        private fun String.toHumanReadable(): String = replace(".", "")
             .replace("/", " ")
             .replace("\\", " ")
 
-        fun provideFileBase(context: Context): File {
+        fun provideFileBase(
+            context: Context?
+        ): File? {
             val appName = BuildConfig.APP_NAME
             val externalDir = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 if (Environment.isExternalStorageManager()) {
+                    Log.d(TAG, "External storage manager enabled, using external storage directory")
                     File(Environment.getExternalStorageDirectory(), appName)
                 } else {
-                    context.getExternalFilesDir(null)?.resolve(appName)
+                    Log.d(TAG, "External storage manager NOT enabled, using getExternalFilesDir")
+                    context?.getExternalFilesDir(null)?.resolve(appName)
                 }
             } else {
+                Log.d(TAG, "Android < R, using external storage directory")
                 File(Environment.getExternalStorageDirectory(), appName)
             }
-            val baseDir = externalDir ?: context.filesDir.resolve(appName)
-            return baseDir.apply {
+            val baseDir = externalDir ?: context?.filesDir?.resolve(appName)
+            return baseDir?.apply {
                 if (!exists()) {
                     val created = mkdirs()
                     Log.d(TAG, "Creating base directory: $absolutePath, success: $created")
+                } else {
+                    Log.d(TAG, "Base directory already exists: $absolutePath")
                 }
             }
         }
