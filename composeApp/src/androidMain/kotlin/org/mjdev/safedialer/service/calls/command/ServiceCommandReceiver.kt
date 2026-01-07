@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.service.command
+package org.mjdev.safedialer.service.calls.command
 
 import android.content.BroadcastReceiver
 import android.content.Context

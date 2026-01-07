@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.service
+package org.mjdev.safedialer.service.calls
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -12,26 +12,23 @@ import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.provider.Settings
-import android.telephony.TelephonyManager.EXTRA_INCOMING_NUMBER
+import android.telephony.TelephonyManager
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.service.calls.CallListener
-import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
-import org.mjdev.safedialer.service.command.CommandReceiver
-import org.mjdev.safedialer.service.command.ServiceCommand
-import org.mjdev.safedialer.service.command.ServiceCommandReceiver
+import org.mjdev.safedialer.extensions.DiExt.closestDI
+import org.mjdev.safedialer.service.calls.command.CommandReceiver
+import org.mjdev.safedialer.service.calls.command.ServiceCommand
+import org.mjdev.safedialer.service.calls.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
 import org.mjdev.safedialer.sync.SyncManager
 import org.mjdev.safedialer.ui.components.call.CallDialog
 import org.mjdev.safedialer.window.ComposeFloatingWindow
-import org.mjdev.safedialer.window.ComposeFloatingWindow.Companion.fullScreenLayoutParams
 
 @Suppress("DEPRECATION", "unused")
 class IncomingCallService :
@@ -133,7 +130,7 @@ class IncomingCallService :
         context: Context = applicationContext,
     ) = ComposeFloatingWindow(
         context = context,
-        windowParams = fullScreenLayoutParams(context),
+        windowParams = ComposeFloatingWindow.fullScreenLayoutParams(context),
     ) {
         setContent {
             CallDialog(
@@ -170,7 +167,7 @@ class IncomingCallService :
     ) {
         when (command) {
             ServiceCommand.ShowAlert -> {
-                data?.getString(EXTRA_INCOMING_NUMBER).also { phoneNumber ->
+                data?.getString(TelephonyManager.EXTRA_INCOMING_NUMBER).also { phoneNumber ->
                     showAlert(baseContext, phoneNumber)
                 }
             }
@@ -237,7 +234,7 @@ class IncomingCallService :
             context,
             ServiceCommand.ShowAlert,
             Bundle().apply {
-                putString(EXTRA_INCOMING_NUMBER, phoneNumber)
+                putString(TelephonyManager.EXTRA_INCOMING_NUMBER, phoneNumber)
             },
         )
 

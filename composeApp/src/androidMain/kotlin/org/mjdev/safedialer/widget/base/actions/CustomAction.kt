@@ -1,25 +1,34 @@
-package org.mjdev.safedialer.widget.media.actions
+package org.mjdev.safedialer.widget.base.actions
 
 import android.content.Context
-import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.MutablePreferences
 import androidx.glance.GlanceId
 import androidx.glance.action.ActionParameters
 import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.appwidget.state.updateAppWidgetState
 import org.mjdev.safedialer.widget.media.MediaPlayer
-import org.mjdev.safedialer.widget.media.helpers.Constants.CURRENT_TRACK
 
-class PreviousAction : ActionCallback {
+class CustomAction(
+    val onCustomAction: CustomAction.(
+        context: Context,
+        glanceId: GlanceId,
+        prefs: MutablePreferences,
+        parameters: ActionParameters,
+    ) -> Unit = { c, i, ps, pr -> }
+) : ActionCallback {
     override suspend fun onAction(
         context: Context,
         glanceId: GlanceId,
         parameters: ActionParameters
     ) {
         updateAppWidgetState(context, glanceId) { prefs ->
-            val currentTrack = prefs[intPreferencesKey(CURRENT_TRACK)] ?: 0
-            if (currentTrack > 0) {
-                prefs[intPreferencesKey(CURRENT_TRACK)] = currentTrack - 1
-            }
+            onCustomAction.invoke(
+                this,
+                context,
+                glanceId,
+                prefs,
+                parameters
+            )
         }
         MediaPlayer().update(context, glanceId)
     }

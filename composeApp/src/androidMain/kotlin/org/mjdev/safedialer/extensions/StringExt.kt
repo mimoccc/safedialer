@@ -1,9 +1,11 @@
 package org.mjdev.safedialer.extensions
 
+import org.jsoup.Jsoup
 import java.net.URI
 
 @Suppress("unused")
 object StringExt {
+
     fun String?.isNotNBlank(): Boolean =
         this?.isNotBlank() ?: false
 
@@ -16,4 +18,8 @@ object StringExt {
 
     fun String.extractEmail(): String? =
         Regex("[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}").find(this)?.value
+
+    fun String.htmlToText(): String =
+        Jsoup.parse(this).text()
+
 }

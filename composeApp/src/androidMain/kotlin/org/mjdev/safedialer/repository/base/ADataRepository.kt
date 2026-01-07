@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import org.kodein.di.DI
 import org.kodein.di.DIAware
 import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
+import org.mjdev.safedialer.extensions.DiExt.closestDI
 import org.mjdev.safedialer.providers.core.AbstractProvider
 import org.mjdev.safedialer.providers.core.Entity
 import org.mjdev.safedialer.repository.base.EntityContentObserver.Companion.entityContentObserver

@@ -14,7 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ViewModelExt.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.list.MappedList

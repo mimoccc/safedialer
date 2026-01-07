@@ -25,8 +25,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import org.mjdev.safedialer.data.custom.DisplayInfo
 import org.mjdev.safedialer.data.custom.DisplayInfo.Companion.rememberDisplayInfo
-import org.mjdev.safedialer.extensions.ComposeExt.applyIf
 import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
+import org.mjdev.safedialer.extensions.ModifierExt.applyIf
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.theme.AppTheme
 

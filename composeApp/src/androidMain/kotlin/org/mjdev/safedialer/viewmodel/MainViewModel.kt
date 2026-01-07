@@ -7,8 +7,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.kodein.di.DIAware
 import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.extensions.CustomExt.application
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
+import org.mjdev.safedialer.extensions.ContextExt.application
+import org.mjdev.safedialer.extensions.DiExt.closestDI
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import org.mjdev.safedialer.repository.base.IDataRepository
 

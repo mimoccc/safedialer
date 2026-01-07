@@ -1,8 +1,11 @@
 package org.mjdev.safedialer.extensions
 
+import androidx.annotation.ColorInt
+import androidx.annotation.ColorLong
 import androidx.annotation.FloatRange
 import androidx.compose.ui.graphics.Color
 
+@Suppress("unused")
 object ColorExt {
 
     fun Color.lighter(
@@ -33,6 +36,24 @@ object ColorExt {
         val ng = g * (1f - k)
         val nb = b * (1f - k)
         return Color(nr, ng, nb, a)
+    }
+
+    @ColorLong
+    fun Color.toColorLong(): Long {
+        return if ((value and 0x3FUL) < 16UL) {
+            value
+        } else {
+            (value and 0x3FUL.inv()) or ((value and 0x3FUL) - 1UL)
+        }.toLong()
+    }
+
+    @ColorInt
+    fun Color.toColorInt(): Int {
+        return if ((value and 0x3FUL) < 16UL) {
+            value
+        } else {
+            (value and 0x3FUL.inv()) or ((value and 0x3FUL) - 1UL)
+        }.toInt()
     }
 
 }

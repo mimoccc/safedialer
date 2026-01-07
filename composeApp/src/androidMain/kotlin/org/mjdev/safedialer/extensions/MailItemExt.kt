@@ -8,6 +8,7 @@ import jakarta.mail.internet.InternetAddress
 import jakarta.mail.internet.MimeMessage
 import jakarta.mail.internet.MimeMultipart
 import jakarta.mail.util.ByteArrayDataSource
+import org.mjdev.safedialer.extensions.StringExt.htmlToText
 import org.mjdev.safedialer.providers.custom.email.MailItem
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -49,13 +50,13 @@ object MailItemExt {
         )
     }
 
-    private fun addressesToList(
+    fun addressesToList(
         addresses: Array<jakarta.mail.Address>?
     ): List<String> = addresses?.mapNotNull { addr ->
         (addr as? InternetAddress)?.address
     } ?: emptyList()
 
-    private fun extractText(
+    fun extractText(
         part: Part
     ): String {
         return try {
@@ -120,7 +121,7 @@ object MailItemExt {
         }
     }
 
-    private fun processMultipart(
+    fun processMultipart(
         mp: Multipart
     ): String {
         val ct = (mp as? MimeMultipart)?.contentType ?: runCatching {
@@ -147,24 +148,27 @@ object MailItemExt {
         return textPlain ?: textHtml ?: ""
     }
 
-    private fun contentToString(
+    fun contentToString(
         content: Any?,
         contentType: String?,
         isHtml: Boolean
     ): String = when (content) {
-        is String -> if (isHtml) htmlToText(content) else content
+        is String -> if (isHtml) content.htmlToText() else content
+
         is InputStream -> {
             val txt = readToString(content, parseCharset(contentType))
-            if (isHtml) htmlToText(txt) else txt
+            if (isHtml) txt.htmlToText() else txt
         }
 
         else -> content?.toString() ?: ""
     }
 
-    private fun String?.isAttachmentDisposition(): Boolean =
+    fun String?.isAttachmentDisposition(): Boolean =
         this?.equals(Part.ATTACHMENT, ignoreCase = true) == true
 
-    private fun parseCharset(contentType: String?): Charset {
+    fun parseCharset(
+        contentType: String?
+    ): Charset {
         if (contentType.isNullOrBlank()) return StandardCharsets.UTF_8
         val regex = Regex("charset=([^;]+)", RegexOption.IGNORE_CASE)
         val match = regex.find(contentType)
@@ -176,25 +180,11 @@ object MailItemExt {
         }
     }
 
-    private fun readToString(
+    fun readToString(
         input: InputStream,
         charset: Charset
     ): String = input.bufferedReader(charset).use {
         it.readText()
-    }
-
-    private fun htmlToText(
-        html: String
-    ): String {
-        // very simple HTML tag stripper; avoid bringing dependencies here
-        return html
-            .replace(Regex("<br ?/?>", RegexOption.IGNORE_CASE), "\n")
-            .replace(Regex("</p>", RegexOption.IGNORE_CASE), "\n\n")
-            .replace(Regex("<[^>]+>"), "")
-            .replace("&nbsp;", " ")
-            .replace("&amp;", "&")
-            .replace("&lt;", "<")
-            .replace("&gt;", ">")
     }
 
 }

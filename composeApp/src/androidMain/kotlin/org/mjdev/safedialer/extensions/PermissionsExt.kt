@@ -101,6 +101,7 @@ object PermissionsExt {
                 }
             },
         )
+        // todo repeat in cycle
         LaunchedEffect(
             permissionsState,
             permissionsState.allPermissionsGranted,
@@ -158,4 +159,5 @@ object PermissionsExt {
         val shouldShowRationale: Boolean
         fun launchPermissionRequest()
     }
+
 }

@@ -8,10 +8,10 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.data.list.ListItem
 import org.mjdev.safedialer.di.mainDI
+import org.mjdev.safedialer.extensions.DiExt.closestDI
 
 @Suppress("unused")
 class PhoneLookup(

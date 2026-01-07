@@ -36,7 +36,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ViewModelExt.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.server.ManagementServer

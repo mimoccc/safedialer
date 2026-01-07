@@ -273,11 +273,20 @@
 -dontwarn ch.qos.logback.classic.servlet.**
 -dontwarn freemarker.log._Log4jLoggerFactory$Log4jLogger
 -dontwarn freemarker.ext.jsp.FreeMarkerJspFactory21
-
 -keep class * { *; }
 -keep class org.mjdev.safedialer.providers.** { *; }
-
 -keepclassmembers enum org.mjdev.safedialer.providers.** {
     public static <fields>;
     public static <methods>;
 }
+-keep class org.kodein.di.compose.** { *; }
+-keep class org.kodein.di.** { *; }
+-keepclassmembers class * {
+    @org.kodein.di.* *;
+}
+-keepattributes *Annotation*
+-keep class org.kodein.di.compose.RetrievingKt** { *; }
+-keep class org.kodein.di.LazyDelegate { *; }
+-keep class org.kodein.di.DI { *; }
+-keep class javax.mail.* { *; }
+-keep class javax.servlet.jsp.* { *; }

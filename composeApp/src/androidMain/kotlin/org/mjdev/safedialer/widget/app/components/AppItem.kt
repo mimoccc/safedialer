@@ -20,8 +20,8 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import org.mjdev.safedialer.widget.base.GlanceComposeExt.ActionEmpty
-import org.mjdev.safedialer.widget.base.GlancePreviews
+import org.mjdev.safedialer.widget.base.extensions.GlanceComposeExt.ActionEmpty
+import org.mjdev.safedialer.widget.base.previews.GlancePreviews
 
 @OptIn(ExperimentalGlancePreviewApi::class)
 @SuppressLint("RestrictedApi")

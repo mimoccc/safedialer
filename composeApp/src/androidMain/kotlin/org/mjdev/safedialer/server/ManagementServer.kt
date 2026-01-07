@@ -41,9 +41,9 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.kodein.di.DI
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.di.mainDI
+import org.mjdev.safedialer.extensions.DiExt.closestDI
 import org.slf4j.event.Level
 import java.net.Inet4Address
 import kotlin.time.Duration.Companion.seconds
@@ -220,11 +220,15 @@ class ManagementServer(
     }
 
     companion object {
+
         @Composable
-        fun rememberCallServer(
-            context: Context = LocalContext.current
-        ): ManagementServer = remember {
-            ManagementServer(context)
+        fun rememberCallServer(): ManagementServer {
+            val  context: Context = LocalContext.current
+            return remember {
+                ManagementServer(context)
+            }
         }
+
     }
+
 }

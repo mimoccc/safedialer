@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.widget.base
+package org.mjdev.safedialer.widget.base.previews
 
 import android.widget.RemoteViews
 import androidx.annotation.LayoutRes
@@ -12,7 +12,7 @@ import com.google.android.glance.appwidget.host.AppWidgetHostPreview
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.widget.app.AppWidget
-import org.mjdev.safedialer.widget.base.GlanceComposeExt.rememberPreviewSize
+import org.mjdev.safedialer.widget.base.extensions.GlanceComposeExt.rememberPreviewSize
 
 @Previews
 @Composable

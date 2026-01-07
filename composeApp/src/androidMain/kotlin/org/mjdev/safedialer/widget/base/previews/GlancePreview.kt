@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.widget.base
+package org.mjdev.safedialer.widget.base.previews
 
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.preview.Preview

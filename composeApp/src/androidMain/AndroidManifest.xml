@@ -22,6 +22,7 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
@@ -39,6 +40,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_CALENDAR" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
     <uses-permission
             android:name="android.permission.READ_CALL_LOG"
             tools:ignore="SmsAndCallLogPolicy" />
@@ -114,14 +116,14 @@
         </receiver>
 
         <receiver
-            android:name=".widget.media.MediaPlayerWidgetReceiver"
-            android:exported="true">
+                android:name=".widget.media.MediaPlayerWidgetReceiver"
+                android:exported="true">
             <intent-filter>
-            <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-        </intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
             <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/media_player_widget" />
+                    android:name="android.appwidget.provider"
+                    android:resource="@xml/media_player_widget" />
         </receiver>
 
         <receiver
@@ -144,7 +146,15 @@
 
         <service
                 android:largeHeap="true"
-                android:name="org.mjdev.safedialer.service.IncomingCallService"
+                android:name=".service.media.MediaService"
+                android:enabled="true"
+                android:exported="false"
+                android:foregroundServiceType="mediaPlayback" />
+
+        <service
+                android:largeHeap="true"
+                android:enabled="true"
+                android:name="org.mjdev.safedialer.service.calls.IncomingCallService"
                 android:exported="false"
                 android:foregroundServiceType="phoneCall" />
 

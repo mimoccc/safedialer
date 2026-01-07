@@ -26,8 +26,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import org.mjdev.safedialer.extensions.ComposeExt.rememberAssetImage
 import org.mjdev.safedialer.extensions.CustomExt.isPreview
-import org.mjdev.safedialer.extensions.CustomExt.rememberAssetImage
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.theme.AppTheme
 

@@ -19,10 +19,10 @@ import coil3.ImageLoader
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.haze
 import org.mjdev.safedialer.data.mapper.ContactMapper.Companion.asListItem
-import org.mjdev.safedialer.extensions.ComposeExt.applyIf
 import org.mjdev.safedialer.extensions.ComposeExt.collectAsState
 import org.mjdev.safedialer.extensions.ComposeExt.rememberImageLoader
-import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ViewModelExt.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.ModifierExt.applyIf
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.ui.components.contact.ContactBackground

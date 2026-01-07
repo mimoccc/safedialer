@@ -27,9 +27,9 @@ import coil3.request.ImageRequest
 import coil3.request.allowHardware
 import coil3.toBitmap
 import org.mjdev.safedialer.data.list.ListItem
+import org.mjdev.safedialer.extensions.ComposeExt.rememberAssetImage
 import org.mjdev.safedialer.extensions.ComposeExt.rememberImageLoader
 import org.mjdev.safedialer.extensions.CustomExt.isPreview
-import org.mjdev.safedialer.extensions.CustomExt.rememberAssetImage
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.ui.components.image.ImageCard
 

@@ -14,7 +14,7 @@ import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import org.mjdev.safedialer.widget.app.helpers.Constants.allItems
-import org.mjdev.safedialer.widget.base.GlancePreviews
+import org.mjdev.safedialer.widget.base.previews.GlancePreviews
 
 @OptIn(ExperimentalGlancePreviewApi::class)
 @GlancePreviews

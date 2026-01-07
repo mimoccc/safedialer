@@ -6,12 +6,7 @@ import androidx.glance.GlanceId
 
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.provideContent
-import org.kodein.di.DI
-import org.kodein.di.DIAware
-import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.mjdev.safedialer.widget.app.components.AppWidgetContent
-import kotlin.getValue
 
 class AppWidget() : GlanceAppWidget() {
     override suspend fun provideGlance(

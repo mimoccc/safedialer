@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 
 object DateExt {
+
     @SuppressLint("SimpleDateFormat")
     fun Long?.formatDate(
         format: String = "dd.MM.yyyy",
@@ -15,4 +16,5 @@ object DateExt {
             sdf.format(Date(this@formatDate ?: 0L))
         }
     }.getOrNull() ?: errorValue
+
 }

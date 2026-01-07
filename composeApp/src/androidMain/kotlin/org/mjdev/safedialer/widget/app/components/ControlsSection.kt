@@ -13,7 +13,7 @@ import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.width
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import org.mjdev.safedialer.widget.app.actions.AppWidgetActions
-import org.mjdev.safedialer.widget.base.GlancePreviews
+import org.mjdev.safedialer.widget.base.previews.GlancePreviews
 import org.mjdev.safedialer.widget.base.components.ControlButton
 
 @OptIn(ExperimentalGlancePreviewApi::class)

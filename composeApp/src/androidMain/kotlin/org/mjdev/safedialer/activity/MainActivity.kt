@@ -17,18 +17,19 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.nabinbhandari.android.permissions.PermissionHandler
 import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DIAware
-import org.mjdev.safedialer.extensions.CustomExt.closestDI
 import org.kodein.di.compose.withDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
-import org.mjdev.safedialer.extensions.ComposeExt.enableEdgeToEdge
-import org.mjdev.safedialer.extensions.CustomExt.stringResource
+import org.mjdev.safedialer.extensions.ActivityExt.enableEdgeToEdge
+import org.mjdev.safedialer.extensions.ActivityExt.stringResource
+import org.mjdev.safedialer.extensions.DiExt.closestDI
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.helpers.Previews
-import org.mjdev.safedialer.service.IncomingCallService
-import org.mjdev.safedialer.service.IncomingCallService.Companion.showAlert
+import org.mjdev.safedialer.service.calls.IncomingCallService
+import org.mjdev.safedialer.service.calls.IncomingCallService.Companion.showAlert
+import org.mjdev.safedialer.service.media.MediaService
 import org.mjdev.safedialer.sync.SyncManager
 import org.mjdev.safedialer.ui.screen.MainScreen
 import org.mjdev.safedialer.ui.screen.PermissionsScreen
@@ -70,6 +71,8 @@ class MainActivity : ComponentActivity(), DIAware {
         }
         checkPermissions()
         checkFullFileAccessPermission()
+        MediaService.start(this)
+        IncomingCallService.start(this)
         SyncManager.ensureAccount(this)
     }
 

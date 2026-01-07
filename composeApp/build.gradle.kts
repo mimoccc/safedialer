@@ -121,6 +121,10 @@ kotlin {
             implementation("com.google.android.glance.tools:appwidget-host:0.2.2")
             implementation("com.google.android.glance.tools:appwidget-preview:0.1.2")
             implementation("com.google.android.glance.tools:appwidget-viewer:0.2.2")
+
+            implementation("androidx.media3:media3-exoplayer:1.2.0")
+            implementation("androidx.media3:media3-ui:1.2.0")
+            implementation("org.jsoup:jsoup:1.22.1")
         }
         commonMain.dependencies {
             implementation(compose.runtime)

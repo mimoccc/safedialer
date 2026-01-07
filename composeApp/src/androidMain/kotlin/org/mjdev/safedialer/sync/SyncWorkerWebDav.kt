@@ -16,9 +16,9 @@ import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.BuildConfig
-import org.mjdev.safedialer.extensions.CustomExt.createIfNoExists
+import org.mjdev.safedialer.extensions.PathExt.createIfNoExists
 import org.mjdev.safedialer.providers.core.Entity
-import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
+import org.mjdev.safedialer.service.calls.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.webdav.WebDavClient
 import java.io.File
 import java.nio.file.Files

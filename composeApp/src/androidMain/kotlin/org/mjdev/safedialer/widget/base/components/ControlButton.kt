@@ -18,9 +18,9 @@ import androidx.glance.action.clickable
 import androidx.glance.layout.size
 import androidx.glance.preview.ExperimentalGlancePreviewApi
 import androidx.glance.unit.ColorProvider
-import org.mjdev.safedialer.widget.base.GlanceComposeExt.ActionEmpty
-import org.mjdev.safedialer.widget.base.GlanceComposeExt.rememberVectorImageProvider
-import org.mjdev.safedialer.widget.base.GlancePreviews
+import org.mjdev.safedialer.widget.base.extensions.GlanceComposeExt.ActionEmpty
+import org.mjdev.safedialer.widget.base.previews.GlancePreviews
+import org.mjdev.safedialer.widget.base.vector.ImageVectorProvider.rememberVectorImageProvider
 
 @GlancePreviews
 @OptIn(ExperimentalGlancePreviewApi::class)

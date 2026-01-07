@@ -22,10 +22,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import org.mjdev.safedialer.extensions.ComposeExt.canScroll
 import org.mjdev.safedialer.extensions.ComposeExt.isLandscape
-import org.mjdev.safedialer.extensions.ComposeExt.rememberViewModelSafe
+import org.mjdev.safedialer.extensions.CustomExt.canScroll
+import org.mjdev.safedialer.extensions.ViewModelExt.rememberViewModelSafe
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.repository.MockDataRepository
 import org.mjdev.safedialer.sync.SyncAccountTypes

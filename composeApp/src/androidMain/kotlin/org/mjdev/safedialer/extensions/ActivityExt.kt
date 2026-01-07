@@ -5,8 +5,14 @@ import android.app.KeyguardManager
 import android.content.Context
 import android.os.Build
 import android.view.WindowManager
+import androidx.activity.ComponentActivity
+import androidx.activity.SystemBarStyle
+import androidx.activity.enableEdgeToEdge
+import androidx.annotation.StringRes
+import androidx.compose.ui.graphics.Color
+import org.mjdev.safedialer.extensions.ColorExt.toColorInt
 
-@Suppress("DEPRECATION")
+@Suppress("DEPRECATION", "unused")
 object ActivityExt {
 
     fun Activity.addLockScreenFlags() {
@@ -40,5 +46,19 @@ object ActivityExt {
     fun isOreoPlus(): Boolean {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     }
+
+    fun Activity.stringResource(
+        @StringRes id: Int
+    ) :  Lazy<String> = lazy{
+        baseContext.resources.getString(id)
+    }
+
+    fun ComponentActivity.enableEdgeToEdge(
+        statusBarColor: Color = Color.DarkGray,
+        navigationBarColor: Color = Color.DarkGray,
+    ) = enableEdgeToEdge(
+        statusBarStyle = SystemBarStyle.dark(statusBarColor.toColorInt()),
+        navigationBarStyle = SystemBarStyle.dark(navigationBarColor.toColorInt())
+    )
 
 }

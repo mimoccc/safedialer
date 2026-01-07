@@ -7,7 +7,8 @@ import org.kodein.di.DIAware
 import org.kodein.di.LazyDI
 import org.kodein.di.instance
 import org.mjdev.safedialer.di.mainDI
-import org.mjdev.safedialer.service.IncomingCallService
+import org.mjdev.safedialer.service.calls.IncomingCallService
+import org.mjdev.safedialer.service.media.MediaService
 
 class MainApp : Application(), DIAware {
     override val di: LazyDI by mainDI(this@MainApp)
@@ -20,5 +21,6 @@ class MainApp : Application(), DIAware {
         super.onCreate()
         // todo check if from boot & permissions granted & permission activity
         IncomingCallService.start(this)
+        MediaService.start(this)
     }
 }

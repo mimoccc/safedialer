@@ -46,9 +46,9 @@ import org.mjdev.safedialer.helpers.VCFHelper.toImageBitmap
 import org.mjdev.safedialer.repository.DataRepository
 import org.mjdev.safedialer.repository.base.IDataRepository
 import org.mjdev.safedialer.repository.MockDataRepository
-import org.mjdev.safedialer.service.IncomingCallService.Companion.CHANNEL_ID
+import org.mjdev.safedialer.service.calls.IncomingCallService.Companion.CHANNEL_ID
 import org.mjdev.safedialer.service.calls.IncomingCallBroadcastReceiver
-import org.mjdev.safedialer.service.command.ServiceCommandReceiver
+import org.mjdev.safedialer.service.calls.command.ServiceCommandReceiver
 import org.mjdev.safedialer.service.external.PhoneLookup
 import org.mjdev.safedialer.webdav.WebDavClient
 import java.io.File

@@ -1,18 +1,13 @@
-package org.mjdev.safedialer.widget.base
+package org.mjdev.safedialer.widget.base.extensions
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.Canvas
+
 import android.graphics.drawable.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.Dp
+
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.createBitmap
@@ -30,8 +25,8 @@ import androidx.glance.appwidget.action.ActionCallback
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.height
 import androidx.glance.layout.width
-import kotlinx.coroutines.flow.flow
-import org.mjdev.safedialer.extensions.CustomExt.isInPreviewMode
+import org.mjdev.safedialer.extensions.CustomExt
+
 
 @Suppress("unused")
 object GlanceComposeExt {
@@ -42,7 +37,7 @@ object GlanceComposeExt {
     @Composable
     fun rememberPreviewSize(
         isPortrait: Boolean = true,
-        isInDesignMode: Boolean = isInPreviewMode,
+        isInDesignMode: Boolean = CustomExt.isInPreviewMode,
         displaySize: DpSize? = if (isInDesignMode) if (isPortrait) PORTRAIT else LANDSCAPE else null
     ) = remember(displaySize) {
         derivedStateOf {
@@ -132,32 +127,6 @@ object GlanceComposeExt {
                 ImageProvider(icon)
             }
         }
-
-    @GlanceComposable
-    @Composable
-    fun rememberVectorImageProvider(
-        imageVector: ImageVector,
-        size: Dp,
-        tint: Color
-    ): State<ImageProvider> {
-        val context = LocalContext.current
-        return remember(
-            imageVector,
-            size,
-            tint
-        ) {
-            flow {
-                val sizePx = (size.value * context.resources.displayMetrics.density).toInt()
-                val bmp = createBitmap(sizePx, sizePx, Bitmap.Config.ARGB_8888)
-                val canvas = Canvas(bmp)
-                // todo from ImageVector
-                canvas.drawColor(tint.toArgb())
-                // /todo
-                val icon = Icon.createWithBitmap(bmp)
-                emit(ImageProvider(icon))
-            }
-        }.collectAsState(EmptyImageProvider)
-    }
 
     @Composable
     fun <T> rememberDerivedState(

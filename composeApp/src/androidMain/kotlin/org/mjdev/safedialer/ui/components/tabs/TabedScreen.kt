@@ -26,7 +26,7 @@ import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
-import org.mjdev.safedialer.extensions.ComposeExt.applyIf
+import org.mjdev.safedialer.extensions.ModifierExt.applyIf
 import org.mjdev.safedialer.helpers.Previews
 import org.mjdev.safedialer.sync.SyncAccountTypes
 import org.mjdev.safedialer.ui.components.custom.ResponsiveContainer

@@ -30,7 +30,7 @@ import androidx.glance.unit.ColorProvider
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.widget.app.actions.AppWidgetActions
 import org.mjdev.safedialer.widget.app.helpers.CustomAppExt.rememberCurrentUser
-import org.mjdev.safedialer.widget.base.GlancePreviews
+import org.mjdev.safedialer.widget.base.previews.GlancePreviews
 
 @SuppressLint("RestrictedApi")
 @OptIn(ExperimentalGlancePreviewApi::class)

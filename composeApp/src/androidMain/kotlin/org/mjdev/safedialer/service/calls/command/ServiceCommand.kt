@@ -1,4 +1,4 @@
-package org.mjdev.safedialer.service.command
+package org.mjdev.safedialer.service.calls.command
 
 enum class ServiceCommand {
     ShowAlert,
