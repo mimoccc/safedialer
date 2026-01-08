@@ -73,9 +73,9 @@ object ToolsCalendar {
             callDate = event.dateStart?.value?.time ?: 0L,
             duration = event.duration?.value?.toMillis()?.div(1000) ?: 0L,
             isRead = event.getExperimentalProperty("X-CALL-IS-READ")?.value?.toBoolean() ?: false,
-            number = event.getExperimentalProperty("X-CALL-NUMBER").value,
-            type = event.getExperimentalProperty("X-CALL-TYPE")?.let { typeName ->
-                CallType.entries.find { it.name == typeName.name }
+            number = event.getExperimentalProperty("X-CALL-NUMBER")?.value,
+            type = event.getExperimentalProperty("X-CALL-TYPE")?.value?.let { typeName ->
+                CallType.entries.find { it.name == typeName }
             }
         )
     }
