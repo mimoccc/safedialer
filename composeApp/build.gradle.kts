@@ -124,7 +124,9 @@ kotlin {
 
             implementation("androidx.media3:media3-exoplayer:1.2.0")
             implementation("androidx.media3:media3-ui:1.2.0")
+
             implementation("org.jsoup:jsoup:1.22.1")
+            implementation("net.sf.biweekly:biweekly:0.6.8")
         }
         commonMain.dependencies {
             implementation(compose.runtime)

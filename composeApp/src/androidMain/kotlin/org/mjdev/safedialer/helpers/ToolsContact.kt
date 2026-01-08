@@ -16,7 +16,7 @@ import org.mjdev.safedialer.BuildConfig
 import org.mjdev.safedialer.providers.android.contacts.Contact
 import kotlin.use
 
-object ContactHelper {
+object ToolsContact {
 
     fun contactExists(
         context:Context,
