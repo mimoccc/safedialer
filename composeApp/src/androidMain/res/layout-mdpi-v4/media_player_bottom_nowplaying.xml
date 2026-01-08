@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/bottom_nowplaying_layout"
+        android:longClickable="true"
+        android:layout_width="fill_parent"
+        android:layout_height="36.0dip">
+
+    <ImageView
+            android:gravity="top"
+            android:layout_gravity="center"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:src="@drawable/audio_player_playing_mask"
+            android:scaleType="matrix" />
+
+    <ImageView
+            android:layout_gravity="center"
+            android:id="@id/playing_dot"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/playing_dot"
+            android:scaleType="fitCenter" />
+
+    <TextView
+            android:textSize="14.0dip"
+            android:textColor="@android:color/white"
+            android:gravity="center"
+            android:layout_gravity="center"
+            android:id="@+id/media_player_bottom_now_playing"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginLeft="50.0dip"
+            android:layout_marginRight="50.0dip"
+            android:maxWidth="200.0dip" />
+
+</FrameLayout>

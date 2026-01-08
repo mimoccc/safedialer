@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.miui.player.ui.view.ExtendScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@id/lyric_wrap"
+        android:scrollbars="none"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    <TextView
+            android:textSize="16.0dip"
+            android:textColor="#80ffffff"
+            android:gravity="center"
+            android:id="@id/lyric"
+            android:paddingLeft="20.0dip"
+            android:paddingRight="20.0dip"
+            android:fadingEdge="vertical"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:lineSpacingExtra="5.0dip" />
+
+</com.miui.player.ui.view.ExtendScrollView>

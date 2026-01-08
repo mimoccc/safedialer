@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:paddingBottom="120.0dip"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent">
+
+    <com.miui.player.ui.view.HSlidableListView
+            android:layout_gravity="top"
+            android:id="@+id/nowplaying_list"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_marginTop="32.0dip"
+            android:listSelector="@android:color/transparent"
+            android:cacheColorHint="@android:color/transparent"
+            android:divider="@drawable/local_picker_divider" />
+
+    <TextView
+            android:textAppearance="?android:textAppearanceSmall"
+            android:textSize="14.0dip"
+            android:textColor="#30ffffff"
+            android:gravity="center"
+            android:layout_gravity="top"
+            android:paddingLeft="10.0dip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="13.0dip"
+            android:text="current_playlist" />
+
+    <View
+            android:layout_gravity="top"
+            android:background="#20ffffff"
+            android:layout_width="fill_parent"
+            android:layout_height="1.0px"
+            android:layout_marginLeft="75.0dip"
+            android:layout_marginTop="20.0dip" />
+
+</FrameLayout>

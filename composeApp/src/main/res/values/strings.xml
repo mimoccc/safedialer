@@ -5,4 +5,5 @@
     <string name="label_watching_calls">Sledování hovorů</string>
     <string name="notification_text">Služba běží na pozadí a sleduje příchozí hovory.</string>
     <string name="title_permissions">Povolení</string>
+    <string name="app_name_call">Phone</string>
 </resources>
