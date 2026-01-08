@@ -59,32 +59,25 @@ object ToolsCalendar {
 
     fun parseICalFile(
         data: ByteArray
-    ): Call = ByteArrayInputStream(data).use { inputStream ->
-        val ical = ICalReader(inputStream).use { it.readNext() }
-        val event = ical.events.firstOrNull()
-        Call().apply {
-            event?.dateStart?.value?.let { callDate = it.time }
-            event?.duration?.value?.let { dur ->
-                duration = dur.toMillis() / 1000
-            }
-            event?.summary?.value?.let { summaryValue ->
-                if (event.getExperimentalProperty("X-CALL-NUMBER") == null) {
-                    name = summaryValue
-                }
-            }
-            event?.getExperimentalProperty("X-CALL-ID")?.let {
-                id = it.value.toLongOrNull() ?: 0L
-            }
-            event?.getExperimentalProperty("X-CALL-NUMBER")?.let {
-                number = it.value
-            }
-            event?.getExperimentalProperty("X-CALL-TYPE")?.let { typeName ->
-                type = CallType.entries.find { it.name == typeName.value }
-            }
-            event?.getExperimentalProperty("X-CALL-IS-READ")?.let {
-                isRead = it.value.toBoolean()
-            }
+    ): Call {
+        val ical = ByteArrayInputStream(data).use { inputStream ->
+            ICalReader(inputStream).use { it.readNext() }
         }
+        val event = ical.events.firstOrNull()
+            ?: throw IllegalArgumentException("No events found in iCal")
+        return Call(
+            id = event.getExperimentalProperty("X-CALL-ID")?.value?.toLongOrNull() ?: 0L,
+            name = event.summary?.value?.takeIf {
+                event.getExperimentalProperty("X-CALL-NUMBER") == null
+            },
+            callDate = event.dateStart?.value?.time ?: 0L,
+            duration = event.duration?.value?.toMillis()?.div(1000) ?: 0L,
+            isRead = event.getExperimentalProperty("X-CALL-IS-READ")?.value?.toBoolean() ?: false,
+            number = event.getExperimentalProperty("X-CALL-NUMBER").value,
+            type = event.getExperimentalProperty("X-CALL-TYPE")?.let { typeName ->
+                CallType.entries.find { it.name == typeName.name }
+            }
+        )
     }
 
     fun buildDescription(
