@@ -2,8 +2,10 @@ package org.mjdev.safedialer.sync.document
 
 import android.content.Context
 import android.content.SyncResult
+import android.os.Environment
 import org.mjdev.safedialer.providers.custom.document.DocumentItem
 import org.mjdev.safedialer.sync.SyncWorkerWebDav
+import java.nio.file.Path
 
 @Suppress("unused")
 class SyncWorkerDocuments(
@@ -13,11 +15,17 @@ class SyncWorkerDocuments(
     context,
     dirName,
 ) {
-    override fun prepareLocalFiles(syncResult: SyncResult?) {
+    override suspend fun prepareLocalFiles(
+        syncResult: SyncResult?
+    ) {
     }
 
-    override fun mergeChanges() {
+    override suspend fun mergeChanges() {
     }
+
+    override fun overrideBasePath(path: Path): Path = Environment.getExternalStoragePublicDirectory(
+        Environment.DIRECTORY_DOCUMENTS
+    ).toPath()
 
     companion object {
         private val TAG = SyncWorkerDocuments::class.simpleName

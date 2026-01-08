@@ -4,12 +4,16 @@ import okhttp3.HttpUrl
 import okhttp3.Response
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
+import java.util.Date
 import java.util.Locale
 import java.util.logging.Logger
+import kotlin.time.Duration.Companion.milliseconds
 
 object HttpUtils {
     private const val httpDateFormatStr = "EEE, dd MMM yyyy HH:mm:ss ZZZZ"
@@ -30,23 +34,21 @@ object HttpUtils {
     fun formatDate(date: Instant): String =
         ZonedDateTime.ofInstant(date, ZoneOffset.UTC).format(httpDateFormat)
 
-    fun parseDate(dateStr: String): Instant? {
-        val zonedFormats = arrayOf(
-            httpDateFormat,
-            DateTimeFormatter.ofPattern("EEEE, dd-MMM-yy HH:mm:ss zzz", Locale.US),
-        )
-        for (format in zonedFormats)
-            try {
-                return ZonedDateTime.parse(dateStr, format).toInstant()
-            } catch (ignored: DateTimeParseException) {
-            }
-        try {
-            val formatC = DateTimeFormatter.ofPattern("EEE MMM ppd HH:mm:ss yyyy", Locale.US)
-            val local = LocalDateTime.parse(dateStr, formatC)
-            return local.atZone(ZoneOffset.UTC).toInstant()
-        } catch (ignored: DateTimeParseException) {
-        }
-        logger.warning("Couldn't parse HTTP date: $dateStr, ignoring")
-        return null
-    }
+    val httpDateFormatter: DateTimeFormatter = DateTimeFormatterBuilder()
+        .parseCaseInsensitive()
+        .appendPattern("EEE, ")
+        .optionalStart()
+        .appendPattern("d")
+        .optionalEnd()
+        .appendPattern(" MMM yyyy HH:mm:ss")
+        .appendLiteral(" GMT")
+        .toFormatter(Locale.ENGLISH)
+        .withZone(ZoneId.of("GMT"))
+
+    fun parseDate(dateStr: String): Instant? = runCatching {
+        ZonedDateTime.parse(dateStr, httpDateFormatter).toInstant()
+    }.onFailure { e ->
+        e.printStackTrace()
+    }.getOrNull()
+
 }

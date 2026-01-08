@@ -12,6 +12,9 @@ import android.os.Bundle
 import android.os.Environment
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.kodein.di.DIAware
 import org.kodein.di.android.closestDI
 import org.kodein.di.instance
@@ -47,29 +50,37 @@ abstract class SyncWorkerWebDav<T : Entity>(
     protected val webDav: WebDavClient by instance()
     protected val notificationManager: NotificationManager by instance()
     protected var authority: String? = null
+
     // base root webdav folder containing all the user data
     protected val baseRemoteFilesPath: String = "${webDav.baseUrl.trimEnd('/')}/$dirName"
     private val notificationId = dirName.hashCode()
+
     // standard path root of webdav custom folder
-    protected val baseLocalFilesPath: Path by lazy {
-        Paths.get(filesDir?.absolutePath, dirName).createIfNoExists()
-    }
+    protected val baseLocalFilesPath: Path
+        get() = Paths.get(filesDir?.absolutePath, dirName).let { bp ->
+            overrideBasePath(bp)
+        }.createIfNoExists()
+
     // Private subfolder in synced folder / user visible only
     protected val privateSyncDir: Path by lazy {
         baseLocalFilesPath.resolve(DIR_PRIVATE).createIfNoExists()
     }
+
     // Company subfolder in synced folder / company visible
     protected val companySyncDir: Path by lazy {
         baseLocalFilesPath.resolve(DIR_COMPANY).createIfNoExists()
     }
+
     // Public subfolder in synced folder / public for everybody
     protected val publicSyncDir: Path by lazy {
         baseLocalFilesPath.resolve(DIR_PUBLIC).createIfNoExists()
     }
+
     // Invoices only incoming subfolder / only user visible
     protected val incomingSyncDir: Path by lazy {
         baseLocalFilesPath.resolve(DIR_INCOMING).createIfNoExists()
     }
+
     // Invoices only outgoing subfolder / only user visible
     protected val outgoingSyncDir: Path by lazy {
         baseLocalFilesPath.resolve(DIR_OUTGOING).createIfNoExists()
@@ -90,19 +101,25 @@ abstract class SyncWorkerWebDav<T : Entity>(
         Log.d(TAG, "Performing sync for $dirName")
         showNotification()
         runCatching {
-            prepareLocalFiles(syncResult)
+            runBlocking(Dispatchers.IO) {
+                prepareLocalFiles(syncResult)
+            }
         }.onFailure { e -> e.printStackTrace() }
         runCatching {
-            prepareRemoteFiles(syncResult)
+            runBlocking(Dispatchers.IO) {
+                prepareRemoteFiles(syncResult)
+            }
         }.onFailure { e -> e.printStackTrace() }
         runCatching {
-            mergeChanges()
+            runBlocking(Dispatchers.IO) {
+                mergeChanges()
+            }
         }.onFailure { e -> e.printStackTrace() }
         hideNotification()
         isRunning.remove(dirName)
     }
 
-    private fun prepareRemoteFiles(
+    private suspend fun prepareRemoteFiles(
         syncResult: SyncResult?
     ) {
         Log.d(TAG, "Syncing remote files for: $dirName")
@@ -148,7 +165,7 @@ abstract class SyncWorkerWebDav<T : Entity>(
         notificationManager.cancel(notificationId)
     }.onFailure { e -> e.printStackTrace() }
 
-    protected fun syncDirectory(
+    protected suspend fun syncDirectory(
         localDirPath: Path,
         remoteDirPath: String,
         syncResult: SyncResult?
@@ -160,7 +177,9 @@ abstract class SyncWorkerWebDav<T : Entity>(
         }
         val remoteDirStr = remoteDirPath.replace(webDav.baseUrl, "")
         webDav.mkcol(remoteDirStr)
-        val localEntries = Files.list(localDirPath).collect(
+        val localEntries = withContext(Dispatchers.IO) {
+            Files.list(localDirPath)
+        }.collect(
             Collectors.toList()
         )
         val remoteEntries = webDav.listExtended(remoteDirStr).filter { remoteFile ->
@@ -284,8 +303,10 @@ abstract class SyncWorkerWebDav<T : Entity>(
         updateNotification(syncResult)
     }
 
-    abstract fun prepareLocalFiles(syncResult: SyncResult?)
-    abstract fun mergeChanges()
+    abstract suspend fun prepareLocalFiles(syncResult: SyncResult?)
+    abstract suspend fun mergeChanges()
+
+    open fun overrideBasePath(path: Path): Path = path
 
     open fun mergeConflict(
         conflict: ConflictType,

@@ -82,7 +82,7 @@ object ContactHelper {
         contact: Contact,
         accountType: String = BuildConfig.ACCOUNT_TYPE,
         accountName: String = BuildConfig.SERVER_UNAME,
-        onInserted: (Boolean) -> Unit
+        onInserted: (Boolean) -> Unit = {}
     ) {
         val ops = arrayListOf<ContentProviderOperation>()
         ops.add(
@@ -226,7 +226,7 @@ object ContactHelper {
         contact: Contact,
         accountType: String = BuildConfig.ACCOUNT_TYPE,
         accountName: String = BuildConfig.SERVER_UNAME,
-        onUpdateFinished: (Boolean) -> Unit
+        onUpdateFinished: (Boolean) -> Unit = {}
     ) {
         val contactId = findRawContactId(
             context,
@@ -382,7 +382,7 @@ object ContactHelper {
         contact: Contact,
         accountType: String = BuildConfig.ACCOUNT_TYPE,
         accountName: String = BuildConfig.SERVER_UNAME,
-        onDeleted: (Boolean) -> Unit
+        onDeleted: (Boolean) -> Unit = {}
     ) {
         val contactId = findRawContactId(
             context,

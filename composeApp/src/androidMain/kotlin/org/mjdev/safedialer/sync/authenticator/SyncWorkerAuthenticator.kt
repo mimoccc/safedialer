@@ -10,12 +10,12 @@ class SyncWorkerAuthenticator(
     context: Context,
     dirName: String,
 ) : SyncWorkerWebDav<Contact>(context, dirName) {
-    override fun prepareLocalFiles(
+    override suspend fun prepareLocalFiles(
         syncResult: SyncResult?
     ) {
     }
 
-    override fun mergeChanges() {
+    override suspend fun mergeChanges() {
     }
 
     companion object {

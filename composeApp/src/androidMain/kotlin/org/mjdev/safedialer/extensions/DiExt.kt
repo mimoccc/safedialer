@@ -24,17 +24,17 @@ object DiExt {
         mockBuilder
     )
 
-    fun Activity.closestDI(
-        mockBuilder: (Context) -> DI? = { null }
-    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
+//    fun Activity.closestDI(
+//        mockBuilder: (Context) -> DI? = { null }
+//    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
 
-    fun Service.closestDI(
-        mockBuilder: (Context) -> DI? = { null }
-    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
+//    fun Service.closestDI(
+//        mockBuilder: (Context) -> DI? = { null }
+//    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
 
-    fun Application.closestDI(
-        mockBuilder: (Context) -> DI? = { null }
-    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
+//    fun Application.closestDI(
+//        mockBuilder: (Context) -> DI? = { null }
+//    ) : DIPropertyDelegateProvider<Any?> = closestDI { mockBuilder(this) }
 
 //    fun closestDI(
 //        context: Context,

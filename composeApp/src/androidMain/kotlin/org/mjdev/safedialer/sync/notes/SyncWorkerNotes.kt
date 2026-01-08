@@ -10,10 +10,12 @@ class SyncWorkerNotes(
     context: Context,
     dirName: String,
 ) : SyncWorkerWebDav<Contact>(context, dirName) {
-    override fun prepareLocalFiles(syncResult: SyncResult?) {
+    override suspend fun prepareLocalFiles(
+        syncResult: SyncResult?
+    ) {
     }
 
-    override fun mergeChanges() {
+    override suspend fun mergeChanges() {
     }
 
     companion object {
