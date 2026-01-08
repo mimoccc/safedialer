@@ -1,17 +1,22 @@
 package org.mjdev.safedialer.app
 
-import android.app.Application
 import android.util.Log
 import androidx.core.telecom.CallsManager
 import org.kodein.di.DIAware
 import org.kodein.di.LazyDI
 import org.kodein.di.instance
+import org.mjdev.phone.application.CallApplication
+import org.mjdev.phone.nsd.service.CallNsdService.Companion.start
+import org.mjdev.phone.nsd.service.NsdService
 import org.mjdev.safedialer.di.mainDI
+import org.mjdev.safedialer.phone.WifiPhoneService
 import org.mjdev.safedialer.service.calls.IncomingCallService
 import org.mjdev.safedialer.service.media.MediaService
 
-class MainApp : Application(), DIAware {
+@Suppress("UNCHECKED_CAST")
+class MainApp() : CallApplication<NsdService>(), DIAware {
     override val di: LazyDI by mainDI(this@MainApp)
+    override var service: Class<NsdService> = WifiPhoneService::class.java as Class<NsdService>
 
     private val callsManager by instance<CallsManager>()
     private val capabilities by instance<Int>("callCapabilities")
@@ -23,6 +28,7 @@ class MainApp : Application(), DIAware {
         // todo check if from boot & permissions granted & permission activity
         IncomingCallService.start(this)
         MediaService.start(this)
+        start<WifiPhoneService>()
     }
 
     private fun setupExceptionHandler() {

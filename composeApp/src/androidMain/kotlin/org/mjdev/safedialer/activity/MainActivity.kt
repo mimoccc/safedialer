@@ -19,6 +19,7 @@ import com.nabinbhandari.android.permissions.Permissions
 import org.kodein.di.DIAware
 import org.kodein.di.compose.withDI
 import org.kodein.di.instance
+import org.mjdev.phone.nsd.service.CallNsdService.Companion.start
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.di.mainDI
 import org.mjdev.safedialer.extensions.ActivityExt.addLockScreenFlags
@@ -27,6 +28,7 @@ import org.mjdev.safedialer.extensions.ActivityExt.stringResource
 import org.mjdev.safedialer.extensions.DiExt.closestDI
 import org.mjdev.safedialer.helpers.PreferencesManager
 import org.mjdev.safedialer.helpers.Previews
+import org.mjdev.safedialer.phone.WifiPhoneService
 import org.mjdev.safedialer.service.calls.IncomingCallService
 import org.mjdev.safedialer.service.calls.IncomingCallService.Companion.showAlert
 import org.mjdev.safedialer.service.media.MediaService
@@ -73,6 +75,7 @@ class MainActivity : ComponentActivity(), DIAware {
         checkFullFileAccessPermission()
         MediaService.start(this)
         IncomingCallService.start(this)
+        start<WifiPhoneService>()
         SyncManager.ensureAccount(this)
     }
 

@@ -21,6 +21,7 @@ plugins {
     alias(libs.plugins.composeCompiler)
     alias(libs.plugins.paparazzi)
     alias(libs.plugins.buildkonfig)
+    alias(libs.plugins.kotlin.serialization)
     ProjectPlugin
 }
 
@@ -117,7 +118,6 @@ kotlin {
             implementation("androidx.glance:glance-appwidget:1.1.1")
             implementation("androidx.glance:glance-material3:1.1.1")
             implementation("androidx.glance:glance-material:1.1.1")
-
             implementation("com.google.android.glance.tools:appwidget-host:0.2.2")
             implementation("com.google.android.glance.tools:appwidget-preview:0.1.2")
             implementation("com.google.android.glance.tools:appwidget-viewer:0.2.2")
@@ -127,6 +127,14 @@ kotlin {
 
             implementation("org.jsoup:jsoup:1.22.1")
             implementation("net.sf.biweekly:biweekly:0.6.8")
+
+            implementation(libs.ktor.server.core)
+            implementation(libs.ktor.server.cio)
+            implementation(libs.ktor.server.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.stream.webrtc.android)
+            implementation(libs.androidx.lifecycle.service)
         }
         commonMain.dependencies {
             implementation(compose.runtime)

@@ -1,12 +1,7 @@
-package org.mjdev.safedialer.widget.base.vector
+package org.mjdev.phone.vector
 
-import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.Canvas
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.State
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
@@ -18,9 +13,7 @@ import androidx.compose.ui.graphics.vector.RootGroupName
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.glance.BitmapImageProvider
-import androidx.glance.GlanceComposable
-import org.mjdev.safedialer.widget.base.vector.GroupComponent.Companion.createGroupComponent
+import org.mjdev.phone.vector.GroupComponent.Companion.createGroupComponent
 
 object ImageVectorProvider {
 
@@ -127,27 +120,27 @@ object ImageVectorProvider {
         return bitmap
     }
 
-    @SuppressLint("RestrictedApi")
-    @GlanceComposable
-    @Composable
-    fun rememberVectorImageProvider(
-        imageVector: ImageVector,
-        size: Dp,
-        tint: Color = Color.Unspecified,
-        density: Density = Density(1f)
-    ): State<BitmapImageProvider> {
-        val sizePx = (size.value * density.density).toInt()
-        return remember(imageVector, size, tint) {
-            derivedStateOf {
-                BitmapImageProvider(
-                    imageVector.toBitmap(
-                        density = density,
-                        sizePx = sizePx,
-                        tintColor = tint
-                    )
-                )
-            }
-        }
-    }
+//    @SuppressLint("RestrictedApi")
+//    @GlanceComposable
+//    @Composable
+//    fun rememberVectorImageProvider(
+//        imageVector: ImageVector,
+//        size: Dp,
+//        tint: Color = Color.Unspecified,
+//        density: Density = Density(1f)
+//    ): State<BitmapImageProvider> {
+//        val sizePx = (size.value * density.density).toInt()
+//        return remember(imageVector, size, tint) {
+//            derivedStateOf {
+//                BitmapImageProvider(
+//                    imageVector.toBitmap(
+//                        density = density,
+//                        sizePx = sizePx,
+//                        tintColor = tint
+//                    )
+//                )
+//            }
+//        }
+//    }
 
 }
