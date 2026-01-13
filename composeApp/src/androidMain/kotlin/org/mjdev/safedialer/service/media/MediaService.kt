@@ -3,6 +3,7 @@ package org.mjdev.safedialer.service.media
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.ContentUris
@@ -18,6 +19,8 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.ExoPlayer.*
+import androidx.media3.session.MediaSession
+import androidx.media3.session.MediaStyleNotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -27,9 +30,13 @@ import kotlinx.coroutines.launch
 import org.mjdev.safedialer.R
 import org.mjdev.safedialer.widget.media.MediaPlayer
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.annotation.MainThread
+import androidx.annotation.OptIn
 import androidx.media3.common.MediaMetadata
+import androidx.media3.common.util.UnstableApi
 import kotlinx.coroutines.withContext
 
 @Suppress("unused")
@@ -39,6 +46,8 @@ class MediaService : Service() {
 
     private val _playbackState = MutableStateFlow(EmptyState)
     private val _playlist = MutableStateFlow<MutableList<MediaItem>?>(null)
+
+    private var mediaSession: MediaSession? = null
 
     private val player: ExoPlayer by lazy {
         Builder(this).build().apply {
@@ -85,11 +94,20 @@ class MediaService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        initializeMediaSession()
         registerReceiver()
         startForeground()
         CoroutineScope(Dispatchers.IO).launch {
             loadMediaFiles()
         }
+    }
+
+    private fun initializeMediaSession() {
+        mediaSession = MediaSession.Builder(this, player)
+            .setCallback(object : MediaSession.Callback {
+                // Handle custom commands if needed
+            })
+            .build()
     }
 
     private suspend fun loadMediaFiles() {
@@ -160,6 +178,7 @@ class MediaService : Service() {
         startForeground(NOTIFICATION_ID, createNotification())
     }
 
+    @OptIn(UnstableApi::class)
     @MainThread
     private fun createNotification(): Notification {
         val channel = NotificationChannel(
@@ -169,11 +188,64 @@ class MediaService : Service() {
         )
         val manager = getSystemService(NotificationManager::class.java)
         manager.createNotificationChannel(channel)
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        return mediaSession?.let { session ->
+            NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle(getCurrentMediaTitle())
+                .setContentText(getCurrentMediaArtist())
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setLargeIcon(getCurrentAlbumArt())
+                .setStyle(
+                    MediaStyleNotificationHelper.MediaStyle(session)
+                        .setShowActionsInCompactView(0, 1, 2)
+                )
+                .addAction(createAction(MediaCommand.PREVIOUS, "Previous", android.R.drawable.ic_media_previous))
+                .addAction(
+                    if (player.isPlaying)
+                        createAction(MediaCommand.PAUSE, "Pause", android.R.drawable.ic_media_pause)
+                    else
+                        createAction(MediaCommand.PLAY, "Play", android.R.drawable.ic_media_play)
+                )
+                .addAction(createAction(MediaCommand.NEXT, "Next", android.R.drawable.ic_media_next))
+                .setOngoing(player.isPlaying)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .build()
+        } ?: NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Media Player")
             .setSmallIcon(R.mipmap.ic_launcher)
             .setOngoing(true)
             .build()
+    }
+
+    private fun createAction(command: MediaCommand, title: String, icon: Int): NotificationCompat.Action {
+        val intent = Intent(command.action).apply {
+            setPackage(packageName)
+        }
+        val pendingIntent = PendingIntent.getBroadcast(
+            this,
+            command.ordinal,
+            intent,
+            PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT
+        )
+        return NotificationCompat.Action.Builder(icon, title, pendingIntent).build()
+    }
+
+    private fun getCurrentMediaTitle(): String {
+        return player.currentMediaItem?.mediaMetadata?.title?.toString() ?: "Media Player"
+    }
+
+    private fun getCurrentMediaArtist(): String {
+        return player.currentMediaItem?.mediaMetadata?.artist?.toString() ?: "Unknown Artist"
+    }
+
+    // todo : check if it is working
+    private fun getCurrentAlbumArt(): Bitmap? {
+        return runCatching {
+            player.currentMediaItem?.mediaMetadata?.artworkUri?.let { uri ->
+                contentResolver.openInputStream(uri)?.use { inputStream ->
+                    BitmapFactory.decodeStream(inputStream)
+                }
+            }
+        }.getOrNull()
     }
 
     @MainThread
@@ -184,7 +256,13 @@ class MediaService : Service() {
             currentPosition = player.currentPosition,
             duration = player.duration,
         )
+        updateNotification()
         updateWidget()
+    }
+
+    private fun updateNotification() {
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(NOTIFICATION_ID, createNotification())
     }
 
     private fun updateWidget() {
@@ -208,6 +286,8 @@ class MediaService : Service() {
     @MainThread
     override fun onDestroy() {
         unregisterReceiver(receiver)
+        mediaSession?.release()
+        mediaSession = null
         player.release()
         super.onDestroy()
     }
